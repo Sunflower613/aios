@@ -430,29 +430,42 @@
         /* Responsive Mobile Layout for Small Viewports (Landscape) */
         @media (max-height: 520px) {
             .paint-layout {
-                grid-template-columns: 160px 1fr 160px;
-                gap: 12px;
-                padding: 12px;
+                grid-template-columns: 140px 1fr 140px;
+                gap: 8px;
+                padding: 8px;
                 max-height: 100%;
             }
 
             .card {
-                padding: 10px;
-                gap: 8px;
+                padding: 6px !important;
+                gap: 6px !important;
+            }
+
+            .card-title {
+                display: none !important; /* Hide card titles to save massive vertical space */
             }
 
             .column-left, .column-right {
-                gap: 8px;
+                gap: 6px !important;
             }
 
             .canvas-container {
-                max-width: 290px;
-                max-height: 290px;
+                max-width: 260px; /* Reduced from 290px to 260px to guarantee fit on low-height screens */
+                max-height: 260px;
             }
 
             .target-color-display {
-                width: 40px;
-                height: 40px;
+                width: 36px;
+                height: 36px;
+            }
+
+            .target-title {
+                font-size: 0.75rem !important;
+                margin-bottom: 2px !important;
+            }
+
+            .target-hex {
+                font-size: 0.75rem !important;
             }
 
             .palette-grid {
@@ -461,23 +474,43 @@
 
             .color-pot {
                 border-width: 1.5px;
+                font-size: 0.7rem !important;
+                height: 20px !important;
+                line-height: 20px !important;
+            }
+
+            .blend-actions {
+                gap: 4px !important;
+            }
+
+            .btn {
+                padding: 6px 10px !important;
+                font-size: 0.75rem !important;
             }
 
             .btn-tool {
-                padding: 6px 0;
+                padding: 4px 0 !important;
+                font-size: 0.75rem !important;
             }
 
             .btn-tool .tool-icon {
-                font-size: 1rem;
+                font-size: 0.85rem !important;
             }
 
             .color-circle {
-                width: 24px;
-                height: 24px;
+                width: 20px;
+                height: 20px;
             }
 
             .btn-submit {
-                padding: 8px 0;
+                padding: 6px 0 !important;
+                font-size: 0.75rem !important;
+            }
+            
+            .mobile-close-btn {
+                padding: 6px 0 !important;
+                font-size: 0.75rem !important;
+                margin-bottom: 4px !important;
             }
         }
     </style>
@@ -661,14 +694,11 @@
                     
                     const existingColor = a === 0 ? 'rgb(255, 255, 255)' : `rgb(${r}, ${g}, ${b})`;
                     const mixed = mix(currentColor, existingColor);
-                    currentColor = mixed;
 
-                    ctx.fillStyle = currentColor;
+                    ctx.fillStyle = mixed;
                     ctx.beginPath();
                     ctx.arc(x, y, brushRadius, 0, Math.PI * 2);
                     ctx.fill();
-
-                    updateColorsHud();
                 }
             }
         }
