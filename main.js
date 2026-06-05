@@ -152,6 +152,106 @@ class GameApp {
         osc.stop(this.audioCtx.currentTime + 0.16);
       }
     });
+
+    // Wardrobe Outfit selection listeners
+    const setupWardrobeSection = (sectionId, type) => {
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+      
+      const buttons = section.querySelectorAll('.color-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          section.querySelector('.color-btn.active')?.classList.remove('active');
+          btn.classList.add('active');
+          const color = btn.getAttribute('data-color');
+          if (this.player) {
+            this.player.updateOutfit(type, color);
+          }
+        });
+      });
+    };
+
+    setupWardrobeSection('wardrobe-hair', 'hair');
+    setupWardrobeSection('wardrobe-clothes', 'clothing');
+    setupWardrobeSection('wardrobe-hat', 'hat');
+
+    // Model selection listeners
+    const modelBtns = document.querySelectorAll('.model-btn');
+    modelBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelector('.model-btn.active')?.classList.remove('active');
+        btn.classList.add('active');
+        const modelType = btn.getAttribute('data-model');
+        if (this.player) {
+          this.player.updateModel(modelType);
+          
+          // Dynamically change title descriptions for model specific colors
+          const hairTitle = document.getElementById('wardrobe-hair-title');
+          const clothingTitle = document.getElementById('wardrobe-clothing-title');
+          const hatTitle = document.getElementById('wardrobe-hat-title');
+          
+          if (modelType === 'kitty') {
+            if (hairTitle) hairTitle.textContent = '毛皮颜色 (Fur Color)';
+            if (clothingTitle) clothingTitle.textContent = '小猫背心 (Vest Color)';
+            if (hatTitle) hatTitle.textContent = '金铃铛颜色 (Bell Color)';
+          } else {
+            if (hairTitle) hairTitle.textContent = '发发 / 毛毛';
+            if (clothingTitle) clothingTitle.textContent = '服装颜色';
+            if (hatTitle) hatTitle.textContent = '配饰 / 铃铛颜色';
+          }
+
+          // Trigger a sound effect
+          if (this.isPlayingMusic && this.audioCtx) {
+            const osc = this.audioCtx.createOscillator();
+            const gain = this.audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(360, this.audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(720, this.audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.06, this.audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, this.audioCtx.currentTime + 0.15);
+            osc.connect(gain);
+            gain.connect(this.audioCtx.destination);
+            osc.start();
+            osc.stop(this.audioCtx.currentTime + 0.15);
+          }
+        }
+      });
+    });
+
+    // Day/Night toggle listener
+    const btnToggleTime = document.getElementById('btn-toggle-time');
+    if (btnToggleTime) {
+      btnToggleTime.addEventListener('click', () => {
+        if (this.environment) {
+          this.environment.isNight = !this.environment.isNight;
+          
+          // Play soft chime sound
+          if (this.isPlayingMusic && this.audioCtx) {
+            const osc = this.audioCtx.createOscillator();
+            const gain = this.audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(this.environment.isNight ? 220 : 440, this.audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(80, this.audioCtx.currentTime + 0.4);
+            gain.gain.setValueAtTime(0.08, this.audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, this.audioCtx.currentTime + 0.4);
+            osc.connect(gain);
+            gain.connect(this.audioCtx.destination);
+            osc.start();
+            osc.stop(this.audioCtx.currentTime + 0.4);
+          }
+        }
+      });
+    }
+
+    // Bed dismount stand-up listener
+    const btnStandUp = document.getElementById('btn-stand-up');
+    if (btnStandUp) {
+      btnStandUp.addEventListener('click', () => {
+        if (this.player && this.player.isLyingDown) {
+          this.player.standUp();
+        }
+      });
+    }
   }
 
   initMobileJoystick() {

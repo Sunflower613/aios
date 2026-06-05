@@ -30,6 +30,7 @@ export class Player {
 
     this.isSitting = false;
     this.swingRef = null;
+    this.isLyingDown = false; // Add state for bed interaction
     
     this.initMesh();
     this.initControls();
@@ -38,27 +39,53 @@ export class Player {
   initMesh() {
     this.group = new THREE.Group();
     this.group.position.copy(this.position);
+    this.activeModel = 'girl'; // Default model is girl
 
-    const isChristmas = this.themeConfig.colors.sky === 0x050c18;
     const hairColorHex = this.themeConfig.player.hairColor || 0xff8a80;
     const clothingColorHex = this.themeConfig.player.clothingColor || 0xffffff;
     const hatColorHex = this.themeConfig.player.hatColor || 0xffd180;
 
+    this.rebuildMesh(hairColorHex, clothingColorHex, hatColorHex);
+  }
+
+  rebuildMesh(hairColorHex, clothingColorHex, hatColorHex) {
+    // Clear all children of this.group to rebuild
+    while (this.group.children.length > 0) {
+      const child = this.group.children[0];
+      this.group.remove(child);
+      if (child.geometry) child.geometry.dispose();
+      if (child.material) {
+        if (Array.isArray(child.material)) {
+          child.material.forEach(m => m.dispose());
+        } else {
+          child.material.dispose();
+        }
+      }
+    }
+
+    // Clear old animation references
+    this.tailL = null;
+    this.tailR = null;
+    this.catTail = null;
+
+    const isChristmas = this.themeConfig.colors.sky === 0x050c18;
+
     // Materials
     const skinMat = new THREE.MeshLambertMaterial({ color: 0xffe0bd, flatShading: true }); // skin
     const whiteMat = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true }); // white details
-    const hairMat = new THREE.MeshLambertMaterial({ color: hairColorHex, flatShading: true }); // hair
-    
+    const hairMat = new THREE.MeshLambertMaterial({ color: hairColorHex, flatShading: true }); // hair / fur
+    this.hairMat = hairMat;
+
     // 1. Torso & Clothes
-    // Upper body top
     const topGeo = new THREE.CylinderGeometry(0.2, 0.24, 0.35, 8);
     const topMat = new THREE.MeshLambertMaterial({ color: clothingColorHex, flatShading: true });
+    this.clothingMat = topMat;
     this.body = new THREE.Mesh(topGeo, topMat);
     this.body.position.y = 0.55;
     this.body.castShadow = true;
     this.group.add(this.body);
 
-    // Lower body (Denim shorts for summer, warm dark grey pants for winter)
+    // Lower body (shorts/pants)
     const lowerBodyColor = isChristmas ? 0x263238 : 0x3f51b5;
     const shortsGeo = new THREE.CylinderGeometry(0.24, 0.3, 0.3, 8);
     const lowerMat = new THREE.MeshLambertMaterial({ color: lowerBodyColor, flatShading: true });
@@ -79,7 +106,70 @@ export class Player {
     neck.position.y = 0.75;
     this.group.add(neck);
 
-    // 3. Hair (helm, bangs, twin-tails)
+    // 3. Sandals / Boots / Shoes
+    const sandalColor = isChristmas ? 0x5d4037 : (this.activeModel === 'boy' ? 0xff5252 : 0xffffff); // Red sneakers for boy, white sandals for girl
+    const sandalMat = new THREE.MeshLambertMaterial({ color: sandalColor, flatShading: true });
+    const footGeo = new THREE.SphereGeometry(0.09, 6, 6);
+    footGeo.scale(1, isChristmas ? 1.0 : 0.7, 1.3);
+
+    this.footL = new THREE.Mesh(footGeo, sandalMat);
+    this.footL.position.set(-0.16, 0.04, 0);
+    this.footR = new THREE.Mesh(footGeo, sandalMat);
+    this.footR.position.set(0.16, 0.04, 0);
+
+    if (!isChristmas && this.activeModel === 'girl') {
+      const sandalBowGeo = new THREE.BoxGeometry(0.12, 0.04, 0.08);
+      const sBowL = new THREE.Mesh(sandalBowGeo, sandalMat);
+      sBowL.position.set(-0.16, 0.06, 0.08);
+      const sBowR = new THREE.Mesh(sandalBowGeo, sandalMat);
+      sBowR.position.set(0.16, 0.06, 0.08);
+      this.group.add(sBowL);
+      this.group.add(sBowR);
+    }
+    this.group.add(this.footL);
+    this.group.add(this.footR);
+
+    // Build model specific features
+    if (this.activeModel === 'girl') {
+      this.buildGirlModel(hairMat, whiteMat, hatColorHex, isChristmas);
+    } else if (this.activeModel === 'boy') {
+      this.buildBoyModel(hairMat, whiteMat, hatColorHex, isChristmas);
+    } else if (this.activeModel === 'kitty') {
+      this.buildKittyModel(hairMat, whiteMat, hatColorHex, isChristmas);
+    }
+
+    // 4. Cardigan / Scarf (waving cape)
+    const capeColor = isChristmas ? 0xd50000 : 0xffffff;
+    const capeMat = new THREE.MeshLambertMaterial({
+      color: capeColor,
+      transparent: !isChristmas,
+      opacity: isChristmas ? 1.0 : 0.8,
+      side: THREE.DoubleSide,
+      flatShading: true
+    });
+    
+    if (isChristmas) {
+      const capeGeo = new THREE.PlaneGeometry(0.55, 0.7, 2, 4);
+      this.cape = new THREE.Mesh(capeGeo, capeMat);
+      this.cape.position.set(0.05, 0.62, -0.22);
+      this.cape.rotation.x = 0.12;
+      this.cape.rotation.y = 0.05;
+      this.cape.castShadow = true;
+      this.group.add(this.cape);
+    } else {
+      const capeGeo = new THREE.PlaneGeometry(0.65, 0.75, 3, 5);
+      this.cape = new THREE.Mesh(capeGeo, capeMat);
+      this.cape.position.set(0, 0.48, -0.32);
+      this.cape.rotation.x = 0.15;
+      this.cape.castShadow = true;
+      this.group.add(this.cape);
+    }
+
+    this.scene.add(this.group);
+  }
+
+  buildGirlModel(hairMat, whiteMat, hatColorHex, isChristmas) {
+    // Hair (helm, bangs, twin-tails)
     const hairHelmGeo = new THREE.SphereGeometry(0.36, 8, 8);
     const hairHelm = new THREE.Mesh(hairHelmGeo, hairMat);
     hairHelm.position.set(0, 0.98, -0.04);
@@ -113,13 +203,11 @@ export class Player {
 
     // Hair Clip
     if (isChristmas) {
-      // White Snowflake star clip
       const clip = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 0.04), whiteMat);
       clip.position.set(0.24, 1.12, 0.24);
       clip.rotation.z = Math.PI / 4;
       this.group.add(clip);
     } else {
-      // Watermelon Clip
       const clipRind = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.04), new THREE.MeshLambertMaterial({ color: 0x4caf50 }));
       clipRind.position.set(0.24, 1.12, 0.24);
       clipRind.rotation.z = -0.4;
@@ -130,29 +218,26 @@ export class Player {
       this.group.add(clipFlesh);
     }
 
-    // 4. Headwear (Santa Hat vs Straw Hat)
+    // Headwear (Santa Hat vs Straw Hat)
     if (isChristmas) {
-      // Santa Hat
       const hatGroup = new THREE.Group();
       hatGroup.position.set(0, 1.25, -0.04);
 
-      // Red Cone
       const coneGeo = new THREE.ConeGeometry(0.35, 0.6, 8);
-      coneGeo.translate(0, 0.3, 0); // Offset center to base
+      coneGeo.translate(0, 0.3, 0);
       const redMat = new THREE.MeshLambertMaterial({ color: hatColorHex, flatShading: true });
+      this.hatMat = redMat;
       const cone = new THREE.Mesh(coneGeo, redMat);
-      cone.rotation.z = -0.15; // Slanted slightly
+      cone.rotation.z = -0.15;
       cone.rotation.x = -0.1;
       cone.castShadow = true;
       hatGroup.add(cone);
 
-      // White fluffy band at base
       const bandGeo = new THREE.CylinderGeometry(0.36, 0.36, 0.12, 8);
       const band = new THREE.Mesh(bandGeo, whiteMat);
       band.position.y = 0.05;
       hatGroup.add(band);
 
-      // White Pom-pom sphere at the top tip
       const pomGeo = new THREE.SphereGeometry(0.08, 6, 6);
       const pom = new THREE.Mesh(pomGeo, whiteMat);
       pom.position.set(0.08, 0.62, -0.04);
@@ -160,12 +245,12 @@ export class Player {
 
       this.group.add(hatGroup);
     } else {
-      // Straw Beach Hat
       const hatGroup = new THREE.Group();
       hatGroup.position.set(0, 1.28, -0.04);
       
       const brimGeo = new THREE.CylinderGeometry(0.72, 0.72, 0.04, 10);
       const strawMat = new THREE.MeshLambertMaterial({ color: hatColorHex, flatShading: true });
+      this.hatMat = strawMat;
       const brim = new THREE.Mesh(brimGeo, strawMat);
       brim.castShadow = true;
       hatGroup.add(brim);
@@ -184,16 +269,14 @@ export class Player {
       this.group.add(hatGroup);
     }
 
-    // 5. Glasses (Snow Goggles vs Flower Sunglasses)
+    // Glasses
     const glassGroup = new THREE.Group();
     glassGroup.position.set(0, 1.22, 0.3);
     glassGroup.rotation.x = -0.15;
 
-    // Sunglasses lenses (dark circles)
     const lensGeo = new THREE.SphereGeometry(0.12, 6, 6);
     lensGeo.scale(1, 1, 0.2);
     const lensMat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
-    
     const lensL = new THREE.Mesh(lensGeo, lensMat);
     lensL.position.x = -0.16;
     const lensR = new THREE.Mesh(lensGeo, lensMat);
@@ -201,21 +284,17 @@ export class Player {
     glassGroup.add(lensL);
     glassGroup.add(lensR);
 
-    // Frames
-    const frameColor = isChristmas ? 0xffffff : 0xff80ab; // White ski frame vs Pink flower frame
+    const frameColor = isChristmas ? 0xffffff : 0xff80ab;
     const frameMat = new THREE.MeshLambertMaterial({ color: frameColor, flatShading: true });
     
     if (isChristmas) {
-      // Ski Goggles strap/frame (connected box)
       const frameGeo = new THREE.BoxGeometry(0.48, 0.2, 0.06);
       const frame = new THREE.Mesh(frameGeo, frameMat);
       frame.position.set(0, 0, 0.02);
       glassGroup.add(frame);
     } else {
-      // Flower shape frames
       const frameGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.05, 8);
       frameGeo.rotateX(Math.PI / 2);
-      
       const frameL = new THREE.Mesh(frameGeo, frameMat);
       frameL.position.set(-0.16, 0, 0.02);
       const frameR = new THREE.Mesh(frameGeo, frameMat);
@@ -223,16 +302,14 @@ export class Player {
       glassGroup.add(frameL);
       glassGroup.add(frameR);
     }
-
     this.group.add(glassGroup);
 
-    // 6. Hamster on Head
+    // Hamster on Head
     const hamster = new THREE.Group();
     hamster.position.set(0.1, isChristmas ? 1.55 : 1.48, -0.06);
-
     const hamBodyGeo = new THREE.SphereGeometry(0.14, 6, 6);
     hamBodyGeo.scale(1, 0.9, 1.1);
-    const hamColor = isChristmas ? 0xb0bec5 : 0xffd180; // White-grey hamster vs orange hamster
+    const hamColor = isChristmas ? 0xb0bec5 : 0xffd180;
     const hamMat = new THREE.MeshLambertMaterial({ color: hamColor, flatShading: true });
     const hamBody = new THREE.Mesh(hamBodyGeo, hamMat);
     hamster.add(hamBody);
@@ -245,61 +322,304 @@ export class Player {
     hamster.add(earL);
     hamster.add(earR);
 
-    // Tiny pink cheeks for hamster
     const hamBlush = new THREE.Mesh(new THREE.SphereGeometry(0.02, 4, 4), new THREE.MeshLambertMaterial({ color: 0xff8a80 }));
     hamBlush.position.set(0.08, 0, 0.11);
     hamster.add(hamBlush);
 
     if (isChristmas) {
-      // Cozy tiny red neck scarf on the hamster
       const scarfGeo = new THREE.CylinderGeometry(0.11, 0.11, 0.04, 6);
       const scarf = new THREE.Mesh(scarfGeo, new THREE.MeshLambertMaterial({ color: 0xc62828 }));
       scarf.position.y = -0.06;
       hamster.add(scarf);
     } else {
-      // Flower on ear
       const flower = new THREE.Mesh(new THREE.SphereGeometry(0.02, 4, 4), whiteMat);
       flower.position.set(0.06, 0.12, 0.08);
       hamster.add(flower);
     }
-
     this.group.add(hamster);
 
-    // 7. Interactive Toy in Hands (Gift Box vs Watermelon slice)
+    // Interactive Toy in Hands
     if (isChristmas) {
-      // Green present box with red ribbon
       const giftGroup = new THREE.Group();
       giftGroup.position.set(0, 0.58, 0.3);
-
       const boxMesh = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.25, 0.25), new THREE.MeshLambertMaterial({ color: 0x2e7d32, flatShading: true }));
       boxMesh.castShadow = true;
       giftGroup.add(boxMesh);
-
       const ribbonMesh = new THREE.Mesh(new THREE.BoxGeometry(0.27, 0.05, 0.27), new THREE.MeshLambertMaterial({ color: 0xd50000, flatShading: true }));
       giftGroup.add(ribbonMesh);
-
       this.group.add(giftGroup);
     } else {
-      // Watermelon Slice
       const wmGroup = new THREE.Group();
       wmGroup.position.set(0, 0.58, 0.35);
-
       const fleshGeo = new THREE.BoxGeometry(0.3, 0.16, 0.06);
       const wmFlesh = new THREE.Mesh(fleshGeo, new THREE.MeshLambertMaterial({ color: 0xff5252 }));
       wmGroup.add(wmFlesh);
-
       const rindGeo = new THREE.BoxGeometry(0.32, 0.04, 0.08);
       const wmrind = new THREE.Mesh(rindGeo, new THREE.MeshLambertMaterial({ color: 0x4caf50 }));
       wmrind.position.y = -0.09;
       wmGroup.add(wmrind);
-
       this.group.add(wmGroup);
     }
 
-    // 8. Eyes and Cheeks
+    this.buildFaceDetails();
+  }
+
+  buildBoyModel(hairMat, whiteMat, hatColorHex, isChristmas) {
+    // Spiky Hair
+    const hairHelmGeo = new THREE.SphereGeometry(0.35, 8, 8);
+    const hairHelm = new THREE.Mesh(hairHelmGeo, hairMat);
+    hairHelm.position.set(0, 0.98, -0.04);
+    this.group.add(hairHelm);
+
+    // Spiky Bangs
+    const spikeGeo = new THREE.ConeGeometry(0.08, 0.22, 4);
+    spikeGeo.rotateX(Math.PI / 1.8);
+    
+    for (let i = 0; i < 4; i++) {
+      const spike = new THREE.Mesh(spikeGeo, hairMat);
+      const offset = -0.15 + i * 0.1;
+      spike.position.set(offset, 1.08, 0.26);
+      spike.rotation.y = offset * 0.5;
+      spike.castShadow = true;
+      this.group.add(spike);
+    }
+
+    // Top spiky tufts
+    const topSpikeGeo = new THREE.ConeGeometry(0.07, 0.22, 4);
+    topSpikeGeo.rotateX(-0.3);
+    const topSpikeOffsets = [
+      { x: -0.14, y: 1.25, z: -0.08 },
+      { x: 0.14, y: 1.25, z: -0.08 },
+      { x: 0, y: 1.28, z: -0.04 },
+      { x: -0.08, y: 1.24, z: -0.2 },
+      { x: 0.08, y: 1.24, z: -0.2 }
+    ];
+    topSpikeOffsets.forEach(offset => {
+      const tSpike = new THREE.Mesh(topSpikeGeo, hairMat);
+      tSpike.position.set(offset.x, offset.y, offset.z);
+      tSpike.castShadow = true;
+      this.group.add(tSpike);
+    });
+
+    // Baseball Cap
+    const hatGroup = new THREE.Group();
+    hatGroup.position.set(0, 1.24, -0.04);
+    const capMat = new THREE.MeshLambertMaterial({ color: hatColorHex, flatShading: true });
+    this.hatMat = capMat;
+
+    const crownGeo = new THREE.CylinderGeometry(0.35, 0.36, 0.22, 8);
+    const crown = new THREE.Mesh(crownGeo, capMat);
+    crown.castShadow = true;
+    hatGroup.add(crown);
+
+    const visorGeo = new THREE.BoxGeometry(0.46, 0.02, 0.35);
+    const visor = new THREE.Mesh(visorGeo, capMat);
+    visor.position.set(0, -0.06, 0.28);
+    visor.rotation.x = 0.14;
+    visor.castShadow = true;
+    hatGroup.add(visor);
+
+    const btnGeo = new THREE.SphereGeometry(0.04, 4, 4);
+    const button = new THREE.Mesh(btnGeo, whiteMat);
+    button.position.y = 0.12;
+    hatGroup.add(button);
+    this.group.add(hatGroup);
+
+    // Sunglasses
+    const glassGroup = new THREE.Group();
+    glassGroup.position.set(0, 1.22, 0.3);
+    
+    const lensGeo = new THREE.BoxGeometry(0.14, 0.09, 0.02);
+    const lensMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const lensL = new THREE.Mesh(lensGeo, lensMat);
+    lensL.position.x = -0.16;
+    const lensR = new THREE.Mesh(lensGeo, lensMat);
+    lensR.position.x = 0.16;
+    glassGroup.add(lensL);
+    glassGroup.add(lensR);
+
+    const frameMat = new THREE.MeshLambertMaterial({ color: isChristmas ? 0xffffff : 0x2196f3, flatShading: true });
+    const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.02, 0.03), frameMat);
+    bridge.position.set(0, 0, 0.01);
+    glassGroup.add(bridge);
+
+    const sideL = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.11, 0.04), frameMat);
+    sideL.position.set(-0.24, 0, 0.01);
+    const sideR = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.11, 0.04), frameMat);
+    sideR.position.set(0.24, 0, 0.01);
+    glassGroup.add(sideL);
+    glassGroup.add(sideR);
+    this.group.add(glassGroup);
+
+    // Crab on Shoulder
+    const crab = new THREE.Group();
+    crab.position.set(-0.35, 0.65, 0.05);
+    crab.scale.set(0.8, 0.8, 0.8);
+    const crabMat = new THREE.MeshLambertMaterial({ color: 0xff5252, flatShading: true });
+    const crabBody = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.12, 0.15), crabMat);
+    crabBody.castShadow = true;
+    crab.add(crabBody);
+
+    const cEyeGeo = new THREE.SphereGeometry(0.03, 4, 4);
+    const cEyeL = new THREE.Mesh(cEyeGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    cEyeL.position.set(-0.05, 0.08, 0.08);
+    const cEyeR = new THREE.Mesh(cEyeGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    cEyeR.position.set(0.05, 0.08, 0.08);
+    crab.add(cEyeL);
+    crab.add(cEyeR);
+
+    const clawGeo = new THREE.SphereGeometry(0.06, 5, 5);
+    clawGeo.scale(1.2, 0.8, 1);
+    const clawL = new THREE.Mesh(clawGeo, crabMat);
+    clawL.position.set(-0.14, 0.04, 0.08);
+    const clawR = new THREE.Mesh(clawGeo, crabMat);
+    clawR.position.set(0.14, 0.04, 0.08);
+    crab.add(clawL);
+    crab.add(clawR);
+    this.group.add(crab);
+
+    // Toy (surfboard)
+    const surfGroup = new THREE.Group();
+    surfGroup.position.set(0.25, 0.52, 0.28);
+    surfGroup.rotation.set(-0.15, -0.4, 0.35);
+    const surfMat = new THREE.MeshLambertMaterial({ color: 0x00e676, flatShading: true });
+    const board = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.9, 0.04), surfMat);
+    board.castShadow = true;
+    surfGroup.add(board);
+    const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.2, 0.05), new THREE.MeshLambertMaterial({ color: 0xffeb3b, flatShading: true }));
+    stripe.position.y = 0.05;
+    surfGroup.add(stripe);
+    this.group.add(surfGroup);
+
+    this.buildFaceDetails();
+  }
+
+  buildKittyModel(hairMat, whiteMat, hatColorHex, isChristmas) {
+    const furMat = hairMat;
+
+    // Cat Snout
+    const snoutGeo = new THREE.SphereGeometry(0.07, 6, 6);
+    snoutGeo.scale(1.3, 0.8, 1);
+    const snout = new THREE.Mesh(snoutGeo, whiteMat);
+    snout.position.set(0, 0.86, 0.29);
+    this.group.add(snout);
+
+    const noseGeo = new THREE.SphereGeometry(0.035, 4, 4);
+    const noseMat = new THREE.MeshLambertMaterial({ color: 0xff8a80 });
+    const nose = new THREE.Mesh(noseGeo, noseMat);
+    nose.position.set(0, 0.89, 0.35);
+    this.group.add(nose);
+
+    // Cat Whiskers
+    const whiskerGeo = new THREE.BoxGeometry(0.26, 0.015, 0.015);
+    const whiskerMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    for (let i = 0; i < 3; i++) {
+      const wL = new THREE.Mesh(whiskerGeo, whiskerMat);
+      wL.position.set(-0.26, 0.86 + (i - 1) * 0.04, 0.25);
+      wL.rotation.z = (i - 1) * 0.12 - 0.05;
+      wL.rotation.y = 0.2;
+      this.group.add(wL);
+
+      const wR = new THREE.Mesh(whiskerGeo, whiskerMat);
+      wR.position.set(0.26, 0.86 + (i - 1) * 0.04, 0.25);
+      wR.rotation.z = -(i - 1) * 0.12 + 0.05;
+      wR.rotation.y = -0.2;
+      this.group.add(wR);
+    }
+
+    // Cat Ears
+    const earGeo = new THREE.ConeGeometry(0.12, 0.28, 4);
+    earGeo.rotateX(0.1);
+    const earL = new THREE.Mesh(earGeo, furMat);
+    earL.position.set(-0.22, 1.2, 0.06);
+    earL.rotation.z = 0.25;
+    earL.castShadow = true;
+    this.group.add(earL);
+
+    const earR = new THREE.Mesh(earGeo, furMat);
+    earR.position.set(0.22, 1.2, 0.06);
+    earR.rotation.z = -0.25;
+    earR.castShadow = true;
+    this.group.add(earR);
+
+    // Inner Ears
+    const innerEarMat = new THREE.MeshLambertMaterial({ color: 0xff8a80, flatShading: true });
+    const innerEarGeo = new THREE.ConeGeometry(0.08, 0.2, 4);
+    innerEarGeo.rotateX(0.1);
+    const innerEarL = new THREE.Mesh(innerEarGeo, innerEarMat);
+    innerEarL.position.set(-0.21, 1.21, 0.09);
+    innerEarL.rotation.z = 0.25;
+    this.group.add(innerEarL);
+
+    const innerEarR = new THREE.Mesh(innerEarGeo, innerEarMat);
+    innerEarR.position.set(0.21, 1.21, 0.09);
+    innerEarR.rotation.z = -0.25;
+    this.group.add(innerEarR);
+
+    // Collar
+    const collarColor = isChristmas ? 0x2e7d32 : 0xd50000;
+    const collarMat = new THREE.MeshLambertMaterial({ color: collarColor, flatShading: true });
+    const collarGeo = new THREE.CylinderGeometry(0.21, 0.21, 0.06, 8);
+    const collar = new THREE.Mesh(collarGeo, collarMat);
+    collar.position.y = 0.73;
+    this.group.add(collar);
+
+    // Gold Bell (bound to hat color customization)
+    const bellMat = new THREE.MeshLambertMaterial({ color: hatColorHex, flatShading: true });
+    this.hatMat = bellMat;
+    const bellGeo = new THREE.SphereGeometry(0.07, 6, 6);
+    const bell = new THREE.Mesh(bellGeo, bellMat);
+    bell.position.set(0, 0.69, 0.21);
+    this.group.add(bell);
+
+    const loopGeo = new THREE.TorusGeometry(0.03, 0.01, 4, 8);
+    const loop = new THREE.Mesh(loopGeo, bellMat);
+    loop.position.set(0, 0.74, 0.18);
+    this.group.add(loop);
+
+    // Cat Tail
+    this.catTail = new THREE.Group();
+    this.catTail.position.set(0, 0.22, -0.28);
+    let prevSegment = this.catTail;
+    const segCount = 4;
+    const segGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.18, 5);
+    segGeo.translate(0, 0.09, 0);
+    for (let i = 0; i < segCount; i++) {
+      const seg = new THREE.Mesh(segGeo, furMat);
+      seg.position.set(0, i === 0 ? 0 : 0.15, i === 0 ? 0 : -0.05);
+      seg.rotation.x = -0.3;
+      seg.castShadow = true;
+      prevSegment.add(seg);
+      prevSegment = seg;
+    }
+    this.group.add(this.catTail);
+
+    // Little Toy (blue fish)
+    const fishGroup = new THREE.Group();
+    fishGroup.position.set(0, 0.56, 0.32);
+    fishGroup.rotation.set(0.1, -0.4, 0.2);
+    const fishMat = new THREE.MeshLambertMaterial({ color: 0x00bcd4, flatShading: true });
+    const fishBody = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.09, 0.05), fishMat);
+    fishBody.castShadow = true;
+    fishGroup.add(fishBody);
+
+    const tailGeoF = new THREE.ConeGeometry(0.05, 0.08, 3);
+    tailGeoF.rotateX(Math.PI / 2);
+    const fishTail = new THREE.Mesh(tailGeoF, fishMat);
+    fishTail.position.set(-0.11, 0, 0);
+    fishGroup.add(fishTail);
+
+    const eyeF = new THREE.Mesh(new THREE.SphereGeometry(0.012, 4, 4), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    eyeF.position.set(0.06, 0.02, 0.03);
+    fishGroup.add(eyeF);
+    this.group.add(fishGroup);
+
+    this.buildFaceDetails();
+  }
+
+  buildFaceDetails() {
     const eyeGeo = new THREE.SphereGeometry(0.06, 5, 5);
     const eyeMat = new THREE.MeshBasicMaterial({ color: 0x4e342e });
-    
     const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
     eyeL.position.set(-0.11, 0.94, 0.27);
     const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
@@ -309,75 +629,32 @@ export class Player {
 
     const blushGeo = new THREE.SphereGeometry(0.05, 4, 4);
     const blushMat = new THREE.MeshLambertMaterial({ color: 0xff8a80, flatShading: true });
-    
     const blushL = new THREE.Mesh(blushGeo, blushMat);
     blushL.position.set(-0.19, 0.87, 0.25);
     const blushR = new THREE.Mesh(blushGeo, blushMat);
     blushR.position.set(0.19, 0.87, 0.25);
     this.group.add(blushL);
     this.group.add(blushR);
+  }
 
-    // 9. Sandals / Boots
-    const sandalColor = isChristmas ? 0x5d4037 : 0xffffff; // Brown winter boots vs white summer sandals
-    const sandalMat = new THREE.MeshLambertMaterial({ color: sandalColor, flatShading: true });
-    const footGeo = new THREE.SphereGeometry(0.09, 6, 6);
-    footGeo.scale(1, isChristmas ? 1.0 : 0.7, 1.3);
+  updateModel(modelType) {
+    if (this.activeModel === modelType) return;
+    this.activeModel = modelType;
 
-    this.footL = new THREE.Mesh(footGeo, sandalMat);
-    this.footL.position.set(-0.16, 0.04, 0);
-    this.footR = new THREE.Mesh(footGeo, sandalMat);
-    this.footR.position.set(0.16, 0.04, 0);
-    
-    if (!isChristmas) {
-      // Add sandal bows for summer
-      const sandalBowGeo = new THREE.BoxGeometry(0.12, 0.04, 0.08);
-      const sBowL = new THREE.Mesh(sandalBowGeo, sandalMat);
-      sBowL.position.set(-0.16, 0.06, 0.08);
-      const sBowR = new THREE.Mesh(sandalBowGeo, sandalMat);
-      sBowR.position.set(0.16, 0.06, 0.08);
-      this.group.add(sBowL);
-      this.group.add(sBowR);
-    }
+    // Preserve current colors
+    const hairColor = this.hairMat ? this.hairMat.color.getHex() : (this.themeConfig.player.hairColor || 0xff8a80);
+    const clothingColor = this.clothingMat ? this.clothingMat.color.getHex() : (this.themeConfig.player.clothingColor || 0xffffff);
+    const hatColor = this.hatMat ? this.hatMat.color.getHex() : (this.themeConfig.player.hatColor || 0xffd180);
 
-    this.group.add(this.footL);
-    this.group.add(this.footR);
-
-    // 10. Cardigan / Scarf (White cardigan for summer, warm red winter scarf for Christmas)
-    const capeColor = isChristmas ? 0xd50000 : 0xffffff;
-    const capeMat = new THREE.MeshLambertMaterial({
-      color: capeColor,
-      transparent: !isChristmas, // transparent crop cardigan for summer
-      opacity: isChristmas ? 1.0 : 0.8,
-      side: THREE.DoubleSide,
-      flatShading: true
-    });
-    
-    if (isChristmas) {
-      // Winter neck scarf representation (wrapped around neck, waving ends)
-      const capeGeo = new THREE.PlaneGeometry(0.55, 0.7, 2, 4);
-      this.cape = new THREE.Mesh(capeGeo, capeMat);
-      this.cape.position.set(0.05, 0.62, -0.22);
-      this.cape.rotation.x = 0.12;
-      this.cape.rotation.y = 0.05;
-      this.cape.castShadow = true;
-      this.group.add(this.cape);
-    } else {
-      // Summer Cardigan
-      const capeGeo = new THREE.PlaneGeometry(0.65, 0.75, 3, 5);
-      this.cape = new THREE.Mesh(capeGeo, capeMat);
-      this.cape.position.set(0, 0.48, -0.32);
-      this.cape.rotation.x = 0.15;
-      this.cape.castShadow = true;
-      this.group.add(this.cape);
-    }
-
-    this.scene.add(this.group);
+    this.rebuildMesh(hairColor, clothingColor, hatColor);
   }
 
   initControls() {
     const handleKey = (e, isDown) => {
-      if (this.isSitting) {
-        if (isDown) this.standUp();
+      if (this.isSitting || this.isLyingDown) {
+        if (isDown && (e.key === ' ' || e.key === 'Spacebar')) {
+          this.standUp();
+        }
         return;
       }
       if (this.controlsLocked) return;
@@ -503,6 +780,10 @@ export class Player {
     if (btnJump) {
       btnJump.addEventListener('touchstart', (e) => {
         e.preventDefault();
+        if (this.isSitting || this.isLyingDown) {
+          this.standUp();
+          return;
+        }
         if (!this.controlsLocked) this.keys.space = true;
       });
       btnJump.addEventListener('touchend', (e) => {
@@ -530,53 +811,87 @@ export class Player {
   }
 
   update(delta, time) {
-    if (this.isSitting && this.swingRef) {
-      // If the player presses any movement key or jump, stand up!
-      if (this.keys.w || this.keys.s || this.keys.a || this.keys.d || this.keys.space) {
-        this.standUp();
-      } else {
-        const rotationX = this.swingRef.rotation.x;
-        const seatLength = 1.1;
-        this.position.x = this.swingRef.parent.position.x + this.swingRef.position.x;
-        this.position.y = (this.swingRef.parent.position.y + this.swingRef.position.y) - (seatLength * Math.cos(rotationX)) - 0.28;
-        this.position.z = this.swingRef.parent.position.z + this.swingRef.position.z - (seatLength * Math.sin(rotationX));
+    if (this.isLyingDown) {
+      this.velocity.set(0, 0, 0);
+      this.isGrounded = true;
+      this.group.position.copy(this.position);
+      
+      this.group.rotation.x = -Math.PI / 2; // Lie flat
+      this.group.rotation.y = 0; 
+      this.group.rotation.z = 0;
 
-        this.velocity.set(0, 0, 0);
-        this.isGrounded = true;
-        this.group.position.copy(this.position);
-        this.group.rotation.y = 0; // Face Z axis
+      this.body.rotation.x = 0;
+      this.footL.position.set(-0.16, 0.05, 0);
+      this.footR.position.set(0.16, 0.05, 0);
+      this.body.position.y = 0.38;
+      this.head.position.y = 0.88;
 
-        // Sitting pose
-        this.footL.position.set(-0.16, 0.15, 0.18);
-        this.footR.position.set(0.16, 0.15, 0.18);
-        this.body.position.y = 0.3; 
-        this.head.position.y = 0.8;
-
-        // Cape and twins sway with swing
-        this.cape.rotation.x = -0.1 + Math.sin(time * 0.002) * 0.05;
-        const capePositions = this.cape.geometry.attributes.position;
-        for (let i = 0; i < capePositions.count; i++) {
-          capePositions.setZ(i, 0);
-        }
-        capePositions.needsUpdate = true;
-
-        this.tailL.rotation.z = -0.2 - Math.sin(time * 0.002) * 0.1;
-        this.tailR.rotation.z = 0.2 + Math.sin(time * 0.002) * 0.1;
-
-        // Camera follow sitting
-        const targetCamX = this.position.x + Math.sin(this.cameraAngleH) * Math.cos(this.cameraAngleV) * this.cameraDistance;
-        const targetCamY = this.position.y + Math.sin(this.cameraAngleV) * this.cameraDistance + 0.8;
-        const targetCamZ = this.position.z + Math.cos(this.cameraAngleH) * Math.cos(this.cameraAngleV) * this.cameraDistance;
-
-        this.camera.position.x += (targetCamX - this.camera.position.x) * 0.08;
-        this.camera.position.y += (targetCamY - this.camera.position.y) * 0.08;
-        this.camera.position.z += (targetCamZ - this.camera.position.z) * 0.08;
-
-        const lookAtTarget = this.position.clone().add(new THREE.Vector3(0, 0.8, 0));
-        this.camera.lookAt(lookAtTarget);
-
-        return;
+      this.cape.rotation.x = 0.15;
+      const capePositions = this.cape.geometry.attributes.position;
+      for (let i = 0; i < capePositions.count; i++) {
+        capePositions.setZ(i, 0);
       }
+      capePositions.needsUpdate = true;
+
+      const targetCamX = this.position.x + Math.sin(this.cameraAngleH) * Math.cos(this.cameraAngleV) * this.cameraDistance;
+      const targetCamY = this.position.y + Math.sin(this.cameraAngleV) * this.cameraDistance + 0.8;
+      const targetCamZ = this.position.z + Math.cos(this.cameraAngleH) * Math.cos(this.cameraAngleV) * this.cameraDistance;
+
+      this.camera.position.x += (targetCamX - this.camera.position.x) * 0.08;
+      this.camera.position.y += (targetCamY - this.camera.position.y) * 0.08;
+      this.camera.position.z += (targetCamZ - this.camera.position.z) * 0.08;
+
+      const lookAtTarget = this.position.clone().add(new THREE.Vector3(0, 0.4, 0));
+      this.camera.lookAt(lookAtTarget);
+      return;
+    }
+
+    if (this.isSitting && this.swingRef) {
+      const rotationX = this.swingRef.rotation.x;
+      const seatLength = 1.1;
+      this.position.x = this.swingRef.parent.position.x + this.swingRef.position.x;
+      this.position.y = (this.swingRef.parent.position.y + this.swingRef.position.y) - (seatLength * Math.cos(rotationX)) - 0.28;
+      this.position.z = this.swingRef.parent.position.z + this.swingRef.position.z - (seatLength * Math.sin(rotationX));
+
+      this.velocity.set(0, 0, 0);
+      this.isGrounded = true;
+      this.group.position.copy(this.position);
+      this.group.rotation.y = 0; // Face Z axis
+
+      // Sitting pose
+      this.footL.position.set(-0.16, 0.15, 0.18);
+      this.footR.position.set(0.16, 0.15, 0.18);
+      this.body.position.y = 0.3; 
+      this.head.position.y = 0.8;
+
+      // Cape and twins sway with swing
+      this.cape.rotation.x = -0.1 + Math.sin(time * 0.002) * 0.05;
+      const capePositions = this.cape.geometry.attributes.position;
+      for (let i = 0; i < capePositions.count; i++) {
+        capePositions.setZ(i, 0);
+      }
+      capePositions.needsUpdate = true;
+
+      if (this.tailL) this.tailL.rotation.z = -0.2 - Math.sin(time * 0.002) * 0.1;
+      if (this.tailR) this.tailR.rotation.z = 0.2 + Math.sin(time * 0.002) * 0.1;
+
+      if (this.catTail) {
+        this.catTail.rotation.y = Math.sin(time * 0.003) * 0.15;
+      }
+
+      // Camera follow sitting
+      const targetCamX = this.position.x + Math.sin(this.cameraAngleH) * Math.cos(this.cameraAngleV) * this.cameraDistance;
+      const targetCamY = this.position.y + Math.sin(this.cameraAngleV) * this.cameraDistance + 0.8;
+      const targetCamZ = this.position.z + Math.cos(this.cameraAngleH) * Math.cos(this.cameraAngleV) * this.cameraDistance;
+
+      this.camera.position.x += (targetCamX - this.camera.position.x) * 0.08;
+      this.camera.position.y += (targetCamY - this.camera.position.y) * 0.08;
+      this.camera.position.z += (targetCamZ - this.camera.position.z) * 0.08;
+
+      const lookAtTarget = this.position.clone().add(new THREE.Vector3(0, 0.8, 0));
+      this.camera.lookAt(lookAtTarget);
+
+      return;
     }
 
     // 1. Movement vector relative to camera direction
@@ -674,8 +989,13 @@ export class Player {
       this.footR.position.z = -Math.sin(time * 0.001 * feetSpeed) * 0.25;
       this.footR.position.y = 0.05 + Math.max(0, -Math.cos(time * 0.001 * feetSpeed)) * 0.12;
 
-      this.tailL.rotation.z = -0.2 - Math.abs(Math.sin(time * 0.001 * feetSpeed)) * 0.18;
-      this.tailR.rotation.z = 0.2 + Math.abs(Math.sin(time * 0.001 * feetSpeed)) * 0.18;
+      if (this.tailL) this.tailL.rotation.z = -0.2 - Math.abs(Math.sin(time * 0.001 * feetSpeed)) * 0.18;
+      if (this.tailR) this.tailR.rotation.z = 0.2 + Math.abs(Math.sin(time * 0.001 * feetSpeed)) * 0.18;
+
+      if (this.catTail) {
+        this.catTail.rotation.y = Math.sin(time * 0.001 * feetSpeed * 1.5) * 0.35;
+        this.catTail.rotation.z = Math.cos(time * 0.001 * feetSpeed * 1.5) * 0.06;
+      }
 
       this.body.rotation.x = this.keys.shift ? 0.22 : 0.1;
 
@@ -688,8 +1008,13 @@ export class Player {
       this.body.position.y = 0.38 + Math.sin(time * 0.003) * 0.02;
       this.head.position.y = 0.88 + Math.sin(time * 0.003) * 0.02;
 
-      this.tailL.rotation.z = -0.2 + Math.sin(time * 0.003) * 0.04;
-      this.tailR.rotation.z = 0.2 - Math.sin(time * 0.003) * 0.04;
+      if (this.tailL) this.tailL.rotation.z = -0.2 + Math.sin(time * 0.003) * 0.04;
+      if (this.tailR) this.tailR.rotation.z = 0.2 - Math.sin(time * 0.003) * 0.04;
+
+      if (this.catTail) {
+        this.catTail.rotation.y = Math.sin(time * 0.003) * 0.15;
+        this.catTail.rotation.z = Math.cos(time * 0.003) * 0.03;
+      }
     }
 
     // 6. Cape/Scarf wave wave wave
@@ -727,7 +1052,38 @@ export class Player {
     this.controlsLocked = true;
   }
 
+  lieDown(bedPos) {
+    this.isLyingDown = true;
+    this.controlsLocked = true;
+    this.position.copy(bedPos);
+    this.position.y = 0.72 + 0.26; // deck Y + bed elevation
+  }
+
+  updateOutfit(type, colorHex) {
+    const color = parseInt(colorHex);
+    if (type === 'hair' && this.hairMat) {
+      this.hairMat.color.setHex(color);
+    } else if (type === 'clothing' && this.clothingMat) {
+      this.clothingMat.color.setHex(color);
+    } else if (type === 'hat' && this.hatMat) {
+      this.hatMat.color.setHex(color);
+    }
+  }
+
   standUp() {
+    if (this.isLyingDown) {
+      this.isLyingDown = false;
+      this.controlsLocked = false;
+      this.group.rotation.x = 0;
+      this.group.rotation.z = 0;
+      this.position.z += 1.4; // Dismount forward from bed
+      this.position.y = 0.72; // Stand on house deck floor
+      
+      const bedHud = document.getElementById('bed-hud');
+      if (bedHud) bedHud.style.display = 'none';
+      return;
+    }
+
     this.isSitting = false;
     this.swingRef = null;
     this.controlsLocked = false;

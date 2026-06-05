@@ -8,7 +8,9 @@ export class ModalManager {
       about: document.getElementById('modal-about'),
       skills: document.getElementById('modal-skills'),
       projects: document.getElementById('modal-projects'),
-      arcade: document.getElementById('modal-arcade')
+      arcade: document.getElementById('modal-arcade'),
+      easel: document.getElementById('modal-easel'),
+      wardrobe: document.getElementById('modal-wardrobe')
     };
     
     this.iframe = document.getElementById('arcade-iframe');
@@ -169,6 +171,14 @@ export class ModalManager {
       this.showLobby();
     }
 
+    // Load paint game on opening easel modal
+    if (id === 'easel') {
+      const easelIframe = document.getElementById('easel-iframe');
+      if (easelIframe) {
+        easelIframe.src = '../../games/paint/paint2.html';
+      }
+    }
+
     modal.classList.add('open');
     this.isAnyModalOpen = true;
 
@@ -185,6 +195,12 @@ export class ModalManager {
     // Clear iframe to stop sounds and release resources
     if (id === 'arcade' && this.iframe) {
       this.iframe.src = '';
+    }
+    if (id === 'easel') {
+      const easelIframe = document.getElementById('easel-iframe');
+      if (easelIframe) {
+        easelIframe.src = '';
+      }
     }
 
     // Check if any other modals are open

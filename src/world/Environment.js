@@ -8,6 +8,7 @@ export class Environment {
     this.particleCount = 150;
     this.particleGeometry = null;
     this.particleMaterial = null;
+    this.isNight = false; // Add state for day/night toggle
 
     this.initLights();
     this.initFog();
@@ -26,6 +27,7 @@ export class Environment {
     const hemiLight = new THREE.HemisphereLight(skyLightColor, groundLightColor, intensity);
     hemiLight.position.set(0, 50, 0);
     this.scene.add(hemiLight);
+    this.hemiLight = hemiLight; // Save reference for day/night transition
 
     // Directional Sun/Moon Light
     const sunColor = isChristmas ? 0xd9e8f5 : 0xfffde7;
@@ -104,7 +106,7 @@ export class Environment {
     
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 16, 16);
-
+ 
     const texture = new THREE.CanvasTexture(canvas);
 
     this.particleMaterial = new THREE.PointsMaterial({
@@ -158,9 +160,25 @@ export class Environment {
 
     this.particleGeometry.attributes.position.needsUpdate = true;
 
-    // Slow rotate the sun light for dynamic shadows (subtle effect)
-    const angle = time * 0.00005;
-    this.sun.position.x = Math.cos(angle) * 30 + 10;
-    this.sun.position.z = Math.sin(angle) * 30 + 10;
+    // Smoothly transition lighting between day and night (locking position, changing color & intensity)
+    const targetHemiIntensity = this.isNight ? 0.18 : (isChristmas ? 0.75 : 1.1);
+    const targetSunIntensity = this.isNight ? 0.22 : (isChristmas ? 0.95 : 1.75);
+    const targetSunColor = new THREE.Color(this.isNight ? 0x90a4ae : (isChristmas ? 0xd9e8f5 : 0xfffde7));
+    const targetSkyColor = new THREE.Color(this.isNight ? 0x070b12 : this.themeConfig.colors.sky);
+    const targetFogColor = new THREE.Color(this.isNight ? 0x070b12 : this.themeConfig.colors.fog);
+
+    // Lerp values
+    if (this.hemiLight) {
+      this.hemiLight.intensity += (targetHemiIntensity - this.hemiLight.intensity) * 0.04;
+    }
+    if (this.sun) {
+      this.sun.intensity += (targetSunIntensity - this.sun.intensity) * 0.04;
+      this.sun.color.lerp(targetSunColor, 0.04);
+    }
+    
+    this.scene.background.lerp(targetSkyColor, 0.04);
+    if (this.scene.fog) {
+      this.scene.fog.color.lerp(targetFogColor, 0.04);
+    }
   }
 }

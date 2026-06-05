@@ -48,6 +48,13 @@ export class InteractsManager {
         this.player.cameraAngleH = this.cameraSavedState.angleH;
         this.player.cameraAngleV = this.cameraSavedState.angleV;
         
+        if (this.cameraSavedState.rotationY !== undefined) {
+          this.player.group.rotation.y = this.cameraSavedState.rotationY;
+        }
+        if (this.cameraSavedState.controlsLocked !== undefined) {
+          this.player.controlsLocked = this.cameraSavedState.controlsLocked;
+        }
+        
         this.activeInteractZone = null;
       }
     });
@@ -199,6 +206,55 @@ export class InteractsManager {
       window.dispatchEvent(new CustomEvent('spawn-ball', { 
         detail: { x: zone.x, z: zone.z } 
       }));
+      return;
+    }
+
+    if (zone.id === 'house_bed') {
+      if (this.player.isLyingDown) {
+        this.player.standUp();
+      } else {
+        if (this.player.carriedBall) {
+          this.dropCarriedBall();
+        }
+        const bedPos = new THREE.Vector3(zone.x, zone.y, zone.z);
+        this.player.lieDown(bedPos);
+        this.hidePrompt();
+        
+        // Show bed HUD panel
+        const bedHud = document.getElementById('bed-hud');
+        if (bedHud) bedHud.style.display = 'flex';
+      }
+      return;
+    }
+
+    if (zone.id === 'house_easel') {
+      this.modalManager.openModal('easel');
+      this.hidePrompt();
+      return;
+    }
+
+    if (zone.id === 'house_wardrobe') {
+      // Save camera settings for restoration later
+      this.cameraSavedState = {
+        distance: this.player.cameraDistance,
+        angleH: this.player.cameraAngleH,
+        angleV: this.player.cameraAngleV,
+        rotationY: this.player.group.rotation.y,
+        controlsLocked: this.player.controlsLocked
+      };
+      this.isTransitioningCamera = true;
+      this.player.controlsLocked = true;
+      
+      // Zoom camera in front of character (looking at character)
+      this.player.cameraDistance = 2.4;
+      this.player.cameraAngleH = 0; // Camera south of player, looking north
+      this.player.cameraAngleV = 0.08; 
+      this.player.group.rotation.y = 0; // Face camera (south, positive Z)
+
+      setTimeout(() => {
+        this.modalManager.openModal('wardrobe');
+        this.hidePrompt();
+      }, 450);
       return;
     }
 

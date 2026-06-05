@@ -178,6 +178,116 @@
     </div>
   </div>
 
+  <!-- 5. 调色盘画架 (Easel) 弹窗 -->
+  <div class="modal-overlay" id="modal-easel">
+    <div class="modal-card modal-game">
+      <button class="modal-close" data-close="modal-easel">&times;</button>
+      <div class="modal-header">
+        <span class="modal-emoji">🎨</span>
+        <h2>画架 · 调色盘</h2>
+      </div>
+      <div class="modal-body no-padding" style="display: flex; flex-direction: column; overflow: hidden; flex-grow: 1; height: 100%;">
+        <iframe id="easel-iframe" src="" frameborder="0" width="100%" height="100%" style="flex-grow: 1; border-radius: 0 0 28px 28px; background: #fff;"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. 衣柜换装 (Wardrobe) 弹窗 -->
+  <div class="modal-overlay" id="modal-wardrobe">
+    <div class="wardrobe-container">
+      <!-- Left Sidebar: Model Selection -->
+      <div class="wardrobe-sidebar left">
+        <div class="sidebar-header">
+          <span class="modal-emoji">👤</span>
+          <h2>选择角色</h2>
+        </div>
+        <div class="sidebar-body">
+          <p class="description" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">在下方选择你喜欢的 3D 模型造型：</p>
+          <div class="model-options">
+            <button class="model-btn active" data-model="girl">
+              <span class="model-icon">👧</span>
+              <div class="model-info">
+                <span class="model-name">海滨小女孩</span>
+                <span class="model-desc" style="display: block; font-size: 0.72rem; color: var(--text-muted);">经典双马尾，清新可爱</span>
+              </div>
+            </button>
+            <button class="model-btn" data-model="boy">
+              <span class="model-icon">👦</span>
+              <div class="model-info">
+                <span class="model-name">海滨小男孩</span>
+                <span class="model-desc" style="display: block; font-size: 0.72rem; color: var(--text-muted);">酷炫棒球帽，海滩活力</span>
+              </div>
+            </button>
+            <button class="model-btn" data-model="kitty">
+              <span class="model-icon">🐱</span>
+              <div class="model-info">
+                <span class="model-name">神秘小猫咪</span>
+                <span class="model-desc" style="display: block; font-size: 0.72rem; color: var(--text-muted);">萌耳灵动尾，黄金铃铛</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar: Color Customization -->
+      <div class="wardrobe-sidebar right">
+        <button class="modal-close" data-close="modal-wardrobe">&times;</button>
+        <div class="sidebar-header">
+          <span class="modal-emoji">🎨</span>
+          <h2>定制色彩</h2>
+        </div>
+        <div class="sidebar-body scrollable">
+          <p class="description" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">在此搭配你喜欢的色彩：</p>
+          
+          <!-- Hair Color (Fur color for Kitty) -->
+          <div class="wardrobe-section">
+            <h3 id="wardrobe-hair-title" style="font-size: 1rem; color: #fff; margin-bottom: 12px; border-left: 3px solid var(--primary); padding-left: 8px; font-weight: 700;">发色 / 毛色</h3>
+            <div class="color-options" id="wardrobe-hair" style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button class="color-btn active" style="background-color: #ff4081;" data-color="0xff4081"></button>
+              <button class="color-btn" style="background-color: #ffb74d;" data-color="0xffb74d"></button>
+              <button class="color-btn" style="background-color: #4fc3f7;" data-color="0x4fc3f7"></button>
+              <button class="color-btn" style="background-color: #81c784;" data-color="0x81c784"></button>
+              <button class="color-btn" style="background-color: #ba68c8;" data-color="0xba68c8"></button>
+              <button class="color-btn" style="background-color: #e0f7fa;" data-color="0xe0f7fa"></button>
+            </div>
+          </div>
+          
+          <!-- Clothing Color -->
+          <div class="wardrobe-section" style="margin-top: 24px;">
+            <h3 id="wardrobe-clothing-title" style="font-size: 1rem; color: #fff; margin-bottom: 12px; border-left: 3px solid var(--secondary); padding-left: 8px; font-weight: 700;">服装颜色</h3>
+            <div class="color-options" id="wardrobe-clothes" style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button class="color-btn" style="background-color: #ffffff;" data-color="0xffffff"></button>
+              <button class="color-btn" style="background-color: #ff5252;" data-color="0xff5252"></button>
+              <button class="color-btn active" style="background-color: #4fc3f7;" data-color="0x4fc3f7"></button>
+              <button class="color-btn" style="background-color: #2e7d32;" data-color="0x2e7d32"></button>
+              <button class="color-btn" style="background-color: #ffeb3b;" data-color="0xffeb3b"></button>
+              <button class="color-btn" style="background-color: #263238;" data-color="0x263238"></button>
+            </div>
+          </div>
+
+          <!-- Hat / Accessory Color -->
+          <div class="wardrobe-section" style="margin-top: 24px;">
+            <h3 id="wardrobe-hat-title" style="font-size: 1rem; color: #fff; margin-bottom: 12px; border-left: 3px solid #ffca28; padding-left: 8px; font-weight: 700;">配饰 / 铃铛颜色</h3>
+            <div class="color-options" id="wardrobe-hat" style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button class="color-btn active" style="background-color: #fff9c4;" data-color="0xfff9c4"></button>
+              <button class="color-btn" style="background-color: #d50000;" data-color="0xd50000"></button>
+              <button class="color-btn" style="background-color: #ff80ab;" data-color="0xff80ab"></button>
+              <button class="color-btn" style="background-color: #a1887f;" data-color="0xa1887f"></button>
+              <button class="color-btn" style="background-color: #cfd8dc;" data-color="0xcfd8dc"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- Bed HUD Panel -->
+  <div class="bed-hud" id="bed-hud" style="display: none;">
+    <button id="btn-toggle-time" class="hud-btn">切换时间 🌓</button>
+    <button id="btn-stand-up" class="hud-btn">起身 🏃</button>
+  </div>
+
   <!-- 引入主逻辑 -->
   <script type="module" src="./main.js"></script>
   
