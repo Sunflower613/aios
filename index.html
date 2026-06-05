@@ -182,5 +182,25 @@
 
   <!-- 引入主逻辑 -->
   <script type="module" src="./main.js"></script>
+  
+  <!-- 禁用移动端边缘滑动返回/前进手势 -->
+  <script>
+    document.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches.length > 0) {
+        const x = e.touches[0].clientX;
+        if (x < 40 || x > window.innerWidth - 40) {
+          e.currentTarget.preventSwipeNavigation = true;
+        } else {
+          e.currentTarget.preventSwipeNavigation = false;
+        }
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+      if (e.currentTarget.preventSwipeNavigation) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+  </script>
 </body>
 </html>

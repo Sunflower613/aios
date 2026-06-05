@@ -39,6 +39,7 @@ body, html {
   font-family: var(--font-body);
   color: var(--text-main);
   user-select: none;
+  overscroll-behavior: none;
 }
 
 /* 3D Canvas Container */
