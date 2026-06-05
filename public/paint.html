@@ -412,6 +412,21 @@
             line-height: 1.5;
         }
 
+        .mobile-close-btn {
+            display: none !important;
+        }
+
+        @media (max-width: 768px), (pointer: coarse) {
+            .mobile-close-btn {
+                display: flex !important;
+                margin-bottom: 8px;
+                width: 100%;
+                background: #f1f5f9;
+                color: #0f172a;
+                border: 1px solid #cbd5e1;
+            }
+        }
+
         /* Responsive Mobile Layout for Small Viewports (Landscape) */
         @media (max-height: 520px) {
             .paint-layout {
@@ -472,6 +487,7 @@
     <div class="paint-layout">
         <!-- Left Column: Colors & Target -->
         <div class="column-left">
+            <button class="btn mobile-close-btn" onclick="exitPaint()">返回 3D 房间</button>
             <!-- Target Color Card -->
             <div class="card target-card">
                 <div class="target-title">写生目标色</div>
@@ -834,6 +850,10 @@
             setTimeout(() => {
                 document.getElementById('alert-overlay').style.display = 'none';
             }, 300);
+        }
+
+        function exitPaint() {
+            window.parent.document.querySelector('.modal-close[data-close="modal-easel"]').click();
         }
     </script>
 </body>
