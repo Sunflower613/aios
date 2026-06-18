@@ -40,6 +40,7 @@ class AppShell {
     this.iframe = document.getElementById('game-frame');
     this.synthInterval = null;
     this.activeTheme = 'summer'; // 默认夏季主题，可通过子页面载入时更新
+    this.wasMusicPlayingBeforeLake = false;
     
     this.init();
   }
@@ -455,6 +456,20 @@ class AppShell {
     });
   }
 
+  stopMusic() {
+    if (window.isPlayingMusic) {
+      window.isPlayingMusic = false;
+      const audioMuteIcon = document.getElementById('sidebar-audio-icon-mute');
+      const audioOnIcon = document.getElementById('sidebar-audio-icon-on');
+      if (audioMuteIcon) audioMuteIcon.style.display = 'flex';
+      if (audioOnIcon) audioOnIcon.style.display = 'none';
+      if (this.synthInterval) {
+        clearInterval(this.synthInterval);
+        this.synthInterval = null;
+      }
+    }
+  }
+
   playMelodyLoop() {
     const isChristmas = this.activeTheme === 'christmas';
     const baseOctave = isChristmas ? 1.2 : 1.0;
@@ -506,6 +521,30 @@ class AppShell {
   // 6. iframe 地图页面载入时的回调方法
   onMapLoaded(mapName) {
     console.log(`地图已加载到 iframe: ${mapName}`);
+
+    // 如果是天池地图，强制暂停背景音乐，避免干扰弹钢琴和推碗音效
+    if (mapName === 'lake') {
+      if (window.isPlayingMusic) {
+        this.wasMusicPlayingBeforeLake = true;
+        this.stopMusic();
+      } else {
+        this.wasMusicPlayingBeforeLake = false;
+      }
+    } else {
+      // 离开天池地图时，若此前在天池被临时关闭了背景音乐，则自动恢复它
+      if (this.wasMusicPlayingBeforeLake && !window.isPlayingMusic) {
+        this.wasMusicPlayingBeforeLake = false;
+        window.isPlayingMusic = true;
+        const audioMuteIcon = document.getElementById('sidebar-audio-icon-mute');
+        const audioOnIcon = document.getElementById('sidebar-audio-icon-on');
+        if (audioMuteIcon) audioMuteIcon.style.display = 'none';
+        if (audioOnIcon) audioOnIcon.style.display = 'flex';
+        if (window.audioCtx) {
+          window.audioCtx.resume();
+        }
+        this.playMelodyLoop();
+      }
+    }
     
     // 动态调整动作按钮状态
     const interactBtn = document.getElementById('btn-interact');

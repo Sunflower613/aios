@@ -4742,18 +4742,27 @@ class GameApp {
     dirt.position.y = -1.5;
     this.lakeGroup.add(dirt);
 
-    // 3. 极简禅意水池 - 水面 (Y = 0.5)
-    // 池塘中心在 0, 0，水池半径 6.0。我们使用 Circle 几何体
+    // 3. 极简禅意水池 - 池底与水面 (叠层材质，避免 Z-fighting 且呈现透亮深蓝质感)
+    const poolBottomGeo = new THREE.CircleGeometry(6.0, 32);
+    poolBottomGeo.rotateX(-Math.PI / 2);
+    const poolBottomMat = new THREE.MeshBasicMaterial({
+      color: 0x00acc1, // 治愈的青蓝色池底
+      side: THREE.DoubleSide
+    });
+    const poolBottom = new THREE.Mesh(poolBottomGeo, poolBottomMat);
+    poolBottom.position.y = 0.602;
+    this.lakeGroup.add(poolBottom);
+
     const waterGeo = new THREE.CircleGeometry(6.0, 32);
     waterGeo.rotateX(-Math.PI / 2); // 铺平
     const waterMat = new THREE.MeshBasicMaterial({
       color: 0x4fc3f7, // 明亮的治愈浅蓝
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.55,
       side: THREE.DoubleSide
     });
     const water = new THREE.Mesh(waterGeo, waterMat);
-    water.position.y = 0.5;
+    water.position.y = 0.61;
     this.lakeGroup.add(water);
 
     // 4. 池塘堤岸石围边框 (环绕水池一圈的白石，高出水面 Y=0.65，防止出界视觉提示)
@@ -4793,7 +4802,7 @@ class GameApp {
       const bx = Math.cos(angle) * radius;
       const bz = Math.sin(angle) * radius;
       
-      bowlGroup.position.set(bx, 0.5, bz);
+      bowlGroup.position.set(bx, 0.61, bz);
 
       // 碗壁 Mesh
       const bowlWall = new THREE.Mesh(bowlGeo, bowlMat);
@@ -5232,8 +5241,8 @@ class GameApp {
     const playerDist = Math.sqrt(playerX * playerX + playerZ * playerZ);
 
     if (playerDist < 6.0 && !this.player.isSitting) {
-      // 在池塘中，强制下沉 0.1 单位没入水中 (Y = 0.5)
-      this.player.position.y = 0.5;
+      // 在池塘中，强制下沉没入水中 (Y = 0.52)
+      this.player.position.y = 0.52;
       this.player.velocity.y = 0;
       this.player.isGrounded = true;
 
@@ -5244,7 +5253,7 @@ class GameApp {
         const now = Date.now();
         // 涉水脚下泛水花节流：每 0.32秒产生一次小脚印涟漪
         if (now - this.lastWaterStepTime > 320) {
-          this.createRipple(playerX, 0.505, playerZ);
+          this.createRipple(playerX, 0.612, playerZ);
           this.lastWaterStepTime = now;
           // 播放小声的涉水踩水音效 (低音 Sine)
           this.playCustomSound(120, 0.18, 'sine', 0.03);
@@ -5280,7 +5289,7 @@ class GameApp {
 
           // 触发碰撞发声与涟漪
           this.playBowlCollisionSound(bowl.position, 1.1);
-          this.createRipple(bowl.position.x, 0.505, bowl.position.z);
+          this.createRipple(bowl.position.x, 0.612, bowl.position.z);
         }
       });
     }
@@ -5309,7 +5318,7 @@ class GameApp {
       bowl.velocity.z += (Math.random() - 0.5) * 0.08 * dt;
 
       // 碗在水面上的三维起伏与微晃动画
-      bowl.position.y = 0.5 + Math.sin(time * 0.0022 + bowl.phase) * 0.018;
+      bowl.position.y = 0.61 + Math.sin(time * 0.0022 + bowl.phase) * 0.018;
       bowl.rotation.x = Math.sin(time * 0.0018 + bowl.phase) * 0.038;
       bowl.rotation.z = Math.cos(time * 0.0024 + bowl.phase) * 0.038;
 
@@ -5329,7 +5338,7 @@ class GameApp {
 
         // 碰壁发声并起涟漪
         this.playBowlCollisionSound(bowl.position, 0.45);
-        this.createRipple(bowl.position.x, 0.505, bowl.position.z);
+        this.createRipple(bowl.position.x, 0.612, bowl.position.z);
       }
     });
 
@@ -5372,8 +5381,8 @@ class GameApp {
           // 计算碰撞中点并产生发音和水波纹
           const cx = (b1.position.x + b2.position.x) / 2;
           const cz = (b1.position.z + b2.position.z) / 2;
-          this.playBowlCollisionSound(new THREE.Vector3(cx, 0.5, cz), 1.0);
-          this.createRipple(cx, 0.505, cz);
+          this.playBowlCollisionSound(new THREE.Vector3(cx, 0.61, cz), 1.0);
+          this.createRipple(cx, 0.612, cz);
         }
       }
     }
