@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>可爱弹射台球 | 韭菜盒子</title>
+  <meta name="description" content="一款结合了弹射、碰撞与消除元素的马卡龙色系可爱风格台球小游戏！适配移动端，指尖掌控，极致解压。">
+  
+  <!-- 引入 Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="./style.css?v=3">
+  <!-- 引入 Iconify Web Component 用于矢量图标 -->
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+</head>
+<body>
+  <!-- 背景粒子/气泡画布 -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- 游戏主容器 -->
+  <div class="game-container">
+    <!-- 顶部 HUD 栏 -->
+    <header class="hud-header">
+      <div class="hud-left">
+        <a href="../../index.html" class="btn-back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+        <div class="logo">🎱 <span>可爱台球</span></div>
+      </div>
+      <div class="hud-center">
+        <div class="stat-box">
+          <span class="label">得分</span>
+          <span id="scoreVal" class="value">0</span>
+        </div>
+        <div class="stat-box">
+          <span class="label">余杆</span>
+          <span id="shotsVal" class="value">10</span>
+        </div>
+      </div>
+      <div class="hud-right">
+        <!-- 头像按钮，点击弹窗 -->
+        <button class="hud-btn account-avatar-btn" id="account-avatar-btn" onclick="showLoginModal()" aria-label="账号登录" title="账号登录" style="font-size: 1.1rem; display: flex; align-items: center; justify-content: center;">👤</button>
+        <button id="soundToggle" class="hud-btn" aria-label="切换声音">
+          <iconify-icon class="sound-icon" icon="lucide:volume-2"></iconify-icon>
+        </button>
+        <button id="pauseBtn" class="hud-btn" aria-label="暂停">
+          <iconify-icon icon="lucide:pause"></iconify-icon>
+        </button>
+      </div>
+    </header>
+
+    <!-- 游戏画布区域 -->
+    <div class="canvas-wrapper">
+      <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <!-- 底部操作提示 -->
+    <footer class="hud-footer">
+      <div id="tipText" class="tip-text">拖拽白色母球反向拉伸进行弹射</div>
+    </footer>
+  </div>
+
+  <!-- ==================== 浮层 / 弹窗层 ==================== -->
+
+  <!-- 1. 游戏开始/关卡选择浮层 -->
+  <div class="modal-overlay" id="menuOverlay">
+    <div class="modal-card menu-card">
+      <div class="game-title">
+        <div class="ball-glow">🎱</div>
+        <h2>可爱弹射台球</h2>
+        <p class="subtitle">CUTE SLINGSHOT BILLIARDS</p>
+      </div>
+      
+      <!-- 大厅常驻排行榜，布局与21点完全一致 -->
+      <div class="leaderboard">
+        <h3>🏆 玩家排行榜</h3>
+        <div class="leaderboard-list" id="leaderboard-list">暂无数据</div>
+      </div>
+
+      <div class="mode-selection" style="margin-top: 20px;">
+        <div class="mode-buttons">
+          <button class="menu-btn primary" id="btnClassicMode">
+            <iconify-icon icon="lucide:star" class="btn-icon" style="font-size: 24px; color: var(--primary-neon);"></iconify-icon>
+            <div class="btn-info">
+              <span class="btn-title">关卡闯关</span>
+              <span class="btn-desc">精心设计的 5 个台球桌关卡布局</span>
+            </div>
+          </button>
+          <button class="menu-btn secondary" id="btnEndlessMode">
+            <iconify-icon icon="lucide:candy" class="btn-icon" style="font-size: 24px; color: var(--accent-neon);"></iconify-icon>
+            <div class="btn-info">
+              <span class="btn-title">无尽挑战</span>
+              <span class="btn-desc">初始排好 10 个球，清台自动重摆</span>
+            </div>
+          </button>
+          <a href="../../index.html" class="menu-btn" style="background: #fdfaf2; border-color: #f5edd6; text-decoration: none; display: flex; align-items: center; gap: 16px; transition: all 0.3s;">
+            <iconify-icon icon="lucide:log-out" class="btn-icon" style="font-size: 24px; color: var(--text-muted);"></iconify-icon>
+            <div class="btn-info">
+              <span class="btn-title" style="color: var(--text-muted);">返回主大厅</span>
+              <span class="btn-desc">回到 Sunflower 个人大厅主页</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 关卡选择子页面 (当选择经典模式时显示) -->
+  <div class="modal-overlay" id="levelOverlay" style="display: none;">
+    <div class="modal-card">
+      <button class="modal-close" id="btnBackToMenu">
+        <iconify-icon icon="lucide:x" style="font-size: 18px; display: flex;"></iconify-icon>
+      </button>
+      <div class="modal-header">
+        <h2>选择关卡</h2>
+      </div>
+      <div class="modal-body">
+        <div class="level-grid" id="levelGrid">
+          <!-- 动态生成关卡列表 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 游戏暂停浮层 -->
+  <div class="modal-overlay" id="pauseOverlay" style="display: none;">
+    <div class="modal-card text-center">
+      <h2>游戏暂停</h2>
+      <div class="modal-actions pause-actions">
+        <button class="action-btn-round secondary" id="btnQuit" title="返回主菜单">
+          <iconify-icon icon="lucide:home"></iconify-icon>
+        </button>
+        <button class="action-btn-round accent" id="btnRestart" title="重新开始">
+          <iconify-icon icon="lucide:rotate-ccw"></iconify-icon>
+        </button>
+        <button class="action-btn-round primary" id="btnResume" title="继续游戏">
+          <iconify-icon icon="lucide:play"></iconify-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 结算 / 游戏结束浮层 -->
+  <div class="modal-overlay" id="gameOverOverlay" style="display: none;">
+    <div class="modal-card text-center">
+      <div class="result-emoji" id="resultEmoji">🎉</div>
+      <h2 id="resultTitle">胜利！</h2>
+      <p class="result-text" id="resultText">你清空了台面上所有的数字球！</p>
+      
+      <div class="score-summary">
+        <div class="summary-item">
+          <span class="label">最终得分</span>
+          <span class="value" id="finalScore">0</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">最佳得分</span>
+          <span class="value" id="bestScore">0</span>
+        </div>
+      </div>
+
+      <div class="modal-actions vertical">
+        <button class="action-btn primary" id="btnNextLevel" style="display: none;">下一关</button>
+        <button class="action-btn primary" id="btnReplay">再玩一次</button>
+        <button class="action-btn secondary" id="btnGameOverQuit">返回主菜单</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. 排行榜浮层 -->
+  <div class="modal-overlay" id="leaderboardOverlay" style="display: none;">
+    <div class="modal-card">
+      <button class="modal-close" id="btnHideLeaderboard">
+        <iconify-icon icon="lucide:x" style="font-size: 18px; display: flex;"></iconify-icon>
+      </button>
+      <div class="modal-header">
+        <h2>🏆 玩家排行榜</h2>
+      </div>
+      <div class="modal-body">
+        <div class="leaderboard-container">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th style="width: 25%">排名</th>
+                <th style="width: 45%">玩家</th>
+                <th style="width: 30%">最高分</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody">
+              <!-- 动态插入排行行 -->
+            </tbody>
+          </table>
+          <div id="leaderboardLoading" class="leaderboard-status">加载中...</div>
+          <div id="leaderboardEmpty" class="leaderboard-status" style="display: none;">暂无排行记录</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 登录弹窗 (SSO 统一登录改造，与 21点 结构一致，但使用台球粉红色调) -->
+  <div class="modal-overlay" id="login-modal" style="display: none;" onclick="closeLoginModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <h3 style="margin-bottom: 16px; border-bottom: 1px solid var(--panel-border); padding-bottom: 10px; font-weight: 800;">账号中心</h3>
+      
+      <!-- 已登录 SSO 面板 -->
+      <div id="sso-logged-in-panel" style="display: none;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:12px; padding: 20px 0 10px;">
+          <img id="sso-modal-avatar" style="width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--primary-neon); object-fit: cover;" src="" alt="头像">
+          <div style="font-weight: 800; font-size: 1.15rem; color: var(--text-main);" id="sso-modal-username"></div>
+          <div style="color: var(--text-muted); font-size: 0.8rem;">已通过 SSO 统一认证登录</div>
+        </div>
+        <button class="sso-billiards-logout-big" id="sso-logout-btn" onclick="logoutSSO()" style="width: 100%; margin-top: 16px;">退出登录</button>
+      </div>
+
+      <!-- 未登录 SSO 面板 -->
+      <div id="sso-logged-out-panel" style="display: none;">
+        <div style="text-align: center; padding: 20px 0 10px;">
+          <div style="font-size: 1.8rem; margin-bottom: 12px;">🔐</div>
+          <div style="font-weight: 700; font-size: 1rem; margin-bottom: 8px; color: var(--text-main);">SSO 统一身份认证</div>
+          <div style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.4;">一键登录 Sunflower 统一身份平台</div>
+        </div>
+        <button class="sso-billiards-login-big" id="sso-login-btn" onclick="loginWithSSO()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <iconify-icon icon="lucide:key-round" style="font-size: 18px;"></iconify-icon>
+          SSO 统一登录
+        </button>
+        <button class="sso-billiards-guest-big" onclick="hideLoginModal()" style="width: 100%; margin-top: 8px;">以游客身份继续</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./game.js?v=4"></script>
+</body>
+</html>

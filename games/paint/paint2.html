@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调色盘</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff8c69;
+            --primary-glow: rgba(255, 140, 105, 0.4);
+            --secondary: #64b5f6;
+            --glass-bg: rgba(196, 146, 54, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --text-main: #ffffff;
+            --text-muted: #727780;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #478a6b, var(--primary-glow));
+            color: var(--text-main);
+            font-family: 'Outfit', 'Noto Sans SC', system-ui, sans-serif;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .paint-container {
+            width: 100%;
+            max-width: 680px;
+            background-image: url(palette.png);
+            /* background: rgba(15, 17, 21, 0.75); */
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Target Matching Header */
+        .target-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            padding: 12px 16px;
+            border-radius: 16px;
+        }
+
+        .target-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .target-color-box {
+            width: 70px;
+            height: 38px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+        }
+
+        .target-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .btn-action {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-action:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .btn-action:active {
+            transform: scale(0.96);
+        }
+
+        /* Canvas Board */
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            background-color: transparent;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        /* Color Palette and Paint Pots */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .palette-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .color-pot {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .color-pot:hover {
+            transform: scale(1.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .color-pot.active {
+            transform: scale(1.15);
+            border-color: #ffffff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.4), 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Tool buttons */
+        .tools-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 14px;
+        }
+
+        .left-tools, .right-tools {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .brush-size-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .brush-size-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .now-color-preview {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .color-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1.5px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        /* Alert Overlay */
+        .alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(10, 11, 14, 0.6);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .alert-card {
+            background: rgba(20, 24, 33, 0.9);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px 30px;
+            text-align: center;
+            max-width: 320px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27);
+        }
+
+        .alert-card.show {
+            transform: scale(1);
+        }
+
+        .alert-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .alert-similarity {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+
+        .alert-message {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="paint-container">
+        <!-- Target Color Header -->
+        <div class="target-header">
+            <div class="target-info">
+                <div class="target-color-box" id="target-color"></div>
+                <div class="target-text">写生目标色<br><span id="target-hex" style="font-size:0.75rem; color:rgba(255,255,255,0.8)">#ffffff</span></div>
+            </div>
+            <button class="btn-action" onclick="generateNewTarget()">换目标色</button>
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="canvas-wrapper">
+            <canvas id="canvas" width="640" height="340"></canvas>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="control-panel">
+            <!-- Palette pots -->
+            <div class="palette-section">
+                <!-- Row 1: Base pigments -->
+                <div class="color-pot active" onclick="chooseColor('rgb(255, 64, 129)')" style="background-color: rgb(255, 64, 129);">红</div>
+                <div class="color-pot" onclick="chooseColor('rgb(255, 235, 59)')" style="background-color: rgb(255, 235, 59); color:#000; text-shadow:none;">黄</div>
+                <div class="color-pot" onclick="chooseColor('rgb(33, 150, 243)')" style="background-color: rgb(33, 150, 243);">蓝</div>
+                <div class="color-pot" onclick="chooseColor('rgb(76, 175, 80)')" style="background-color: rgb(76, 175, 80);">绿</div>
+                <div class="color-pot" onclick="chooseColor('rgb(255, 255, 255)')" style="background-color: rgb(255, 255, 255); color:#000; text-shadow:none;">白</div>
+                <div class="color-pot" onclick="chooseColor('rgb(17, 17, 17)')" style="background-color: rgb(17, 17, 17);">黑</div>
+                
+                <!-- Row 2: Secondary / blended pigments -->
+                <div class="color-pot" onclick="chooseColor('rgb(156, 39, 176)')" style="background-color: rgb(156, 39, 176);">紫</div>
+                <div class="color-pot" onclick="chooseColor('rgb(255, 152, 0)')" style="background-color: rgb(255, 152, 0);">橙</div>
+                <div class="color-pot" onclick="chooseColor('rgb(0, 188, 212)')" style="background-color: rgb(0, 188, 212);">青</div>
+                <div class="color-pot" onclick="chooseColor('rgb(121, 85, 72)')" style="background-color: rgb(121, 85, 72);">褐</div>
+                
+                <!-- Special blend actions -->
+                <div class="color-pot" onclick="waterBlend()" style="background-color: rgb(224, 247, 250); color:#0097a7; text-shadow:none;" title="加清水稀释调和">水</div>
+                <button class="color-pot" id="btn-mix" onclick="mixColors()" style="background: linear-gradient(135deg, #ff4081, #9c27b0); border:none;" title="将当前颜色与上一步的颜色混合">融合</button>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="tools-section">
+                <div class="left-tools">
+                    <button class="btn-action" onclick="undo()" style="padding: 8px 12px;">撤销</button>
+                    <button class="btn-action" onclick="clearCanvas()" style="background:rgba(255,82,82,0.15); border-color:rgba(255,82,82,0.3); color:#ff5252; padding: 8px 12px;">清空</button>
+                </div>
+
+                <div class="right-tools">
+                    <div class="now-color-preview">
+                        当前色:
+                        <div class="color-circle" id="now-color-circle" style="background-color: rgb(255, 64, 129);"></div>
+                    </div>
+                    <button class="btn-action" onclick="submitPaint()" style="background:#4caf50; border-color:#4caf50; padding: 8px 20px;">完成</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal Dialog -->
+    <div class="alert-overlay" id="alert-overlay">
+        <div class="alert-card" id="alert-card">
+            <div class="alert-title">写生色彩比对</div>
+            <div class="alert-similarity" id="alert-similarity">0%</div>
+            <div class="alert-message" id="alert-message">你调制的色彩与目标色彩很接近！</div>
+            <button class="btn-action" onclick="closeAlert()" style="background:var(--secondary); border-color:var(--secondary); width:100%;">继续写生</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        
+        let currentColor = 'rgb(255, 64, 129)';
+        let previousColor = 'rgb(255, 255, 255)';
+        let targetColor = 'rgb(255, 255, 255)';
+        let isDrawing = false;
+        let brushRadius = 18;
+
+        // Undo History Stack
+        const historyStack = [];
+        const maxHistory = 15;
+
+        // Set up canvas default (fill with white)
+        // ctx.fillStyle = '#ffffff';
+        // ctx.fillRect(0, 0, canvas.width, canvas.height);
+        canvas.innerHTML = '';
+
+        // Generate initial target color
+        generateNewTarget();
+        updateColorsHud();
+
+        // Canvas event listeners
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            saveHistory();
+            paintAt(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDrawing = false;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDrawing) {
+                paintAt(e.clientX, e.clientY);
+            }
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            isDrawing = true;
+            saveHistory();
+            const touch = e.touches[0];
+            paintAt(touch.clientX, touch.clientY);
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (isDrawing) {
+                const touch = e.touches[0];
+                paintAt(touch.clientX, touch.clientY);
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            isDrawing = false;
+        });
+
+        function paintAt(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.round(((clientX - rect.left) / rect.width) * canvas.width);
+            const y = Math.round(((clientY - rect.top) / rect.height) * canvas.height);
+
+            if (x >= 0 && x < canvas.width && y >= 0 && y < canvas.height) {
+                // Get existing color under brush to mix
+                const imgData = ctx.getImageData(x, y, 1, 1);
+                const r = imgData.data[0];
+                const g = imgData.data[1];
+                const b = imgData.data[2];
+                const a = imgData.data[3];
+
+                // 空白画布(透明像素)不参与混色，只有遇到已有颜料时才混色
+                if (a !== 0) {
+                    const existingColor = `rgb(${r}, ${g}, ${b})`;
+                    currentColor = mix(currentColor, existingColor);
+                }
+
+                // Draw brush circle
+                ctx.fillStyle = currentColor;
+                ctx.beginPath();
+                ctx.arc(x, y, brushRadius, 0, Math.PI * 2);
+                ctx.fill();
+
+                updateColorsHud();
+            }
+        }
+
+        function chooseColor(color) {
+            previousColor = currentColor;
+            currentColor = color;
+            updateColorsHud();
+
+            // Set active class on color pots
+            document.querySelectorAll('.color-pot').forEach(pot => {
+                if (pot.style.backgroundColor === color) {
+                    pot.classList.add('active');
+                } else {
+                    pot.classList.remove('active');
+                }
+            });
+        }
+
+        function waterBlend() {
+            // Dilute brush with white (water)
+            chooseColor('rgb(255, 255, 255)');
+        }
+
+        function mixColors() {
+            // Blend currentColor with previousColor
+            const blended = mix(currentColor, previousColor);
+            chooseColor(blended);
+        }
+
+        function setBrushSize(size, element) {
+            brushRadius = size;
+            document.querySelectorAll('.brush-size-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function saveHistory() {
+            if (historyStack.length >= maxHistory) {
+                historyStack.shift();
+            }
+            historyStack.push(canvas.toDataURL());
+        }
+
+        function undo() {
+            if (historyStack.length > 0) {
+                const prevState = historyStack.pop();
+                const img = new Image();
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = prevState;
+            }
+        }
+
+        function clearCanvas() {
+            saveHistory();
+            canvas.innerHTML = '';
+        }
+
+        function updateColorsHud() {
+            const preview = document.getElementById('now-color-circle');
+            if (preview) preview.style.backgroundColor = currentColor;
+        }
+
+        // Generate random target color in HSL
+        function generateNewTarget() {
+            const h = Math.floor(Math.random() * 360);
+            const s = Math.floor(35 + Math.random() * 55); // 35% to 90%
+            const l = Math.floor(40 + Math.random() * 40); // 40% to 80%
+            targetColor = hslToRgb(h / 360, s / 100, l / 100);
+            
+            const targetBox = document.getElementById('target-color');
+            const targetHex = document.getElementById('target-hex');
+            if (targetBox) {
+                targetBox.style.backgroundColor = targetColor;
+            }
+            if (targetHex) {
+                targetHex.textContent = rgbToHex(targetColor);
+            }
+        }
+
+        function rgbToHex(rgbStr) {
+            const rgb = rgbStr.match(/\d+/g);
+            if (!rgb) return '#ffffff';
+            const r = parseInt(rgb[0]).toString(16).padStart(2, '0');
+            const g = parseInt(rgb[1]).toString(16).padStart(2, '0');
+            const b = parseInt(rgb[2]).toString(16).padStart(2, '0');
+            return `#${r}${g}${b}`.toUpperCase();
+        }
+
+        // Color Mixing Logic (Combined HSL Lerp + CMYK blending)
+        function mix(color1, color2) {
+            if (color1 === color2) return color1;
+
+            const hsl1 = rgbToHsl(color1);
+            const hsl2 = rgbToHsl(color2);
+
+            const h1 = hsl1.h, s1 = hsl1.s, l1 = hsl1.l;
+            const h2 = hsl2.h, s2 = hsl2.s, l2 = hsl2.l;
+
+            // 1. Calculate blended HSL
+            let h = (h1 + h2) / 2;
+            if (Math.abs(h1 - h2) > 180) {
+                h += 180;
+            }
+            if (l1 === 100 || s1 === 0) h = h2;
+            if (l2 === 100 || s2 === 0) h = h1;
+
+            let s = (s1 + s2) / 2;
+            let l = (l1 + l2) / 2;
+
+            h = (h < 0) ? h + 360 : (h >= 360) ? h - 360 : h;
+            s = Math.min(Math.max(s, 0), 100);
+            l = Math.min(Math.max(l, 0), 100);
+
+            const resultHSL = hslToRgb(h / 360, s / 100, l / 100);
+
+            // 2. Calculate blended CMYK
+            const rgb1 = color1.match(/\d+/g).map(Number);
+            const rgb2 = color2.match(/\d+/g).map(Number);
+
+            const cmyk1 = rgbToCmyk(rgb1[0], rgb1[1], rgb1[2]);
+            const cmyk2 = rgbToCmyk(rgb2[0], rgb2[1], rgb2[2]);
+
+            // Additive CMYK properties representing physical ink blending
+            const c = (cmyk1.c + cmyk2.c) / 2;
+            const m = (cmyk1.m + cmyk2.m) / 2;
+            const y = (cmyk1.y + cmyk2.y) / 2;
+            const k = (cmyk1.k + cmyk2.k) / 2;
+
+            const rgbCMYK = cmykToRgb(c, m, y, k);
+            const resultCMYK = `rgb(${rgbCMYK.r}, ${rgbCMYK.g}, ${rgbCMYK.b})`;
+
+            // 3. Average both results for painting canvas accuracy
+            return avgRGB(resultHSL, resultCMYK);
+        }
+
+        function avgRGB(color1, color2) {
+            const rgb1 = color1.match(/\d+/g).map(Number);
+            const rgb2 = color2.match(/\d+/g).map(Number);
+            const r = Math.round((rgb1[0] + rgb2[0]) / 2);
+            const g = Math.round((rgb1[1] + rgb2[1]) / 2);
+            const b = Math.round((rgb1[2] + rgb2[2]) / 2);
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function rgbToCmyk(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            const k = 1 - Math.max(r, g, b);
+            if (k === 1) return { c: 0, m: 0, y: 0, k: 1 };
+            const c = (1 - r - k) / (1 - k);
+            const m = (1 - g - k) / (1 - k);
+            const y = (1 - b - k) / (1 - k);
+            return { c, m, y, k };
+        }
+
+        function cmykToRgb(c, m, y, k) {
+            const r = Math.round(255 * (1 - c) * (1 - k));
+            const g = Math.round(255 * (1 - m) * (1 - k));
+            const b = Math.round(255 * (1 - y) * (1 - k));
+            return { r, g, b };
+        }
+
+        function rgbToHsl(rgbColor) {
+            const rgb = rgbColor.match(/\d+/g).map(Number);
+            const r = rgb[0] / 255, g = rgb[1] / 255, b = rgb[2] / 255;
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+
+            if (max === min) {
+                h = s = 0;
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            return { h: h * 360, s: s * 100, l: l * 100 };
+        }
+
+        function hslToRgb(h, s, l) {
+            let r, g, b;
+            if (s === 0) {
+                r = g = b = l;
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1 / 6) return p + (q - p) * 6 * t;
+                    if (t < 1 / 2) return q;
+                    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                    return p;
+                };
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1 / 3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1 / 3);
+            }
+            return `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
+        }
+
+        // Similarity check
+        function calculateColorSimilarity(color1, color2) {
+            const hsl1 = rgbToHsl(color1);
+            const hsl2 = rgbToHsl(color2);
+
+            const hueDiff = Math.abs((Math.abs(hsl1.h - hsl2.h) + 180) % 360 - 180) * (hsl2.s + hsl1.s) / 200;
+            const satDiff = Math.abs(hsl1.s - hsl2.s);
+            const lightDiff = Math.abs(hsl1.l - hsl2.l);
+
+            const weightedDiff = 1.2 * hueDiff + 0.8 * satDiff + 1.0 * lightDiff;
+            const maxDiff = 180 * 1.2 + 100 * 0.8 + 100 * 1.0;
+            
+            let similarity = 100 - (weightedDiff / maxDiff) * 100;
+            return Math.round(Math.max(0, similarity));
+        }
+
+        function submitPaint() {
+            const similarity = calculateColorSimilarity(currentColor, targetColor);
+            
+            const overlay = document.getElementById('alert-overlay');
+            const simText = document.getElementById('alert-similarity');
+            const msgText = document.getElementById('alert-message');
+            
+            if (simText) simText.textContent = `${similarity}%`;
+            
+            let msg = '继续加油！尝试用更多底色进行调和。';
+            if (similarity >= 90) {
+                msg = '太完美了！你是个天生的色彩大师！🎨';
+            } else if (similarity >= 75) {
+                msg = '太棒了！色彩吻合度非常高。✨';
+            } else if (similarity >= 55) {
+                msg = '很接近了！试试加一点白色或黄色来进行调和。';
+            }
+            
+            if (msgText) msgText.textContent = msg;
+            
+            if (overlay) {
+                overlay.style.display = 'flex';
+                setTimeout(() => {
+                    document.getElementById('alert-card')?.classList.add('show');
+                }, 10);
+            }
+        }
+
+        function closeAlert() {
+            const overlay = document.getElementById('alert-overlay');
+            const card = document.getElementById('alert-card');
+            if (card) card.classList.remove('show');
+            setTimeout(() => {
+                if (overlay) overlay.style.display = 'none';
+            }, 300);
+        }
+    </script>
+</body>
+</html>

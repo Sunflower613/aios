@@ -1,24 +1,5 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+3d-home/node_modules/
+game-api/node_modules/
 .DS_Store
-*.suo
-*.ntvsca*
-*.njsproj
-*.sln
-*.sw?
+*.log
+3d-home/.git_bak/

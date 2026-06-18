@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>合成大西瓜（双人版）</title>
+  <style>
+    :root {
+      --bg: #f7f7c0;
+      --panel: rgba(255, 255, 255, 0.95);
+      --canvas-bg: #fffbe6;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      background: var(--bg);
+      font-family: Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #topBar {
+      width: 100%;
+      height: 40px;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff8c6;
+      padding: 0 10px;
+      font-size: 20px;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    #restartBtn {
+      padding: 5px 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      background: #ff8888;
+      color: white;
+      font-weight: bold;
+    }
+
+    #wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      box-sizing: border-box;
+    }
+
+    #game {
+      background: var(--canvas-bg);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+      /**border-radius: 8px;*/
+      overflow: hidden;
+      position: relative;
+      touch-action: none;
+      width: 100%;
+      height: 100%;
+      max-width: 1200px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .uiLeft,
+    .uiRight {
+      position: absolute;
+      top: 10px;
+      padding: 8px 10px;
+      background: var(--panel);
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .uiLeft {
+      left: 10px;
+    }
+
+    .uiRight {
+      right: 10px;
+    }
+
+    .score {
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 6px;
+    }
+
+    .nextPreview {
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      background: #fff;
+      display: inline-block;
+      vertical-align: middle;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      margin-left: 8px;
+    }
+
+    .controlsHint {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--panel);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #444;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    @media (max-width:600px) {
+      .score {
+        font-size: 14px;
+      }
+    }
+
+    /* 只在PC端显示 */
+    .pc-only {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .pc-only {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="topBar">
+    <button id="restartBtn" title="重新开始">&#x21bb;</button>
+    <span>合成大西瓜（双人版）</span>
+    <span id="timer">0s</span>
+  </div>
+
+  <div id="wrap">
+    <div id="game">
+      <canvas id="canvas"></canvas>
+
+      <div class="uiLeft" id="uiLeft">
+        <div class="score">玩家 1：<span id="scoreL">0</span></div>
+        <div class="pc-only">下一球 <canvas id="previewL" class="nextPreview" width="44" height="44"></canvas></div>
+        <div class="pc-only" style="font-size:12px;margin-top:6px;color:#666">按键：A/D 左右，W/S 放下</div>
+      </div>
+
+      <div class="uiRight" id="uiRight">
+        <div class="score">玩家 2：<span id="scoreR">0</span></div>
+        <div class="pc-only">下一球 <canvas id="previewR" class="nextPreview" width="44" height="44"></canvas></div>
+        <div class="pc-only" style="font-size:12px;margin-top:6px;color:#666">按键：←/→ 左右，↑/↓ 放下</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Matter.js -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script> -->
+  <script src="matter.js"></script>
+  <script>
+    /*
+      修复版：双人对战（无限制）
+      - 两个独立引擎（左右各 50%）
+      - 下一球固定为 1 分
+      - 无音效（你选 D3）
+      - 支持键盘 / 鼠标 / 触摸（多点）
+      - 已修复初始化顺序与边界创建问题
+    */
+
+    (() => {
+      // --- 配置 ---
+      const BALLS = [
+        { score: 1, color: '#ff6666', radius: 22 },
+        { score: 2, color: '#ffb347', radius: 32 },
+        { score: 4, color: '#7ed957', radius: 44 },
+        { score: 8, color: '#4fc3f7', radius: 56 },
+        { score: 16, color: '#a259ff', radius: 70 },
+        { score: 32, color: '#ff6f91', radius: 85 },
+        { score: 64, color: '#43e97b', radius: 100 },
+        { score: 128, color: '#f9d423', radius: 120 },
+        { score: 256, color: '#ff3e3e', radius: 140 },
+        { score: 512, color: '#00c3ff', radius: 160 },
+        { score: 1024, color: '#ff61a6', radius: 180 },
+        { score: 2048, color: '#43e97b', radius: 200 },
+      ];
+      const NEXT_TYPE_DEFAULT = 0; // always 1-point
+
+      // DOM
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const previewLCtx = document.getElementById('previewL').getContext('2d');
+      const previewRCtx = document.getElementById('previewR').getContext('2d');
+      const scoreLEl = document.getElementById('scoreL');
+      const scoreREl = document.getElementById('scoreR');
+      const gameEl = document.getElementById('game');
+
+
+
+      // Matter aliases
+      const Engine = Matter.Engine, Runner = Matter.Runner, World = Matter.World,
+        Bodies = Matter.Bodies, Body = Matter.Body, Events = Matter.Events;
+
+      // create engines (but don't run until after sizing)
+      const engineL = Engine.create();
+      const engineR = Engine.create();
+      engineL.gravity.y = 1.0;
+      engineR.gravity.y = 1.0;
+      const worldL = engineL.world;
+      const worldR = engineR.world;
+
+      // state
+      let time = 0;
+      let timerInterval = null;
+
+      let bodiesL = [];
+      let bodiesR = [];
+      const mergingL = new Set();
+      const mergingR = new Set();
+      const scoreRefL = { value: 0 };
+      const scoreRefR = { value: 0 };
+      let previewXL = 0.5, previewXR = 0.5; // normalized in each half
+      const keyState = { A: false, D: false, LEFT: false, RIGHT: false };
+
+      function restartGame() {
+        // 清空两个容器的球
+        bodiesL = [];
+        bodiesR = [];
+        mergingL.clear();
+        mergingR.clear();
+        function cleanBounds(world) {
+          for (let b of [...world.bodies]) {
+            if (b.isBound) World.remove(world, b);
+          }
+        }
+        cleanBounds(worldL);
+        cleanBounds(worldR);
+        scoreRefL.value = 0;
+        scoreRefR.value = 0;
+
+        // 重置计时器
+        time = 0;
+        document.getElementById('timer').innerText = `0s`;
+        clearInterval(timerInterval);
+        timerInterval = null;
+
+        // 重新开始游戏循环（防止动画停住）
+        isDroppingLeft = false;
+        isDroppingRight = false;
+      }
+
+      // sizing & bounds
+      function fitCanvasAndBounds() {
+        const rect = gameEl.getBoundingClientRect();
+        canvas.width = Math.max(300, Math.floor(rect.width));
+        canvas.height = Math.max(300, Math.floor(rect.height));
+        // build bounds for both worlds after sizing
+        createBoundsForWorlds();
+        // clamp previews
+        previewXL = Math.max(0, Math.min(1, previewXL));
+        previewXR = Math.max(0, Math.min(1, previewXR));
+        // draw small previews
+        drawSmallPreview(previewLCtx, NEXT_TYPE_DEFAULT);
+        drawSmallPreview(previewRCtx, NEXT_TYPE_DEFAULT);
+      }
+
+      // call once on load and on resize
+      window.addEventListener('resize', fitCanvasAndBounds);
+      window.addEventListener('load', fitCanvasAndBounds);
+
+      // create static bounds for each world. Remove previous bounds if any.
+      function createBoundsForWorlds() {
+        // helper to remove previous static bounds (we mark with isBound = true)
+        function cleanBounds(world) {
+          for (let b of [...world.bodies]) {
+            if (b.isBound) World.remove(world, b);
+          }
+        }
+        cleanBounds(worldL);
+        cleanBounds(worldR);
+
+        const W = canvas.width, H = canvas.height, half = W / 2;
+        // left bounds: floor and side walls (positioned so balls can't cross middle)
+        const leftFloor = Bodies.rectangle(half / 2, H - 5, half, 20, { isStatic: true });
+        leftFloor.isBound = true;
+        const leftWallL = Bodies.rectangle(-30, H / 2, 60, H, { isStatic: true });
+        leftWallL.isBound = true;
+        const leftWallR = Bodies.rectangle(half + 30, H / 2, 60, H, { isStatic: true });
+        leftWallR.isBound = true;
+        World.add(worldL, [leftFloor, leftWallL, leftWallR]);
+
+        // right bounds
+        const rightFloor = Bodies.rectangle(half + half / 2, H - 5, half, 20, { isStatic: true });
+        rightFloor.isBound = true;
+        const rightWallL = Bodies.rectangle(half - 30, H / 2, 60, H, { isStatic: true });
+        rightWallL.isBound = true;
+        const rightWallR = Bodies.rectangle(W + 30, H / 2, 60, H, { isStatic: true });
+        rightWallR.isBound = true;
+        World.add(worldR, [rightFloor, rightWallL, rightWallR]);
+      }
+
+      // helper to create a ball in a given world
+      function createBall(world, bodiesArr, side, typeIndex, x, y) {
+        const info = BALLS[typeIndex];
+        const density = 0.001 * Math.max(0.7, info.radius / 30);
+        const b = Bodies.circle(x, y, info.radius, {
+          restitution: 0.05,
+          friction: 0.02,
+          frictionStatic: 0.1,
+          density,
+          label: 'ball'
+        });
+        b.gameData = { typeIndex, score: info.score, radius: info.radius, color: info.color };
+        bodiesArr.push(b);
+        World.add(world, b);
+        return b;
+      }
+
+      // spawn ball for side 'L' or 'R' with normalized nx in [0,1] within that half
+      function spawnBall(side, nx) {
+        if (canvas.width === 0 || canvas.height === 0) return null;
+        const W = canvas.width, H = canvas.height, half = W / 2;
+        const typeIndex = NEXT_TYPE_DEFAULT;
+        const info = BALLS[typeIndex];
+        if (side === 'L') {
+          const x = Math.max(info.radius + 6, Math.min(half - info.radius - 6, nx * half));
+          const y = Math.max(40, info.radius + 6);
+          const b = createBall(worldL, bodiesL, 'L', typeIndex, x, y);
+          Body.setAngularVelocity(b, (Math.random() - 0.5) * 0.1);
+          scoreRefL.value += info.score;
+          return b;
+        } else {
+          const x = Math.max(half + info.radius + 6, Math.min(W - info.radius - 6, half + nx * half));
+          const y = Math.max(40, info.radius + 6);
+          const b = createBall(worldR, bodiesR, 'R', typeIndex, x, y);
+          Body.setAngularVelocity(b, (Math.random() - 0.5) * 0.1);
+          scoreRefR.value += info.score;
+          return b;
+        }
+      }
+
+      // attach merge handlers for each engine
+      function attachMerge(engine, bodiesArr, mergingSet, scoreRef) {
+        Events.on(engine, 'collisionStart', ev => {
+          for (let pair of ev.pairs) {
+            const A = pair.bodyA, B = pair.bodyB;
+            if (!A.gameData || !B.gameData) continue;
+            if (A.gameData.typeIndex !== B.gameData.typeIndex) continue;
+            if (mergingSet.has(A.id) || mergingSet.has(B.id)) continue;
+            // skip very high-speed collisions
+            const relVel = Math.hypot(A.velocity.x - B.velocity.x, A.velocity.y - B.velocity.y);
+            if (relVel > 6) continue;
+            mergingSet.add(A.id);
+            mergingSet.add(B.id);
+
+            setTimeout(() => {
+              try {
+                if (!engine.world.bodies.includes(A) || !engine.world.bodies.includes(B)) {
+                  mergingSet.delete(A.id); mergingSet.delete(B.id);
+                  return;
+                }
+                const nextType = A.gameData.typeIndex + 1;
+                if (nextType >= BALLS.length) { mergingSet.delete(A.id); mergingSet.delete(B.id); return; }
+                const nx = (A.position.x + B.position.x) / 2;
+                const ny = (A.position.y + B.position.y) / 2;
+                // remove A & B
+                World.remove(engine.world, A);
+                World.remove(engine.world, B);
+                // remove from bodiesArr
+                const idxA = bodiesArr.indexOf(A); if (idxA >= 0) bodiesArr.splice(idxA, 1);
+                const idxB = bodiesArr.indexOf(B); if (idxB >= 0) bodiesArr.splice(idxB, 1);
+                // create new ball
+                const newR = BALLS[nextType].radius;
+                const newB = Bodies.circle(nx, ny - 6, newR, { restitution: 0.05, friction: 0.02, density: 0.001 * Math.max(0.7, newR / 30) });
+                newB.gameData = { typeIndex: nextType, score: BALLS[nextType].score, radius: newR, color: BALLS[nextType].color };
+                World.add(engine.world, newB);
+                bodiesArr.push(newB);
+                Body.setVelocity(newB, { x: 0, y: -3 });
+                // scoreRef.value += BALLS[nextType].score;
+              } finally {
+                mergingSet.delete(A.id);
+                mergingSet.delete(B.id);
+              }
+            }, 80);
+          }
+        });
+      }
+
+      attachMerge(engineL, bodiesL, mergingL, scoreRefL);
+      attachMerge(engineR, bodiesR, mergingR, scoreRefR);
+
+      // start runners AFTER sizing
+      let runnerL = null, runnerR = null;
+      function startRunners() {
+        if (runnerL || runnerR) return;
+        runnerL = Runner.create();
+        runnerR = Runner.create();
+        Runner.run(runnerL, engineL);
+        Runner.run(runnerR, engineR);
+      }
+
+      // safe init on load
+      function init() {
+        fitCanvasAndBounds(); // size and bounds
+        startRunners();
+        // start loops
+        requestAnimationFrame(drawLoop);
+        requestAnimationFrame(mainLoop);
+      }
+      window.addEventListener('load', init);
+
+      // cleanup offscreen bodies
+      function cleanup() {
+        const H = canvas.height;
+        // left
+        for (let b of [...bodiesL]) {
+          if (!worldL.bodies.includes(b)) continue;
+          if (b.position.y > H + 300) {
+            World.remove(worldL, b);
+            bodiesL = bodiesL.filter(bb => bb !== b);
+          }
+        }
+        // right
+        for (let b of [...bodiesR]) {
+          if (!worldR.bodies.includes(b)) continue;
+          if (b.position.y > H + 300) {
+            World.remove(worldR, b);
+            bodiesR = bodiesR.filter(bb => bb !== b);
+          }
+        }
+      }
+
+      // draw small preview canvases
+      function drawSmallPreview(ctx2d, typeIdx) {
+        const info = BALLS[typeIdx];
+        const W = ctx2d.canvas.width, H = ctx2d.canvas.height;
+        ctx2d.clearRect(0, 0, W, H);
+        const r = Math.max(12, Math.min(20, info.radius * 0.22));
+        ctx2d.beginPath();
+        ctx2d.arc(W / 2, H / 2, r, 0, Math.PI * 2);
+        ctx2d.fillStyle = info.color;
+        ctx2d.fill();
+        ctx2d.lineWidth = 2;
+        ctx2d.strokeStyle = '#888';
+        ctx2d.stroke();
+        ctx2d.closePath();
+        ctx2d.fillStyle = '#fff';
+        ctx2d.font = `${Math.floor(r)}px Arial`;
+        ctx2d.textAlign = 'center';
+        ctx2d.textBaseline = 'middle';
+        ctx2d.fillText(info.score, W / 2, H / 2);
+      }
+
+      // main draw loop (visual)
+      function drawLoop() {
+        const W = canvas.width, H = canvas.height, half = W / 2;
+        ctx.clearRect(0, 0, W, H);
+
+        // center divider
+        ctx.fillStyle = '#ddd';
+        ctx.fillRect(half - 1, 0, 2, H);
+
+        // floor stripe
+        ctx.fillStyle = '#e0e0e0';
+        ctx.fillRect(0, H - 10, W, 10);
+
+        // draw left bodies
+        for (let b of worldL.bodies) {
+          if (!b.gameData) continue;
+          const gd = b.gameData;
+          ctx.beginPath();
+          ctx.arc(b.position.x, b.position.y, gd.radius, 0, Math.PI * 2);
+          ctx.fillStyle = gd.color;
+          ctx.fill();
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = '#888';
+          ctx.stroke();
+          ctx.closePath();
+          ctx.fillStyle = '#fff';
+          ctx.font = `${Math.max(12, Math.floor(gd.radius * 0.7))}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(gd.score, b.position.x, b.position.y);
+        }
+
+        // draw right bodies
+        for (let b of worldR.bodies) {
+          if (!b.gameData) continue;
+          const gd = b.gameData;
+          ctx.beginPath();
+          ctx.arc(b.position.x, b.position.y, gd.radius, 0, Math.PI * 2);
+          ctx.fillStyle = gd.color;
+          ctx.fill();
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = '#888';
+          ctx.stroke();
+          ctx.closePath();
+          ctx.fillStyle = '#fff';
+          ctx.font = `${Math.max(12, Math.floor(gd.radius * 0.7))}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(gd.score, b.position.x, b.position.y);
+        }
+
+        // previews (top of each half)
+        const pr = BALLS[NEXT_TYPE_DEFAULT].radius;
+        const py = Math.max(pr + 8, 36);
+        const pxL = Math.max(pr + 6, Math.min(half - pr - 6, previewXL * half));
+        const pxR = Math.max(half + pr + 6, Math.min(W - pr - 6, half + previewXR * half));
+        // left preview
+        ctx.beginPath();
+        ctx.arc(pxL, py, pr, 0, Math.PI * 2);
+        ctx.fillStyle = BALLS[NEXT_TYPE_DEFAULT].color;
+        ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = '#666'; ctx.stroke(); ctx.closePath();
+        ctx.fillStyle = '#fff';
+        ctx.font = `${Math.floor(pr * 0.7)}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(BALLS[NEXT_TYPE_DEFAULT].score, pxL, py);
+        // right preview
+        ctx.beginPath();
+        ctx.arc(pxR, py, pr, 0, Math.PI * 2);
+        ctx.fillStyle = BALLS[NEXT_TYPE_DEFAULT].color;
+        ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = '#666'; ctx.stroke(); ctx.closePath();
+        ctx.fillStyle = '#fff';
+        ctx.font = `${Math.floor(pr * 0.7)}px Arial`;
+        ctx.fillText(BALLS[NEXT_TYPE_DEFAULT].score, pxR, py);
+
+        // update small UI scores
+        scoreLEl.textContent = scoreRefL.value;
+        scoreREl.textContent = scoreRefR.value;
+
+        requestAnimationFrame(drawLoop);
+      }
+
+      // main loop: cleanup + preview updates + keyboard movement
+      function mainLoop() {
+
+        cleanup();
+        if (!timerInterval) {
+          timerInterval = setInterval(() => {
+            time++;
+            document.getElementById('timer').innerText = `${time}s`;
+          }, 1000);
+        }
+        // keyboard movement
+        const moveSpeed = 0.015;
+        if (keyState.A) previewXL -= moveSpeed;
+        if (keyState.D) previewXL += moveSpeed;
+        if (keyState.LEFT) previewXR -= moveSpeed;
+        if (keyState.RIGHT) previewXR += moveSpeed;
+        previewXL = Math.max(0, Math.min(1, previewXL));
+        previewXR = Math.max(0, Math.min(1, previewXR));
+        // small previews update
+        drawSmallPreview(previewLCtx, NEXT_TYPE_DEFAULT);
+        drawSmallPreview(previewRCtx, NEXT_TYPE_DEFAULT);
+
+        requestAnimationFrame(mainLoop);
+      }
+      document.getElementById('restartBtn').addEventListener('click', restartGame);
+      // keyboard events
+      window.addEventListener('keydown', e => {
+        const k = e.key.toLowerCase();
+        if (k === 'a') keyState.A = true;
+        if (k === 'd') keyState.D = true;
+        if (k === 'arrowleft') keyState.LEFT = true;
+        if (k === 'arrowright') keyState.RIGHT = true;
+        if (k === 'w' || k === 's') spawnBall('L', previewXL);
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') spawnBall('R', previewXR);
+      });
+      window.addEventListener('keyup', e => {
+        const k = e.key.toLowerCase();
+        if (k === 'a') keyState.A = false;
+        if (k === 'd') keyState.D = false;
+        if (k === 'arrowleft') keyState.LEFT = false;
+        if (k === 'arrowright') keyState.RIGHT = false;
+      });
+
+      // mouse move/click
+      function getNormalizedFromClientX(clientX) {
+        const rect = canvas.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const W = rect.width, half = W / 2;
+        if (x < half) return { side: 'L', nx: Math.max(0, Math.min(1, x / half)) };
+        return { side: 'R', nx: Math.max(0, Math.min(1, (x - half) / half)) };
+      }
+      canvas.addEventListener('mousemove', (e) => {
+        const p = getNormalizedFromClientX(e.clientX);
+        if (p.side === 'L') previewXL = p.nx; else previewXR = p.nx;
+      });
+      canvas.addEventListener('mousedown', (e) => {
+        const p = getNormalizedFromClientX(e.clientX);
+        spawnBall(p.side, p.nx);
+      });
+
+      // touch handling (multi-touch)
+      const touchMap = new Map();
+      canvas.addEventListener('touchstart', (ev) => {
+        ev.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        for (let t of ev.changedTouches) {
+          const x = t.clientX - rect.left;
+          const W = rect.width, half = W / 2;
+          const side = x < half ? 'L' : 'R';
+          const nx = side === 'L' ? Math.max(0, Math.min(1, x / half)) : Math.max(0, Math.min(1, (x - half) / half));
+          touchMap.set(t.identifier, { side, startX: x, moved: false });
+          if (side === 'L') previewXL = nx; else previewXR = nx;
+          // do not spawn until touchend (tap)
+        }
+      }, { passive: false });
+      canvas.addEventListener('touchmove', (ev) => {
+        ev.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        for (let t of ev.changedTouches) {
+          const info = touchMap.get(t.identifier);
+          if (!info) continue;
+          const x = t.clientX - rect.left;
+          if (Math.abs(x - info.startX) > 6) info.moved = true;
+          const W = rect.width, half = W / 2;
+          const nx = info.side === 'L' ? Math.max(0, Math.min(1, x / half)) : Math.max(0, Math.min(1, (x - half) / half));
+          if (info.side === 'L') previewXL = nx; else previewXR = nx;
+        }
+      }, { passive: false });
+      canvas.addEventListener('touchend', (ev) => {
+        ev.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        for (let t of ev.changedTouches) {
+          const info = touchMap.get(t.identifier);
+          if (!info) continue;
+          // If simple tap (not moved) -> spawn
+          if (!info.moved) {
+            const x = t.clientX - rect.left;
+            const W = rect.width, half = W / 2;
+            const nx = info.side === 'L' ? Math.max(0, Math.min(1, x / half)) : Math.max(0, Math.min(1, (x - half) / half));
+            spawnBall(info.side, nx);
+          }
+          touchMap.delete(t.identifier);
+        }
+      }, { passive: false });
+      canvas.addEventListener('touchcancel', (ev) => {
+        for (let t of ev.changedTouches) touchMap.delete(t.identifier);
+      });
+
+      // start runners now that everything ready
+      function ensureRunnersStartedOnce() {
+        if (!window._runnersStarted) {
+          window._runnersStarted = true;
+          const r1 = Runner.create();
+          const r2 = Runner.create();
+          Runner.run(r1, engineL);
+          Runner.run(r2, engineR);
+        }
+      }
+      // start after small timeout to ensure canvas sized
+      setTimeout(() => { fitCanvasAndBounds(); ensureRunnersStartedOnce(); }, 60);
+
+      // expose some helpers for debugging
+      window._game = {
+        spawnBall, engineL, engineR, bodiesL, bodiesR, scoreRefL, scoreRefR
+      };
+
+    })();
+  </script>
+</body>
+
+</html>

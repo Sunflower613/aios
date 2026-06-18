@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>颜色转换工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .converter {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        input, button {
+            padding: 8px;
+            margin: 5px 0;
+        }
+        button {
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            min-height: 20px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="converter">
+            <h2>十六进制转RGB</h2>
+            <p>输入十六进制颜色代码（如 #723456、723456 或 #777）:</p>
+            <input type="text" id="hexInput" placeholder="#723456 或 #777">
+            <button onclick="hexToRgb()">转换</button>
+            <div class="result" id="rgbResult"></div>
+        </div>
+
+        <div class="converter">
+            <h2>RGB转十六进制</h2>
+            <p>输入RGB颜色值（如 rgb(114, 52, 86) 或 114, 52, 86）:</p>
+            <input type="text" id="rgbInput" placeholder="rgb(114, 52, 86)">
+            <button onclick="rgbToHex()">转换</button>
+            <div class="result" id="hexResult"></div>
+        </div>
+    </div>
+
+    <script>
+        function hexToRgb() {
+            const hexInput = document.getElementById('hexInput').value.trim();
+            const resultElement = document.getElementById('rgbResult');
+            
+            // 移除#号
+            let hex = hexInput.replace('#', '');
+            
+            // 检查3位简写格式（如 #777 → #777777）
+            if (hex.length === 3 && /^[0-9A-Fa-f]{3}$/.test(hex)) {
+                hex = hex.split('').map(c => c + c).join('');
+            }
+            
+            // 验证6位十六进制格式
+            if (!/^[0-9A-Fa-f]{6}$/.test(hex)) {
+                resultElement.textContent = "请输入有效的十六进制颜色代码（如 #723456、723456 或 #777）";
+                resultElement.style.color = "red";
+                return;
+            }
+            
+            // 转换为RGB
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            
+            resultElement.textContent = `RGB值: rgb(${r}, ${g}, ${b})`;
+            resultElement.style.color = "black";
+        }
+
+        function rgbToHex() {
+            const rgbInput = document.getElementById('rgbInput').value.trim();
+            const resultElement = document.getElementById('hexResult');
+            
+            let rgbValues;
+            
+            // 尝试匹配rgb(r, g, b)格式
+            const rgbRegex = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i;
+            const match = rgbInput.match(rgbRegex);
+            
+            if (match) {
+                rgbValues = [match[1], match[2], match[3]];
+            } else {
+                // 尝试匹配r, g, b格式
+                const numbers = rgbInput.split(/\s*,\s*/);
+                if (numbers.length === 3) {
+                    rgbValues = numbers;
+                } else {
+                    resultElement.textContent = "请输入有效的RGB颜色值（如 rgb(114, 52, 86) 或 114, 52, 86）";
+                    resultElement.style.color = "red";
+                    return;
+                }
+            }
+            
+            // 验证RGB值是否在0-255范围内
+            const r = parseInt(rgbValues[0]);
+            const g = parseInt(rgbValues[1]);
+            const b = parseInt(rgbValues[2]);
+            
+            if (isNaN(r) || isNaN(g) || isNaN(b)) {
+                resultElement.textContent = "RGB值必须是数字";
+                resultElement.style.color = "red";
+                return;
+            }
+            
+            if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
+                resultElement.textContent = "RGB值必须在0-255之间";
+                resultElement.style.color = "red";
+                return;
+            }
+            
+            // 转换为十六进制
+            const toHex = (c) => {
+                const hex = c.toString(16);
+                return hex.length === 1 ? "0" + hex : hex;
+            };
+            
+            const hex = `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+            
+            resultElement.textContent = `十六进制值: ${hex}`;
+            resultElement.style.color = "black";
+        }
+    </script>
+</body>
+</html>

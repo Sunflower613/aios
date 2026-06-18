@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>如厕身价计算器</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f0f9f0;
+      color: #2d572c;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+      border: 1px solid #2d572c;
+      border-radius: 8px;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 20px;
+      background-color: #ffffff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border: 1px solid #2d572c;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    input[type="time"] {
+      min-height: 44px;
+      font-size: 16px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    button {
+      padding: 15px;
+      width: 100%;
+      background-color: #2d572c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    button:hover {
+      background-color: #1e3e1f;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    #auto-calculations {
+      margin-bottom: 15px;
+      padding: 10px;
+      border: 1px solid #2d572c;
+      border-radius: 4px;
+      background-color: #e8f5e9;
+    }
+
+    #auto-calculations p {
+      margin: 5px 0;
+    }
+
+    .icon-button {
+      margin-left: auto;
+      margin-right: auto;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: none;
+      background-color: #2d572c;
+      color: white;
+      font-size: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .icon-button:disabled {
+      background-color: #a5d6a7;
+      cursor: not-allowed;
+    }
+
+    .icon-button:hover:not(:disabled) {
+      background-color: #1e3e1f;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1 style="text-align: center;">如厕身价计算器</h1>
+    <form id="calculator-form">
+      <label for="monthly-salary">月薪 (元)</label>
+      <input type="number" id="monthly-salary" value="3000">
+
+      <label for="work-days">月工作天数</label>
+      <input type="number" id="work-days" value="22">
+
+      <label for="work-hours">每日工作时长 (小时)</label>
+      <input type="number" id="work-hours" value="8">
+      <div id="auto-calculations">
+        <p>日薪：<span id="daily-salary">-</span> 元</p>
+        <p>时薪：<span id="hourly-salary">-</span> 元</p>
+        <p>每分钟：<span id="per-minute-salary">-</span> 元</p>
+      </div>
+          <button type="button" id="timer-button" class="icon-button">▶</button>
+      <label for="toilet-time">本次时长</label>
+      <input type="time" id="toilet-time" value="00:00:00" step="1" inputmode="numeric" title="请选择时长">
+
+      <button type="button" onclick="calculateWorth()">计算</button>
+    </form>
+
+    <div class="result" id="result"></div>
+
+
+
+    <script>
+      function formatTime(seconds) {
+        const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+        const secs = String(seconds % 60).padStart(2, '0');
+        return `${hrs}:${mins}:${secs}`;
+      }
+
+      function parseTime(timeString) {
+        const parts = timeString.split(':').map(Number);
+        const hrs = parts[0] || 0;
+        const mins = parts[1] || 0;
+        const secs = parts[2] || 0;
+        return (hrs * 3600) + (mins * 60) + secs;
+      }
+
+      let timer = null;
+      let elapsedTime = 0;
+      const timerButton = document.getElementById('timer-button');
+      const toiletTimeInput = document.getElementById('toilet-time');
+
+      timerButton.addEventListener('click', function () {
+        if (timer) {
+          // Stop timer
+          clearInterval(timer);
+          timer = null;
+          timerButton.innerText = '▶';
+          timerButton.style.backgroundColor = '#2d572c';
+        } else {
+          // Start timer
+          elapsedTime = parseTime(toiletTimeInput.value);
+          timer = setInterval(() => {
+            elapsedTime++;
+            toiletTimeInput.value = formatTime(elapsedTime);
+            calculateWorth(true);
+          }, 1000);
+          timerButton.innerText = '■';
+          timerButton.style.backgroundColor = '#d32f2f';
+        }
+      });
+
+      function calculateWorth(silent = false) {
+        const monthlySalary = parseFloat(document.getElementById('monthly-salary').value);
+        const workDays = parseFloat(document.getElementById('work-days').value);
+        const workHours = parseFloat(document.getElementById('work-hours').value);
+        const toiletTimeText = document.getElementById('toilet-time').value;
+        const toiletTime = parseTime(toiletTimeText);
+
+        if (
+          isNaN(monthlySalary) ||
+          isNaN(workDays) ||
+          isNaN(workHours) ||
+          !/^(\d{2}):(\d{2})(?::(\d{2}))?$/.test(toiletTimeText)
+        ) {
+          if (!silent) {
+            alert('请填写所有字段，并确保时长格式有效');
+          }
+          return;
+        }
+
+        const dailySalary = monthlySalary / workDays;
+        const hourlySalary = dailySalary / workHours;
+        const perMinuteSalary = hourlySalary / 60;
+        const perSecondSalary = perMinuteSalary / 60;
+        const worth = (perSecondSalary * toiletTime).toFixed(2);
+
+        document.getElementById('daily-salary').innerText = dailySalary.toFixed(2);
+        document.getElementById('hourly-salary').innerText = hourlySalary.toFixed(2);
+        document.getElementById('per-minute-salary').innerText = perMinuteSalary.toFixed(2);
+        document.getElementById('result').innerText = `本次如厕身价：¥${worth}`;
+      }
+
+      document.getElementById('monthly-salary').addEventListener('input', () => calculateWorth(true));
+      document.getElementById('work-days').addEventListener('input', () => calculateWorth(true));
+      document.getElementById('work-hours').addEventListener('input', () => calculateWorth(true));
+      document.getElementById('toilet-time').addEventListener('input', () => calculateWorth(true));
+      calculateWorth()
+    </script>
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,51 @@
+{
+  "111": {
+    "username": "111",
+    "passwordHash": "7893bb014daa8931ca616688a192565f6b9cf5230a4219e2c299f1dd4e212285",
+    "score": 0,
+    "createdAt": "2026-06-04T21:58:43.753500087+08:00",
+    "updatedAt": "2026-06-04T21:58:43.753500087+08:00"
+  },
+  "ElysiaLover": {
+    "username": "ElysiaLover",
+    "passwordHash": "8035a50ea659b6c0cf9f20469375697e19f8e7a19860573c0848297041ae266d",
+    "score": 13,
+    "createdAt": "2026-06-02T17:09:48.688698268+08:00",
+    "updatedAt": "2026-06-02T17:17:56.018135985+08:00"
+  },
+  "deploy_test": {
+    "username": "deploy_test",
+    "passwordHash": "d97ab2f10d324bc753d35ece5405e00b4319cd4d50b0d08cd0775505b88af76e",
+    "score": 0,
+    "createdAt": "2026-06-02T16:21:53.109936284+08:00",
+    "updatedAt": "2026-06-02T16:21:53.115180973+08:00"
+  },
+  "ext": {
+    "username": "ext",
+    "passwordHash": "163bed7143722a43a85cfcca4a62d48a8c466993679f2baef461c5ba451a1f83",
+    "score": 0,
+    "createdAt": "2026-06-02T16:22:27.16681792+08:00",
+    "updatedAt": "2026-06-02T16:22:27.16681792+08:00"
+  },
+  "p2003722": {
+    "username": "p2003722",
+    "passwordHash": "c5415f50bc2a7b782317290883adfb4fa75457df80ecd0ceb6d81100624b8e3b",
+    "score": 1,
+    "createdAt": "2026-06-04T22:00:55.810344273+08:00",
+    "updatedAt": "2026-06-04T22:02:59.464653978+08:00"
+  },
+  "t": {
+    "username": "t",
+    "passwordHash": "ca24f746c5aa3a9c3080577e1460c33e2673f90923d544c7cfa7d427a86392b0",
+    "score": 0,
+    "createdAt": "2026-06-02T16:22:23.400545309+08:00",
+    "updatedAt": "2026-06-02T16:22:23.406743639+08:00"
+  },
+  "花花": {
+    "username": "花花",
+    "passwordHash": "c8f5250707e1da911e4244d26e9b0879c2b045b7677ebebccc7631b9673a756c",
+    "score": 12,
+    "createdAt": "2026-06-02T16:24:34.267791699+08:00",
+    "updatedAt": "2026-06-03T15:22:52.802376116+08:00"
+  }
+}

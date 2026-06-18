@@ -1,180 +1,619 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>3D 治愈群岛 | 个人主页小游戏</title>
-  <meta name="description" content="欢迎来到我的 3D 治愈群岛个人主页。在这里，你可以控制小角色在浮空岛屿间游览，探索我的项目、技能以及游玩经典的21点街机游戏！">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css">
-  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
-</head>
-<body style="background: #0f1115; overflow: hidden; margin: 0; width: 100%; height: 100%;">
-  
-  <!-- 3D 游戏子视口 iframe (同源，用于地图多页面加载) -->
-  <iframe id="game-frame" src="./lobby.html" style="width: 100%; height: 100%; border: none; background: #0f1115; position: absolute; top: 0; left: 0; z-index: 1;"></iframe>
 
-  <!-- ==================== 外层常驻 HUD 与控制面板 (z-index 提到最前，且 pointer-events 为 none 防止阻挡视角旋转) ==================== -->
-  
-  <div style="position: absolute; inset: 0; z-index: 10; pointer-events: none; width: 100%; height: 100%;">
-    
-    <header class="hud-header">
-      <!-- SSO 统一登录/用户状态小部件 -->
-      <div id="sso-profile-container" class="sso-profile-bar">
-        <!-- 未登录：仅显示 person 图标 -->
-        <button id="sso-login-btn" class="sso-login-btn" style="display: none;" title="打开侧边栏">
-          <iconify-icon icon="lucide:user" style="font-size: 20px; display: flex;"></iconify-icon>
+<head>
+    <script src="Sakura.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="Sunflower, Sunflower613, 桑芬, 个人网站, 个人主页">
+    <meta name="description" content="Sunflower的个人网站">
+    <title>Sunflower</title>
+    <!-- 引入 Iconify Web Component 用于矢量图标 -->
+    <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+    <link rel="icon" href="images/sunflower.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: url(images/p2.jpg) no-repeat 60%/cover fixed;
+            font-family: 'KaiTi', '楷体', 'Microsoft YaHei', '微软雅黑', 'Arial', 'sans-serif';
+            color: #fff;
+            overscroll-behavior: none;
+        }
+        header{
+            height: 50vh;
+            line-height: 50px;
+        }
+        header,main {
+            padding: 5%;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+        .title {
+            font-size: 50px;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            color: #ffffff;
+            text-shadow: 0 0 5px #fff, 0 0 20px #c55daf;
+        }
+        a {
+            text-decoration: none;
+            color: #fff;
+        }
+        nav,p,.title { 
+            margin-top: 30px;
+        }
+        nav{
+            display: flex;
+            white-space: nowrap;
+        }
+        nav>a,p {
+            display: inline-block;
+            margin-right: 20px;
+            font-weight: bold;
+            color: #ffd1f0;
+            text-shadow: 0 0 5px #fff, 0 0 20px #d33967;
+        }
+
+        .box {
+            background: linear-gradient(#fff2, transparent);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 15px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            border-radius: 10px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .game-button {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            border-radius: 20%;
+            border: 1px solid white;
+            margin: 10px 10px 20px;
+            background: gray no-repeat center/cover;
+            transition: transform 0.2s;
+        }
+        .game-button:hover {
+            transform: scale(1.1);
+        }
+        .game-button span {
+            position: relative;
+            top: 50px;
+            white-space: nowrap;
+            display: inline-block;
+            font-family: 'Microsoft YaHei', sans-serif;
+            font-size: 13px;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+
+        h3 {
+            color: #bababa;
+            margin-bottom: 5px;
+        }
+
+        /* 3D mode toggle button */
+        .mode-3d-btn {
+            width: 200px;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+            margin-right: auto;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 30px;
+            color: #fff;
+            font-weight: 600;
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: system-ui, -apple-system, sans-serif;
+            animation: float-btn 3s ease-in-out infinite;
+        }
+        .mode-3d-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            animation-play-state: paused;
+            transform: translateY(-4px) scale(1.03);
+        }
+        .mode-3d-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        @keyframes float-btn {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        /* SSO 登录/用户浮窗样式 */
+        .sso-profile-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 6px 14px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+        .sso-profile-bar:hover {
+            background: rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+        .sso-login-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            background: none;
+            border: none;
+            outline: none;
+            font-size: 13px;
+            transition: opacity 0.2s ease;
+        }
+        .sso-login-btn:hover {
+            opacity: 0.85;
+        }
+        .sso-user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sso-avatar {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            object-fit: cover;
+        }
+        .sso-username {
+            font-weight: 600;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .sso-logout-btn {
+            cursor: pointer;
+            color: #ffb3ba;
+            font-size: 11px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 1px 6px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .sso-logout-btn:hover {
+            background: rgba(255, 107, 129, 0.25);
+            color: #ff6b81;
+            border-color: rgba(255, 107, 129, 0.4);
+        }
+
+    </style>
+</head>
+
+<body>
+    <!-- SSO 统一登录/用户状态小部件 (2D 主页隐藏登录按钮，防止影响美观) -->
+    <div id="sso-profile-container" class="sso-profile-bar" style="display: none !important;">
+        <button id="sso-login-btn" class="sso-login-btn" style="display: none;">
+            <iconify-icon icon="lucide:key-round" style="margin-right: 4px; vertical-align: middle; font-size: 14px; display: inline-flex;"></iconify-icon><span>SSO 登录</span>
         </button>
-        <!-- 已登录：显示头像，点击触发侧边栏 -->
-        <button id="sso-user-info" class="sso-user-info" style="display: none; border: none; background: none; outline: none; padding: 0; cursor: pointer; width: 100%; height: 100%;" title="打开侧边栏">
-          <div class="sso-avatar-wrapper" title="打开侧边栏">
+        <div id="sso-user-info" class="sso-user-info" style="display: none;">
             <img id="sso-avatar" class="sso-avatar" src="" alt="头像">
-          </div>
-        </button>
-      </div>
+            <span id="sso-username" class="sso-username"></span>
+            <button id="sso-logout-btn" class="sso-logout-btn">退出</button>
+        </div>
+    </div>
+    
+    <header>
+        <h1 class="title">Sunflower</h1>
+        <nav>
+        <a href="javascript:alert('大三学生一枚啦~')">个人简介</a>
+        <a href="class.html" title="课表">我的课表</a>
+        <a href="album.html">我的相册</a>
+        <a href="javascript:confirm('2963707761@qq.com')">和我联系</a>
+        </nav>
+        <p>欢迎光临我的个人站点</p>
+       
     </header>
 
-    <!-- 移动端虚拟摇杆与动作按钮 -->
-    <div class="mobile-controls" id="mobile-controls">
-      <div class="joystick-wrapper">
-        <div id="joystick-zone"></div>
-      </div>
-      <div class="action-buttons">
-        <button class="action-btn" id="btn-interact" style="display: none;" aria-label="交互" title="交互">
-          <iconify-icon icon="lucide:sparkles" style="font-size: 22px; display: flex;"></iconify-icon>
-        </button>
-        <button class="action-btn" id="btn-pk-attack" style="display: none;" aria-label="攻击" title="攻击">
-          <iconify-icon icon="lucide:swords" style="font-size: 24px; display: flex;"></iconify-icon>
-        </button>
-        <button class="action-btn" id="btn-run" aria-label="加速" title="加速">
-          <iconify-icon icon="lucide:zap" style="font-size: 22px; display: flex;"></iconify-icon>
-        </button>
-        <button class="action-btn" id="btn-jump" aria-label="跳跃" title="跳跃">
-          <iconify-icon icon="lucide:chevrons-up" style="font-size: 26px; display: flex;"></iconify-icon>
-        </button>
-      </div>
-    </div>
-
-    <!-- 侧边栏遮罩层 -->
-    <div id="sidebar-overlay" class="sidebar-overlay"></div>
-
-    <!-- 原神风格侧边栏 -->
-    <div id="sso-sidebar" class="sso-sidebar">
-      <!-- 左侧系统迷你侧边栏 (竖向) -->
-      <div class="sidebar-aside">
-        <!-- 音量开关 -->
-        <button id="sidebar-audio-btn" class="aside-btn" title="背景音乐">
-          <iconify-icon id="sidebar-audio-icon" icon="lucide:volume-x" style="font-size: 20px; display: flex;"></iconify-icon>
-        </button>
-        <!-- 脱离卡死 -->
-        <button id="sidebar-stuck-btn" class="aside-btn" title="脱离卡死">
-          <iconify-icon icon="lucide:life-buoy" style="font-size: 20px; display: flex;"></iconify-icon>
-        </button>
-        <div style="flex: 1;"></div>
-        <!-- 返回 2D 主页 -->
-        <button id="sidebar-back-2d-btn" class="aside-btn" title="返回2D主页">
-          <iconify-icon icon="lucide:undo-2" style="font-size: 20px; display: flex;"></iconify-icon>
-        </button>
-        <!-- 退出登录 -->
-        <button id="sidebar-logout-btn" class="aside-btn" title="退出登录" style="display: none;">
-          <iconify-icon icon="lucide:power" style="font-size: 20px; display: flex;"></iconify-icon>
-        </button>
-      </div>
-
-      <!-- 右侧内容面板 -->
-      <div class="sidebar-main">
-        <button class="sidebar-close" id="sidebar-close-btn">&times;</button>
-        
-        <div class="sidebar-user-section">
-          <img id="sidebar-avatar" class="sidebar-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M12 14c-4 0-6 2-6 4v2h12v-2c0-2-2-4-6-4z'/%3E%3C/svg%3E" alt="头像">
-          <div class="sidebar-user-meta">
-            <div class="user-meta-top">
-              <h3 id="sidebar-username">未登录</h3>
-              <button id="sidebar-login-btn" class="sso-inline-login-btn">立即登录</button>
-            </div>
-            <span id="sidebar-user-status" class="status-badge">游客</span>
-          </div>
+    <main>
+        <h3>韭菜盒子</h3>
+        <div class="box">
+            <!-- Fallback static buttons, will be overwritten by siteConfig dynamically -->
+            <a class="game-button" href="./games/paint/paint2.html" style="background-image: url('./games/paint/point.png');">
+                <span>调色盘</span>
+            </a>
+            <a class="game-button" href="./games/divine/xiaoLiuRen.html" style="background-image: url('./games/divine/img/hand.jpg');">
+                <span>小六壬</span>
+            </a>
+            <a class="game-button" href="./games/particles/magicParticles.html" style="background-image: url('./games/particles/particles.png');">
+                <span>随心粒子</span>
+            </a>
+            <a class="game-button" href="./games/particles/firework.html" style="background-image: url('./games/particles/firework.png');">
+                <span>烟花</span>
+            </a>
+            <a class="game-button" href="./games/animation/shang.html" style="background-image: url('./games/animation/huang.jpg');">
+                <span>赏</span>
+            </a>
+            <a class="game-button" href="./games/color/colorTrasfer.html" style="background-image: url('./games/color/color.png');background-color: white;">
+                <span>#color</span>
+            </a>
+            <a class="game-button" href="./games/lottery/prizeDraw.html" style="background-image: url('./games/lottery/wheel.png');">
+                <span>抽奖</span>
+            </a>
+            <a class="game-button" href="./games/watermelon/watermelon.html" style="background-image: url('./games/watermelon/watermelon.png');background-color: green;">
+                <span>合西瓜</span>
+            </a>
+            <a class="game-button" href="./games/toilet/cal-toilet.html" style="background-image: url('./games/toilet/toilet.jpg');">
+                <span>沉淀</span>
+            </a>
+            <a class="game-button" href="./games/21dian/index.html" style="background-color: #146b3a; background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22white%22%20stroke%3D%22white%22%20stroke-width%3D%220.5%22%3E%3Cpath%20d%3D%22M12%2018v4%22/%3E%3Cpath%20d%3D%22M2%2014.499a5.5%205.5%200%200%200%209.591%203.675.6.6%200%200%201%20.818.001A5.5%205.5%200%200%200%2022%2014.5c0-2.29-1.5-4-3-5.5l-5.492-5.312a2%202%200%200%200-3-.02L5%208.999c-1.5%201.5-3%203.2-3%205.5%22/%3E%3C/svg%3E'); background-size: 28px 28px; background-repeat: no-repeat; background-position: center;">
+                <span>21点</span>
+            </a>
+            <a class="game-button" href="./note.html" style="background-color: #ffa726; background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M16%204h2a2%202%200%200%201%202%202%20v14a2%202%200%200%201-2%202H6a2%202%200%200%201-2-2V6a2%202%200%200%201%202-2h2%22%3E%3C/path%3E%3Crect%20x%3D%228%22%20y%3D%222%22%20width%3D%228%22%20height%3D%224%22%20rx%3D%221%22%20ry%3D%221%22%3E%3C/rect%3E%3Cline%20x1%3D%229%22%20y1%3D%2212%22%20x2%3D%2215%22%20y2%3D%2212%22%3E%3C/line%3E%3Cline%20x1%3D%229%22%20y1%3D%2216%22%20x2%3D%2215%22%20y2%3D%2216%22%3E%3C/line%3E%3C/svg%3E');">
+                <span>备忘清单</span>
+            </a>
         </div>
-        
-        <div class="sidebar-content scrollable">
-          <!-- 1. 地图选择 -->
-          <div class="sidebar-item expandable" id="sidebar-map-btn" title="地图选择">
-            <div class="sidebar-item-icon">
-              <iconify-icon icon="lucide:map" style="font-size: 24px; display: flex;"></iconify-icon>
-            </div>
-            <span>地图选择</span>
-            <div class="sidebar-submenu" id="sidebar-map-submenu">
-              <div class="submenu-option" id="btn-map-island">治愈群岛</div>
-              <div class="submenu-option" id="btn-map-house">温馨小屋</div>
-            </div>
-          </div>
+         <a id="btn-mode-3d" class="mode-3d-btn" href="#">
+          <span class="btn-text">3D 场景 -></span>
+        </a>
+    </main>
 
-          <div class="sidebar-grid">
-            <!-- 2. 排行榜 -->
-            <button class="sidebar-item" id="btn-sidebar-leaderboard" title="排行榜">
-              <iconify-icon icon="lucide:trophy" style="font-size: 20px; display: flex;"></iconify-icon>
-              <span>排行榜</span>
-            </button>
+    <script>
+        window.onload = startSakura;
 
-            <!-- 3. 游戏任务 -->
-            <button class="sidebar-item" id="btn-sidebar-tasks" title="游戏任务">
-              <iconify-icon icon="lucide:clipboard-list" style="font-size: 20px; display: flex;"></iconify-icon>
-              <span>游戏任务</span>
-            </button>
+        // 禁用移动端左滑/右滑返回/前进手势 (防止边缘滑动触发浏览器历史记录导航)
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches && e.touches.length > 0) {
+                const x = e.touches[0].clientX;
+                // 当触摸起点在屏幕左右边缘 40px 以内时，标记为可能触发导航的滑动
+                if (x < 40 || x > window.innerWidth - 40) {
+                    e.currentTarget.preventSwipeNavigation = true;
+                } else {
+                    e.currentTarget.preventSwipeNavigation = false;
+                }
+            }
+        }, { passive: true });
 
-            <!-- 4. 我的农田 -->
-            <button class="sidebar-item" id="btn-sidebar-farm" title="我的农田">
-              <iconify-icon icon="lucide:sprout" style="font-size: 20px; display: flex;"></iconify-icon>
-              <span>我的农田</span>
-            </button>
+        document.addEventListener('touchmove', (e) => {
+            if (e.currentTarget.preventSwipeNavigation) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
 
-            <!-- 5. PK大厅 -->
-            <button class="sidebar-item" id="btn-sidebar-pk" title="PK大厅">
-              <iconify-icon icon="lucide:swords" style="font-size: 20px; display: flex;"></iconify-icon>
-              <span>PK大厅</span>
-            </button>
+    <!-- Dynamic Site Configuration Integration -->
+    <script type="module">
+        import { siteConfig } from './site-config.js?v=3';
 
-            <!-- 6. 我的背包 -->
-            <button class="sidebar-item" id="btn-sidebar-bag" title="我的背包">
-              <iconify-icon icon="lucide:briefcase" style="font-size: 20px; display: flex;"></iconify-icon>
-              <span>我的背包</span>
-            </button>
-
-            <!-- 7. 我的家园 -->
-            <button class="sidebar-item" id="btn-sidebar-home" title="我的家园">
-              <iconify-icon icon="lucide:home" style="font-size: 20px; display: flex;"></iconify-icon>
-              <span>我的家园</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- 引入外壳常驻脚本 -->
-  <script type="module" src="./src/ui/app-shell.js"></script>
-
-  <!-- 禁用移动端边缘滑动返回/前进手势 -->
-  <script>
-    document.addEventListener('touchstart', (e) => {
-      if (e.touches && e.touches.length > 0) {
-        const x = e.touches[0].clientX;
-        if (x < 40 || x > window.innerWidth - 40) {
-          e.currentTarget.preventSwipeNavigation = true;
-        } else {
-          e.currentTarget.preventSwipeNavigation = false;
+        // 1. Dynamic Mode-3D navigation helper
+        const btn3d = document.getElementById('btn-mode-3d');
+        if (btn3d) {
+            btn3d.addEventListener('click', (e) => {
+                e.preventDefault();
+                const devPort = 3000;
+                // If local development, redirect to local dev port on the same hostname. Otherwise, redirect to build path
+                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const targetUrl = isLocal ? `http://${window.location.hostname}:${devPort}/` : './3d-home/dist/index.html';
+                window.location.href = targetUrl;
+            });
         }
-      }
-    }, { passive: true });
 
-    document.addEventListener('touchmove', (e) => {
-      if (e.currentTarget.preventSwipeNavigation) {
-        e.preventDefault();
-      }
-    }, { passive: false });
-  </script>
+        // Adjust toggle button theme based on active siteConfig theme
+        if (siteConfig.activeTheme === 'christmas') {
+            const btnIcon = btn3d.querySelector('.btn-icon');
+            const btnText = btn3d.querySelector('.btn-text');
+            if (btnIcon) btnIcon.textContent = '❄️';
+            if (btnText) btnText.textContent = '3D 圣诞雪景';
+        }
+
+        // 2. Hydrate Developer Info if available
+        if (siteConfig.developer) {
+            const dev = siteConfig.developer;
+            // Update page description and greeting
+            const subtitleEl = document.querySelector('header p');
+            if (subtitleEl) subtitleEl.textContent = dev.bio.split('。')[0] + '。';
+            
+            // Map dynamic contacts
+            const nav = document.querySelector('header nav');
+            if (nav && dev.contacts) {
+                nav.innerHTML = '';
+                dev.contacts.forEach(contact => {
+                    const a = document.createElement('a');
+                    a.textContent = contact.name;
+                    if (contact.action === 'link') {
+                        a.href = contact.value;
+                        if (contact.name === '我的课表') {
+                            a.title = '课表';
+                        } else if (contact.name === '备忘清单') {
+                            a.title = '备忘清单';
+                        }
+                    } else if (contact.action === 'alert') {
+                        a.href = '#';
+                        a.onclick = (e) => {
+                            e.preventDefault();
+                            alert(contact.value);
+                        };
+                    } else if (contact.action === 'confirm') {
+                        a.href = '#';
+                        a.onclick = (e) => {
+                            e.preventDefault();
+                            confirm(contact.value);
+                        };
+                    }
+                    nav.appendChild(a);
+                });
+            }
+        }
+
+        // 3. Hydrate Games Box ("韭菜盒子") dynamically
+        const boxContainer = document.querySelector('.box');
+        if (boxContainer && siteConfig.games) {
+            // Clear current list to rebuild from site-config
+            boxContainer.innerHTML = '';
+            siteConfig.games.forEach(game => {
+                const a = document.createElement('a');
+                a.className = 'game-button';
+                if (game.id === '21dian') {
+                    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                    a.href = isLocal ? `http://${window.location.hostname}:8080/games/21dian/index.html` : game.path;
+                } else {
+                    a.href = game.path;
+                }
+                a.style.backgroundImage = `url('${game.icon}')`;
+                if (game.icon.startsWith('data:image/svg+xml')) {
+                    a.style.backgroundSize = '28px 28px';
+                }
+                if (game.color) {
+                    a.style.backgroundColor = game.color;
+                }
+                
+                const span = document.createElement('span');
+                span.textContent = game.name;
+                a.appendChild(span);
+                
+                // 点击时自动携带当前登录态（如果主页已登录）
+                a.addEventListener('click', (e) => {
+                    const token = localStorage.getItem('sso_access_token');
+                    const user = localStorage.getItem('sso_user');
+                    if (token && user) {
+                        e.preventDefault();
+                        try {
+                            const urlObj = new URL(a.href, window.location.href);
+                            urlObj.searchParams.set('sso_access_token', token);
+                            urlObj.searchParams.set('sso_user', user);
+                            window.location.href = urlObj.toString();
+                        } catch (err) {
+                            window.location.href = a.href;
+                        }
+                    }
+                });
+
+                boxContainer.appendChild(a);
+            });
+        }
+
+        // ==========================================
+        // SSO 统一登录整合模块
+        // ==========================================
+        
+        // 配置本地 API 网关地址 (对接 game-api 服务)
+        const apiHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+          ? `http://${window.location.hostname}:3001`
+          : 'http://111.229.107.228:3001';
+
+        // 自动检查 URL Query 中的 sso_return_url 中转传参
+        const initUrlParams = new URLSearchParams(window.location.search);
+        const queryReturnUrl = initUrlParams.get('sso_return_url');
+        if (queryReturnUrl) {
+          localStorage.setItem('sso_return_url', queryReturnUrl);
+          const token = localStorage.getItem('sso_access_token');
+          if (!token) {
+            // 如果没有登录，自动触发 SSO 重定向，免去用户手动点击
+            triggerAutoSSOLogin();
+          } else {
+            // 如果已经登录，直接跳回 returnUrl 并在跨域时带上 token 信息！
+            localStorage.removeItem('sso_return_url');
+            try {
+              const urlObj = new URL(queryReturnUrl, window.location.href);
+              const user = localStorage.getItem('sso_user');
+              urlObj.searchParams.set('sso_access_token', token);
+              if (user) {
+                urlObj.searchParams.set('sso_user', user);
+              }
+              window.location.href = urlObj.toString();
+            } catch (e) {
+              window.location.href = queryReturnUrl;
+            }
+          }
+        }
+
+        async function triggerAutoSSOLogin() {
+          try {
+            const res = await fetch(`${apiHost}/api/auth/config`);
+            const config = await res.json();
+            if (config && config.success) {
+              const state = Math.random().toString(36).substring(2, 15);
+              localStorage.setItem('sso_oauth_state', state);
+              // 动态生成匹配当前域名和端口的回调地址
+              const currentRedirectUri = window.location.origin + window.location.pathname;
+              const authUrl = `${config.authorize_url}?client_id=${config.client_id}&redirect_uri=${encodeURIComponent(currentRedirectUri)}&response_type=code&scope=openid profile email&state=${state}`;
+              window.location.href = authUrl;
+            }
+          } catch (err) {
+            console.error('自动 SSO 登录中转失败:', err);
+          }
+        }
+
+        const ssoLoginBtn = document.getElementById('sso-login-btn');
+        const ssoUserInfo = document.getElementById('sso-user-info');
+        const ssoAvatar = document.getElementById('sso-avatar');
+        const ssoUsername = document.getElementById('sso-username');
+        const ssoLogoutBtn = document.getElementById('sso-logout-btn');
+
+        // 初始化/加载用户登录状态
+        function initSSOState() {
+          const token = localStorage.getItem('sso_access_token');
+          const userStr = localStorage.getItem('sso_user');
+
+          if (token && userStr) {
+            const user = JSON.parse(userStr);
+            if (ssoLoginBtn) ssoLoginBtn.style.display = 'none';
+            if (ssoUserInfo) ssoUserInfo.style.display = 'flex';
+            if (ssoUsername) ssoUsername.textContent = user.username;
+            if (ssoAvatar) ssoAvatar.src = user.avatar || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"%3E%3Ccircle cx="12" cy="8" r="4"/%3E%3Cpath d="M12 14c-4 0-6 2-6 4v2h12v-2c0-2-2-4-6-4z"/%3E%3C/svg%3E';
+          } else {
+            if (ssoLoginBtn) ssoLoginBtn.style.display = 'flex';
+            if (ssoUserInfo) ssoUserInfo.style.display = 'none';
+          }
+        }
+
+        // 处理 SSO 登录重定向流程
+        if (ssoLoginBtn) {
+          ssoLoginBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+              // 从后端 API 动态拉取配置，避免前端硬编码 Client ID
+              const res = await fetch(`${apiHost}/api/auth/config`);
+              const config = await res.json();
+              if (config && config.success) {
+                const state = Math.random().toString(36).substring(2, 15);
+                localStorage.setItem('sso_oauth_state', state);
+
+                // 重定向到 SSO 授权页面，动态使用当前主页地址作为回调
+                const currentRedirectUri = window.location.origin + window.location.pathname;
+                const authUrl = `${config.authorize_url}?client_id=${config.client_id}&redirect_uri=${encodeURIComponent(currentRedirectUri)}&response_type=code&scope=openid profile email&state=${state}`;
+                window.location.href = authUrl;
+              } else {
+                alert('无法获取 SSO 授权配置，请检查后端 API 服务！');
+              }
+            } catch (err) {
+              console.error('获取 SSO 配置失败:', err);
+              alert('连接 API 服务失败，请确保端口 3001 的 game-api 服务已启动！');
+            }
+          });
+        }
+
+        // 处理登出
+        if (ssoLogoutBtn) {
+          ssoLogoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('sso_access_token');
+            localStorage.removeItem('sso_user');
+            
+            initSSOState();
+            window.location.reload();
+          });
+        }
+
+        // 处理 OAuth 回调逻辑（检查 URL 中是否存在 code 和 state）
+        async function handleOAuthCallback() {
+          const urlParams = new URLSearchParams(window.location.search);
+          const code = urlParams.get('code');
+          const state = urlParams.get('state');
+
+          if (code) {
+            const savedState = localStorage.getItem('sso_oauth_state');
+            // 安全性校验 (防止 CSRF)
+            if (state && savedState && state !== savedState) {
+              console.warn('OAuth state mismatch!');
+              return;
+            }
+            localStorage.removeItem('sso_oauth_state');
+
+            // 显示加载状态
+            if (ssoLoginBtn) ssoLoginBtn.innerHTML = '<span>⏳ 登录中...</span>';
+
+            try {
+              // 换取 Token 时的 redirect_uri 必须和第一阶段完全对齐一致
+              const currentRedirectUri = window.location.origin + window.location.pathname;
+              // 调用本地 API 后端换取 Token
+              const res = await fetch(`${apiHost}/api/auth/callback`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                  code,
+                  redirect_uri: currentRedirectUri
+                })
+              });
+
+              const result = await res.json();
+              if (result && result.success) {
+                // 保存 Token 和用户信息到本地
+                localStorage.setItem('sso_access_token', result.access_token);
+                localStorage.setItem('sso_user', JSON.stringify(result.user));
+                
+                // 页面回弹清理 Query
+                urlParams.delete('code');
+                urlParams.delete('state');
+                const cleanQuery = urlParams.toString();
+                const cleanUrl = window.location.pathname + (cleanQuery ? '?' + cleanQuery : '') + window.location.hash;
+                window.history.replaceState({}, document.title, cleanUrl);
+
+                initSSOState();
+                 const returnUrl = localStorage.getItem('sso_return_url');
+                 if (returnUrl) {
+                   localStorage.removeItem('sso_return_url');
+                   try {
+                     const urlObj = new URL(returnUrl, window.location.href);
+                     const isCrossDomain = urlObj.host !== window.location.host;
+                     if (isCrossDomain) {
+                       const token = localStorage.getItem('sso_access_token');
+                       const user = localStorage.getItem('sso_user');
+                       if (token && user) {
+                         urlObj.searchParams.set('sso_access_token', token);
+                         urlObj.searchParams.set('sso_user', user);
+                       }
+                     }
+                     window.location.href = urlObj.toString();
+                   } catch (e) {
+                     window.location.href = returnUrl;
+                   }
+                 } else {
+                   window.location.reload();
+                 }
+              } else {
+                alert('OAuth 登录失败: ' + (result.message || '未知错误'));
+                initSSOState();
+              }
+            } catch (err) {
+              console.error('SSO 换取 Token 失败:', err);
+              alert('SSO 登录授权码交换失败，请确保 game-api 后端服务已启动！');
+              initSSOState();
+            }
+          } else {
+            initSSOState();
+          }
+        }
+
+        // 启动执行
+        handleOAuthCallback();
+    </script>
 </body>
 </html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的课表</title>
+    <style>
+        body {
+            background-image: url(images/aaaphi.jpg);
+            background-size: cover;
+            align-items: center;
+        }
+        
+        table {
+            border: 1px solid #36565e;
+            opacity: 0.9;
+            
+            margin-right: auto;
+            margin-left: auto;
+        }
+        
+        td {
+            font-weight: bolder;
+            text-align: center;
+            border: 1px solid #77bfe9;
+            width: 150px;
+            height: 10%;
+            word-break: break-all;
+            color: rgb(226, 214, 245);
+            text-shadow: 0 0 5px rgb(82, 187, 219), 0 0 20px #053b4b;
+        }
+        
+        .biaoti {
+            font-size: 40px;
+            height: 50px;
+            font-family: "楷体";
+            color: #ffffff;
+            text-shadow: 0 0 5px #fff, 0 0 20px #39afd3;
+        }
+        
+        .fu {
+            position: fixed;
+            float: right;
+            right: 1rem;
+            bottom: 1rem;
+            height: 10%;
+            max-width: 200px;
+            aspect-ratio: 1/1;
+        }
+        
+    </style>
+</head>
+
+<body>
+    
+    <table>
+        <tr>
+            <td colspan="8">
+                <div class="biaoti">第3周</div>
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>周一</td>
+            <td>周二</td>
+            <td>周三</td>
+            <td>周四</td>
+            <td>周五</td>
+            <td>周六</td>
+            <td>周日</td>
+        </tr>
+        <tr>
+            <td>
+                <div>1</div>08:00-08:40</td>
+            <td></td>
+            <td rowspan="2" bgcolor="#66cc99">离散数学</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <div>2</div>08:50-09:30</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <div>3</div>09:40-10:20</td>
+            <td rowspan="3" bgcolor="#996666">计算机组成与结构</td>
+            <td rowspan="3" bgcolor="#99cccc">概率与数理统计</td>
+            <td rowspan="3" bgcolor="#9966cc">数据库原理与应用</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <div>4</div>10:30-11:10</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <div>5</div>11:20-12:00</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td colspan="8"></td>
+        </tr>
+        <tr>
+            <td>
+                <div>6</div>14:00-14:40</td>
+            <td rowspan="2" bgcolor="#ff99cc">马克思主义基本原理</td>
+            <td rowspan="3" bgcolor="#666699">web前端开发技术</td>
+            <td rowspan="2" bgcolor="#cc6666">考研英语</td>
+            <td rowspan="2" bgcolor="#66cc99">离散数学</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <div>7</div>14:50-15:30</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <div>8</div>15:40-16:20</td>
+            <td></td>
+            <td rowspan="2" bgcolor="#339999">大学体育</td>
+            <td rowspan="2" bgcolor="#6699cc">面向对象设计Java</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <div>9</div>16:30-17:10</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td colspan="8"></td>
+        </tr>
+        <tr>
+            <td>
+                <div>10</div>18:00-18:40</td>
+            <td rowspan="2" bgcolor="#6699cc">面向对象设计Java</td>
+            <td rowspan="3" bgcolor="#cc6699">观赏鱼养殖与鉴赏</td>
+            <td rowspan="3" bgcolor="#ffcc99">3dsmax三维动画建模</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <div>11</div>18:50-19:30</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <div>12</div>19:40-20:20</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <div>13</div>20:30-21:10</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+    
+        <a class="fu" href="index.html"><img src="images/phigros.png" alt="" title="返回主页" width="100%" height="100%"></a>
+    
+
+</body>
+
+</html>

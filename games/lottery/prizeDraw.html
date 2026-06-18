@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线抽奖转盘</title>
+    <style>
+        body {
+            background: #f6f8fa;
+            font-family: 'Segoe UI', 'PingFang SC', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            margin-top: 40px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px 24px 24px 24px;
+            width: 360px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .input-area {
+            width: 100%;
+            margin-bottom: 24px;
+        }
+        .input-area input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #d0d7de;
+            font-size: 16px;
+        }
+        .wheel {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin-bottom: 24px;
+        }
+        .arrow {
+            position: absolute;
+            top: 0px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 32px solid #ff9800;
+        }
+        .spin-btn {
+            background: linear-gradient(90deg,#ff9800,#ffb74d);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 32px;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(255,152,0,0.08);
+            transition: background 0.2s;
+        }
+        .spin-btn:active {
+            background: linear-gradient(90deg,#ffb74d,#ff9800);
+        }
+        .result {
+            margin-top: 18px;
+            font-size: 20px;
+            color: #43a047;
+            font-weight: bold;
+            min-height: 28px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>在线抽奖转盘</h2>
+        <div class="input-area">
+            <label style="font-size:15px;color:#666;">快速生成奖项：</label>
+            <input id="numInput" type="number" min="2" max="100" value="4" style="width:80px;margin-bottom:10px;">
+            <button id="generateBtn" style="padding: 6px 12px; border: none; border-radius: 4px; background: #ff9800; color: #fff; cursor: pointer;">生成</button>
+            <textarea id="itemsInput" placeholder="输入奖项，逗号分隔，如：一等奖,二等奖,三等奖,谢谢参与" style="width:94%;min-height:38px;resize:vertical;font-size:16px;padding:10px;border-radius:8px;border:1px solid #d0d7de;margin-top:8px;"></textarea>
+            <a href="?title=今天中午吃什么&prize=咖喱牛肉%2C炸鸡*2%2C酸菜鱼*3%2C杂酱面*4，烤肉饭*2" style="font-size: 12px; color: #007bff; text-decoration: underline; cursor: pointer;margin-right: 4px;">今天吃什么?</a>
+            
+            <button id="clearBtn" style="padding: 6px 12px; border: 1px solid #ff9800; border-radius: 4px; background: #fff; color: #ff9800; cursor: pointer;">清空</button>
+            <button id="confirmBtn" style="padding: 6px 12px; border: none; border-radius: 4px; background: #ff9800; color: #fff; cursor: pointer;">确定</button>
+        </div>
+        <div class="wheel" id="wheel">
+            <div class="arrow"></div>
+            <canvas id="wheelCanvas" width="280" height="280"></canvas>
+        </div>
+        <button class="spin-btn" id="spinBtn">抽奖</button>
+        <div class="result" id="result"></div>
+    </div>
+    <script>
+        function getTitleFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('title') || '在线抽奖转盘';
+        }
+        // 设置标题和h2
+        document.addEventListener('DOMContentLoaded', function() {
+            const customTitle = getTitleFromUrl();
+            document.title = customTitle;
+            const h2 = document.querySelector('.container h2');
+            if (h2) h2.textContent = customTitle;
+        });
+        function getPrizeFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('prize');
+        }
+        function setPrizeToUrl(prizeStr) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('prize', prizeStr);
+            window.history.replaceState({}, '', url);
+        }
+        function splitItems(str) {
+            // 支持逗号、换行、全角逗号分割，并识别 *数字 权重
+            const arr = str.split(/,|，|\n|\r/).map(s => s.trim()).filter(Boolean);
+            let result = [];
+            arr.forEach(item => {
+                const match = item.match(/^(.*?)(?:\*(\d+))?$/);
+                if (match) {
+                    const name = match[1].trim();
+                    const count = match[2] ? parseInt(match[2], 10) : 1;
+                    for (let i = 0; i < count; i++) {
+                        result.push(name);
+                    }
+                }
+            });
+            // 洗牌打乱顺序
+            for (let i = result.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [result[i], result[j]] = [result[j], result[i]];
+            }
+            return result;
+        }
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spinBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const resultDiv = document.getElementById('result');
+        const itemsInput = document.getElementById('itemsInput');
+        const numInput = document.getElementById('numInput');
+        let items;
+        let angle = 0;
+        let spinning = false;
+        let targetAngle = 0;
+        let winnerIdx = 0;
+
+        // 初始化奖项内容
+        let initPrize = getPrizeFromUrl();
+        if (initPrize) {
+            itemsInput.value = initPrize;
+        } else {
+            itemsInput.value = '一等奖,二等奖*2,三等奖*3,谢谢参与*4';
+        }
+        items = splitItems(itemsInput.value);
+        numInput.value = items.length;
+
+        function drawWheel() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const n = items.length;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 120;
+            const colors = ["#ffecb3", "#ffe0b2", "#ffe082", "#ffd54f", "#fff9c4", "#ffe57f", "#fff176", "#ffd740"];
+            for (let i = 0; i < n; i++) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, angle + i * 2 * Math.PI / n, angle + (i + 1) * 2 * Math.PI / n);
+                ctx.closePath();
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                ctx.restore();
+                // 绘制奖项文字
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle + (i + 0.5) * 2 * Math.PI / n);
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillStyle = "#333";
+                ctx.font = "16px Segoe UI, PingFang SC";
+                ctx.fillText(items[i], radius * 0.65, 0);
+                ctx.restore();
+            }
+            // 绘制中心圆
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 38, 0, 2 * Math.PI);
+            ctx.fillStyle = "#ff9800";
+            ctx.fill();
+            ctx.font = "bold 18px Segoe UI, PingFang SC";
+            ctx.fillStyle = "#fff";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("抽奖", centerX, centerY);
+            ctx.restore();
+        }
+
+        function updateItems() {
+            items = splitItems(itemsInput.value);
+            angle = 0;
+            drawWheel();
+            resultDiv.textContent = '';
+            setPrizeToUrl(itemsInput.value);
+            numInput.value = items.length;
+        }
+        itemsInput.addEventListener('change', updateItems);
+        itemsInput.addEventListener('blur', updateItems);
+        itemsInput.addEventListener('keyup', e => { if (e.key === 'Enter') updateItems(); });
+
+        numInput.addEventListener('change', function() {
+            let n = parseInt(numInput.value);
+            if (isNaN(n) || n < 2) n = 2;
+            if (n > 100) n = 100;
+            let arr = [];
+            for (let i = 1; i <= n; i++) {
+                arr.push(i);
+            }
+            itemsInput.value = arr.join(',');
+            updateItems();
+        });
+
+        function clear() {
+            itemsInput.value = '';
+            updateItems();
+        }
+
+        function spin() {
+            if (spinning || items.length < 2) return;
+            spinning = true;
+            resultDiv.textContent = '';
+            winnerIdx = Math.floor(Math.random() * items.length);
+            // 让转盘多转几圈，最后停在中奖项
+            const baseAngle = 2 * Math.PI / items.length;
+            const stopAngle = (3 * Math.PI / 2) - (winnerIdx * baseAngle) - baseAngle / 2; // 指针在上方
+            targetAngle = angle + 8 * 2 * Math.PI + stopAngle - (angle % (2 * Math.PI));
+            const duration = 3200; // ms
+            const start = performance.now();
+            function animate(now) {
+                const elapsed = now - start;
+                if (elapsed < duration) {
+                    // ease out
+                    const progress = elapsed / duration;
+                    angle += (targetAngle - angle) * 0.08;
+                    drawWheel();
+                    requestAnimationFrame(animate);
+                } else {
+                    angle = targetAngle;
+                    drawWheel();
+                    spinning = false;
+                    resultDiv.textContent = `中奖：${items[winnerIdx]}`;
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+        spinBtn.addEventListener('click', spin);
+        clearBtn.addEventListener('click', clear);
+        drawWheel();
+    </script>
+</body>
+</html>

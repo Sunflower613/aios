@@ -1,0 +1,1139 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="待办清单, 备忘录, 任务管理, Tasklist, Sunflower" />
+  <meta name="description" content="Sunflower的个人待办清单，支持拖动排序、多种主题切换及本地存储。" />
+  <title>我的待办清单</title>
+  <link rel="icon" href="images/sunflower.ico" type="image/x-icon">
+  <style>
+    :root {
+      --radius-lg: 20px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow: 0 8px 30px rgb(0 0 0 / 0.08);
+      --shadow-hover: 0 12px 40px rgb(0 0 0 / 0.12);
+    }
+
+    /* Sunflower theme */
+    body.theme-sunflower {
+      --bg-gradient: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%);
+      --theme-primary: #d97706;
+      --theme-accent: #f59e0b;
+      --theme-accent-rgb: 245, 158, 11;
+      --theme-bg-muted: rgba(251, 191, 36, 0.1);
+      --card-bg: rgba(255, 255, 255, 0.78);
+      --text-primary: #78350f;
+      --text-muted: #b45309;
+      --text-light: #fefaf0;
+      --border-color: rgba(217, 119, 6, 0.15);
+      --item-bg-hover: rgba(255, 255, 255, 0.9);
+      --btn-primary-bg: #d97706;
+      --btn-primary-text: #ffffff;
+    }
+
+    /* Aurora Dark theme */
+    body.theme-aurora {
+      --bg-gradient: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%);
+      --theme-primary: #a78bfa;
+      --theme-accent: #c084fc;
+      --theme-accent-rgb: 192, 132, 252;
+      --theme-bg-muted: rgba(167, 139, 250, 0.15);
+      --card-bg: rgba(15, 23, 42, 0.65);
+      --text-primary: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-light: #1e293b;
+      --border-color: rgba(167, 139, 250, 0.2);
+      --item-bg-hover: rgba(30, 41, 59, 0.7);
+      --btn-primary-bg: #8b5cf6;
+      --btn-primary-text: #ffffff;
+    }
+
+    /* Beach theme */
+    body.theme-beach {
+      --bg-gradient: linear-gradient(135deg, #e0f7fa 0%, #e0f2fe 50%, #bae6fd 100%);
+      --theme-primary: #0284c7;
+      --theme-accent: #0ea5e9;
+      --theme-accent-rgb: 14, 165, 233;
+      --theme-bg-muted: rgba(14, 165, 233, 0.1);
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --text-primary: #0f172a;
+      --text-muted: #0369a1;
+      --text-light: #f0f9ff;
+      --border-color: rgba(14, 165, 233, 0.15);
+      --item-bg-hover: rgba(255, 255, 255, 0.9);
+      --btn-primary-bg: #0284c7;
+      --btn-primary-text: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 40px 16px;
+      transition: background 0.5s ease;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Back to Home Button */
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      margin-bottom: 24px;
+      width: fit-content;
+    }
+
+    .btn-back:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--theme-accent);
+      color: var(--theme-accent);
+    }
+
+    /* Header style */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      gap: 20px;
+    }
+
+    .header-title-area h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .header-title-area p {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Theme Selector */
+    .theme-selector {
+      display: flex;
+      gap: 8px;
+      background: var(--card-bg);
+      padding: 6px;
+      border-radius: 30px;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+    }
+
+    .theme-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .theme-btn:hover {
+      transform: scale(1.15);
+    }
+
+    .theme-btn.active {
+      border-color: var(--text-primary);
+      transform: scale(1.1);
+    }
+
+    .theme-btn.sunflower {
+      background: linear-gradient(135deg, #fcd34d, #f59e0b);
+    }
+
+    .theme-btn.aurora {
+      background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+    }
+
+    .theme-btn.beach {
+      background: linear-gradient(135deg, #a5f3fc, #0ea5e9);
+    }
+
+    /* Input area */
+    .input-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .new-input-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 4px 6px 4px 16px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+
+    .new-input-wrapper:focus-within {
+      border-color: var(--theme-accent);
+      box-shadow: 0 0 0 3px rgba(var(--theme-accent-rgb), 0.2);
+      background: var(--item-bg-hover);
+    }
+
+    .new-input-wrapper input {
+      flex: 1;
+      border: 0;
+      outline: none;
+      font-size: 16px;
+      background: transparent;
+      color: var(--text-primary);
+      height: 48px;
+      font-family: inherit;
+    }
+
+    .new-input-wrapper input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
+
+    .btn-add {
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+      border: 0;
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+
+    .btn-add:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+      background: var(--theme-accent);
+    }
+
+    .btn-add svg {
+      width: 24px;
+      height: 24px;
+      transition: transform 0.3s ease;
+    }
+
+    .btn-add:hover svg {
+      transform: rotate(90deg);
+    }
+
+    /* Card layout */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    /* Search and Filter Area */
+    .search-filter-row {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .search-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(var(--theme-accent-rgb), 0.04);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 8px 14px;
+      transition: var(--transition);
+    }
+
+    .search-input-wrapper:focus-within {
+      border-color: var(--theme-accent);
+      background: rgba(var(--theme-accent-rgb), 0.08);
+    }
+
+    .search-input-wrapper svg {
+      width: 18px;
+      height: 18px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .search-input-wrapper input {
+      border: 0;
+      outline: none;
+      font-size: 14px;
+      background: transparent;
+      color: var(--text-primary);
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .search-input-wrapper input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      background: rgba(var(--theme-accent-rgb), 0.04);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+
+    .filter-btn {
+      flex: 1;
+      background: transparent;
+      border: 0;
+      padding: 8px 12px;
+      border-radius: calc(var(--radius-md) - 2px);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: inherit;
+    }
+
+    .filter-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .filter-btn.active {
+      background: var(--card-bg);
+      color: var(--text-primary);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Stats Progress Bar */
+    .stats-card {
+      padding: 16px 20px 8px;
+    }
+
+    .stats-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .progress-bar-container {
+      height: 6px;
+      background: rgba(var(--theme-accent-rgb), 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--theme-accent);
+      border-radius: 10px;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Todo List items */
+    ul.todo-list {
+      list-style: none;
+      padding: 8px 20px;
+    }
+
+    li.item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      background: transparent;
+      border: 1px solid transparent;
+      transition: var(--transition);
+      margin-bottom: 8px;
+      touch-action: manipulation;
+    }
+
+    li.item:hover {
+      background: var(--item-bg-hover);
+      border-color: var(--border-color);
+      transform: translateY(-1px);
+    }
+
+    li.item.dragging {
+      background: var(--card-bg);
+      opacity: 0.5;
+      border: 2px dashed var(--theme-accent);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .drag-handle {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      cursor: grab;
+      opacity: 0.2;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+
+    li.item:hover .drag-handle {
+      opacity: 0.6;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .drag-handle svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Checkbox Style */
+    .custom-checkbox {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .custom-checkbox input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .checkbox-box {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--text-muted);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      background: transparent;
+    }
+
+    .custom-checkbox:hover .checkbox-box {
+      border-color: var(--theme-accent);
+      background: rgba(var(--theme-accent-rgb), 0.05);
+    }
+
+    .custom-checkbox input:checked + .checkbox-box {
+      background: var(--theme-accent);
+      border-color: var(--theme-accent);
+    }
+
+    .checkmark {
+      width: 14px;
+      height: 14px;
+      color: white;
+      stroke-dasharray: 24;
+      stroke-dashoffset: 24;
+      transition: stroke-dashoffset 0.2s ease-out;
+    }
+
+    .custom-checkbox input:checked + .checkbox-box .checkmark {
+      stroke-dashoffset: 0;
+    }
+
+    /* Content */
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .text {
+      font-size: 15px;
+      color: var(--text-primary);
+      word-break: break-word;
+      outline: none;
+      cursor: text;
+      padding: 4px 0;
+      font-weight: 500;
+      line-height: 1.4;
+      border-bottom: 1px dashed transparent;
+      transition: border-bottom 0.2s ease;
+    }
+
+    .text[contenteditable="true"]:focus {
+      border-bottom-color: var(--theme-accent);
+    }
+
+    .text[contenteditable]:empty:before {
+      content: attr(data-placeholder);
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    .meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.8;
+    }
+
+    .meta-icon {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+    }
+
+    /* Actions */
+    .actions {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      background: transparent;
+      border: 0;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    li.item:hover .btn {
+      opacity: 0.6;
+    }
+
+    li.item:hover .btn:hover {
+      opacity: 1;
+    }
+
+    .btn.del:hover {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Done items */
+    li.item.done {
+      opacity: 0.7;
+    }
+
+    li.item.done .text {
+      color: var(--text-muted);
+      text-decoration: line-through;
+      text-decoration-thickness: 1.5px;
+    }
+
+    /* Empty Hint */
+    .empty {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .empty-icon {
+      font-size: 32px;
+      animation: bounce-slow 3s ease-in-out infinite;
+    }
+
+    .empty-text {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    @keyframes bounce-slow {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    /* Footer card */
+    .card-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      background: rgba(var(--theme-accent-rgb), 0.02);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: inherit;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(var(--theme-accent-rgb), 0.04);
+      border-color: var(--theme-accent);
+      color: var(--theme-accent);
+    }
+
+    /* Canvas confetti */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Responsive adjustment */
+    @media (max-width: 500px) {
+      body {
+        padding: 20px 12px;
+      }
+      
+      .btn-back {
+        margin-bottom: 16px;
+        font-size: 13px;
+        padding: 8px 12px;
+      }
+
+      .header-title-area h1 {
+        font-size: 20px;
+      }
+      
+      .new-input-wrapper {
+        padding-left: 12px;
+      }
+      
+      .new-input-wrapper input {
+        font-size: 15px;
+        height: 44px;
+      }
+      
+      .btn-add {
+        width: 48px;
+        height: 48px;
+      }
+      
+      li.item {
+        padding: 10px 12px;
+        gap: 8px;
+      }
+      
+      .drag-handle {
+        width: 20px;
+      }
+      
+      .checkbox-box {
+        width: 20px;
+        height: 20px;
+      }
+      
+      .text {
+        font-size: 14px;
+      }
+      
+      li.item .btn {
+        opacity: 0.6; /* always show slightly on mobile */
+      }
+      
+      .search-filter-row {
+        padding: 12px 14px;
+      }
+      
+      ul.todo-list {
+        padding: 8px 14px;
+      }
+    }
+  </style>
+</head>
+
+<body class="theme-sunflower">
+  <!-- Confetti Canvas for Task Completion Sparks -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <div class="container">
+    <a href="index.html" class="btn-back">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      返回首页
+    </a>
+
+    <header>
+      <div class="header-title-area">
+        <h1>我的待办清单</h1>
+        <p>简约 · 自定义 · 本地存储</p>
+      </div>
+      <div class="theme-selector">
+        <button class="theme-btn sunflower active" data-theme="sunflower" title="向日葵暖阳"></button>
+        <button class="theme-btn aurora" data-theme="aurora" title="极光幽蓝"></button>
+        <button class="theme-btn beach" data-theme="beach" title="夏日海滩"></button>
+      </div>
+    </header>
+
+    <div class="input-row">
+      <div class="new-input-wrapper">
+        <input id="newTodo" type="text" placeholder="添加新的待办事项..." aria-label="添加待办" />
+      </div>
+      <button id="addBtn" class="btn-add" aria-label="添加">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="search-filter-row">
+        <div class="search-input-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input id="searchInput" type="text" placeholder="搜索任务..." />
+        </div>
+        <div class="filter-tabs">
+          <button class="filter-btn active" data-filter="all">全部</button>
+          <button class="filter-btn" data-filter="active">未完成</button>
+          <button class="filter-btn" data-filter="completed">已完成</button>
+        </div>
+      </div>
+
+      <div class="stats-card">
+        <div class="stats-info">
+          <span>任务完成进度</span>
+          <span id="statsRatio">0 / 0</span>
+        </div>
+        <div class="progress-bar-container">
+          <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <ul id="todoList" class="todo-list" aria-live="polite">
+        <!-- items injected here -->
+      </ul>
+
+      <div id="emptyHint" class="empty" style="display:none">
+        <div class="empty-icon">✨</div>
+        <div class="empty-text">目前没有待办，快添加一个吧</div>
+      </div>
+
+      <div class="card-footer">
+        <button id="clearCompletedBtn" class="btn-secondary">清除已完成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SortableJS: local script fallback -->
+  <script src="Sortable.min.js"></script>
+  
+  <!-- Confetti script -->
+  <script>
+    const canvas = document.getElementById('confettiCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function createConfetti(x, y) {
+      // Get colors based on active theme
+      let colors = ['#f59e0b', '#fbbf24', '#34d399', '#3b82f6', '#ec4899', '#a78bfa'];
+      if (document.body.classList.contains('theme-aurora')) {
+        colors = ['#c084fc', '#a78bfa', '#818cf8', '#ec4899', '#f43f5e', '#60a5fa'];
+      } else if (document.body.classList.contains('theme-beach')) {
+        colors = ['#0ea5e9', '#38bdf8', '#2dd4bf', '#34d399', '#fbbf24', '#f43f5e'];
+      }
+      
+      for (let i = 0; i < 24; i++) {
+        particles.push({
+          x: x,
+          y: y,
+          vx: (Math.random() - 0.5) * 6,
+          vy: (Math.random() - 0.5) * 6 - 2.5,
+          size: Math.random() * 5 + 3,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          alpha: 1,
+          decay: Math.random() * 0.025 + 0.02,
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 8
+        });
+      }
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.12; // gravity
+        p.alpha -= p.decay;
+        p.rotation += p.rotationSpeed;
+        if (p.alpha <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation * Math.PI / 180);
+        ctx.fillStyle = p.color;
+        
+        // alternate shape between square and circle
+        if (i % 2 === 0) {
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+      requestAnimationFrame(animateParticles);
+    }
+    requestAnimationFrame(animateParticles);
+  </script>
+
+  <!-- App logic -->
+  <script>
+    (function () {
+      const STORAGE_KEY = 'simple_todo_v1';
+      const THEME_KEY = 'todo_theme_v1';
+      
+      const listEl = document.getElementById('todoList');
+      const newInput = document.getElementById('newTodo');
+      const addBtn = document.getElementById('addBtn');
+      const emptyHint = document.getElementById('emptyHint');
+      const searchInput = document.getElementById('searchInput');
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      const themeBtns = document.querySelectorAll('.theme-btn');
+      const progressBar = document.getElementById('progressBar');
+      const statsRatio = document.getElementById('statsRatio');
+      const clearCompletedBtn = document.getElementById('clearCompletedBtn');
+
+      let todos = load();
+      let currentFilter = 'all';
+      let searchQuery = '';
+      let activeTheme = localStorage.getItem(THEME_KEY) || 'sunflower';
+
+      // Apply initial theme
+      setTheme(activeTheme);
+
+      function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7) }
+
+      function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+        updateStats();
+      }
+      function load() {
+        try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : [] } catch (e) { return [] }
+      }
+
+      function setTheme(themeName) {
+        document.body.className = `theme-${themeName}`;
+        themeBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.theme === themeName);
+        });
+        localStorage.setItem(THEME_KEY, themeName);
+      }
+
+      function updateStats() {
+        const total = todos.length;
+        const completed = todos.filter(t => t.done).length;
+        statsRatio.textContent = `${completed} / ${total}`;
+        const pct = total > 0 ? (completed / total) * 100 : 0;
+        progressBar.style.width = `${pct}%`;
+      }
+
+      function render() {
+        listEl.innerHTML = '';
+        
+        // Filter & Search
+        const filtered = todos.filter(item => {
+          const matchesFilter = 
+            currentFilter === 'all' || 
+            (currentFilter === 'active' && !item.done) || 
+            (currentFilter === 'completed' && item.done);
+          const matchesSearch = item.text.toLowerCase().includes(searchQuery.toLowerCase());
+          return matchesFilter && matchesSearch;
+        });
+
+        if (!filtered.length) {
+          emptyHint.style.display = 'flex';
+          emptyHint.querySelector('.empty-text').textContent = searchQuery 
+            ? '没有找到符合搜索条件的待办' 
+            : (currentFilter === 'completed' ? '目前还没有已完成的待办' : '目前没有待办，快添加一个吧 ✨');
+        } else {
+          emptyHint.style.display = 'none';
+        }
+
+        filtered.forEach(item => {
+          const li = document.createElement('li');
+          li.className = 'item' + (item.done ? ' done' : '');
+          li.dataset.id = item.id;
+
+          li.innerHTML = `
+            <div class="drag-handle" title="拖动排序" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="12" r="1"></circle>
+                <circle cx="9" cy="5" r="1"></circle>
+                <circle cx="9" cy="19" r="1"></circle>
+                <circle cx="15" cy="12" r="1"></circle>
+                <circle cx="15" cy="5" r="1"></circle>
+                <circle cx="15" cy="19" r="1"></circle>
+              </svg>
+            </div>
+            <label class="custom-checkbox" title="完成">
+              <input type="checkbox" ${item.done ? 'checked' : ''} aria-label="标记完成">
+              <span class="checkbox-box">
+                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+            </label>
+            <div class="content">
+              <div class="text" contenteditable="true" data-placeholder="点击输入任务..." spellcheck="false">${escapeHtml(item.text)}</div>
+              <div class="meta">
+                <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                ${formatDate(item.createdAt || Date.now())}
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn del" title="删除" aria-label="删除">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </button>
+            </div>
+          `;
+
+          // checkbox toggle
+          const checkbox = li.querySelector('.custom-checkbox input');
+          checkbox.addEventListener('change', (e) => {
+            item.done = e.target.checked;
+            li.classList.toggle('done', item.done);
+            save();
+            if (item.done) {
+              const rect = checkbox.getBoundingClientRect();
+              createConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            }
+            if (currentFilter !== 'all') {
+              setTimeout(render, 300); // smooth exit
+            }
+          });
+
+          // delete
+          li.querySelector('.btn.del').addEventListener('click', () => {
+            li.style.transform = 'translateX(20px)';
+            li.style.opacity = '0';
+            setTimeout(() => {
+              todos = todos.filter(t => t.id !== item.id);
+              save(); 
+              render();
+            }, 220);
+          });
+
+          // edit content
+          const textEl = li.querySelector('.text');
+          let originalText = item.text;
+          
+          textEl.addEventListener('focus', () => {
+            originalText = textEl.innerText.trim();
+          });
+
+          textEl.addEventListener('blur', () => {
+            const currentText = textEl.innerText.trim();
+            if (currentText === '') {
+              textEl.innerText = originalText;
+            } else if (currentText !== originalText) {
+              item.text = currentText;
+              save();
+            }
+          });
+
+          // commit on Enter, cancel on Escape
+          textEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault(); 
+              textEl.blur();
+            } else if (e.key === 'Escape') {
+              e.preventDefault();
+              textEl.innerText = originalText;
+              textEl.blur();
+            }
+          });
+
+          listEl.appendChild(li);
+        });
+      }
+
+      function addTodo(text) {
+        const t = text.trim(); if (!t) return;
+        todos.unshift({ id: uid(), text: t, done: false, createdAt: Date.now() });
+        save(); 
+        render();
+      }
+
+      addBtn.addEventListener('click', () => { addTodo(newInput.value); newInput.value = ''; newInput.focus(); });
+      newInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { addTodo(newInput.value); newInput.value = ''; } });
+
+      // Theme toggle handlers
+      themeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          setTheme(btn.dataset.theme);
+        });
+      });
+
+      // Filter tabs handler
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.dataset.filter;
+          render();
+        });
+      });
+
+      // Search handler
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        render();
+      });
+
+      // Clear completed handler
+      clearCompletedBtn.addEventListener('click', () => {
+        todos = todos.filter(t => !t.done);
+        save();
+        render();
+      });
+
+      // init Sortable
+      const sortable = Sortable.create(listEl, {
+        handle: '.drag-handle',
+        animation: 150,
+        ghostClass: 'dragging',
+        onEnd: function (evt) {
+          const idsInDOM = Array.from(listEl.children).map(li => li.dataset.id);
+          const filteredOut = todos.filter(t => !idsInDOM.includes(t.id));
+          const orderedInDOM = idsInDOM.map(id => todos.find(t => t.id === id)).filter(Boolean);
+          
+          let domIdx = 0;
+          todos = todos.map(t => {
+            if (idsInDOM.includes(t.id)) {
+              return orderedInDOM[domIdx++];
+            }
+            return t;
+          });
+
+          save();
+          render();
+        }
+      });
+
+      function formatDate(ts) {
+        const d = new Date(ts);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const r = String(d.getDate()).padStart(2, '0');
+        const h = String(d.getHours()).padStart(2, '0');
+        const min = String(d.getMinutes()).padStart(2, '0');
+        return `${y}/${m}/${r} ${h}:${min}`;
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      // Initial stats and render
+      updateStats();
+      render();
+
+      // expose for debugging (optional)
+      window._todos = todos;
+    })();
+  </script>
+</body>
+
+</html>
