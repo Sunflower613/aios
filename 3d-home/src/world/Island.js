@@ -1504,54 +1504,81 @@ export class IslandGenerator {
     const portalGroup = new THREE.Group();
     portalGroup.position.set(x, y, z);
 
-    // 传送门底座
-    const baseGeo = new THREE.CylinderGeometry(0.8, 0.9, 0.2, 8);
-    const baseMat = new THREE.MeshLambertMaterial({ color: 0x5d4037, flatShading: true });
-    const base = new THREE.Mesh(baseGeo, baseMat);
-    base.position.y = 0.1;
-    base.castShadow = true;
-    base.receiveShadow = true;
-    portalGroup.add(base);
+    // 1. 喷泉石质双层水盆底座
+    const stoneColor = 0xb0bec5; // 浅灰石色
+    const stoneMat = new THREE.MeshLambertMaterial({ color: stoneColor, flatShading: true });
 
-    // 门石柱 (Low-Poly 极简设计)
-    const gateMat = new THREE.MeshLambertMaterial({ color: 0x78909c, flatShading: true });
-    const leftPillar = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.0, 0.2), gateMat);
-    leftPillar.position.set(-0.6, 1.1, 0);
-    leftPillar.castShadow = true;
-    leftPillar.receiveShadow = true;
-    portalGroup.add(leftPillar);
+    // 下层大底座
+    const bottomBasin = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.0, 0.22, 12), stoneMat);
+    bottomBasin.position.y = 0.11;
+    bottomBasin.castShadow = true;
+    bottomBasin.receiveShadow = true;
+    portalGroup.add(bottomBasin);
 
-    const rightPillar = leftPillar.clone();
-    rightPillar.position.x = 0.6;
-    portalGroup.add(rightPillar);
+    // 上层水盆
+    const topBasin = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.65, 0.35, 12), stoneMat);
+    topBasin.position.y = 0.38;
+    topBasin.castShadow = true;
+    topBasin.receiveShadow = true;
+    portalGroup.add(topBasin);
 
-    const topBar = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.2, 0.2), gateMat);
-    topBar.position.set(0, 2.1, 0);
-    topBar.castShadow = true;
-    portalGroup.add(topBar);
-
-    // 半透明传送光幕 (浅蓝色)
-    const portalGeo = new THREE.PlaneGeometry(1.0, 1.8);
-    const portalMat = new THREE.MeshBasicMaterial({
-      color: 0x00e5ff,
+    // 2. 水盆中的积水面 (治愈半透明蓝色)
+    const poolWaterMat = new THREE.MeshBasicMaterial({
+      color: 0x00b0ff,
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.65,
       side: THREE.DoubleSide
     });
-    const portalMesh = new THREE.Mesh(portalGeo, portalMat);
-    portalMesh.position.set(0, 1.1, 0);
-    portalGroup.add(portalMesh);
+    const poolWater = new THREE.Mesh(new THREE.CircleGeometry(0.7, 12), poolWaterMat);
+    poolWater.rotateX(-Math.PI / 2);
+    poolWater.position.y = 0.54;
+    portalGroup.add(poolWater);
 
-    // 顶牌
-    const signBoard = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.25, 0.05), new THREE.MeshLambertMaterial({ color: 0x3e2723 }));
-    signBoard.position.set(0, 2.3, 0);
+    // 3. 喷水柱 (白色/青蓝色半透明涌泉效果)
+    const waterSpoutGeo = new THREE.CylinderGeometry(0.08, 0.16, 0.9, 8);
+    const waterSpoutMat = new THREE.MeshBasicMaterial({
+      color: 0xe0f7fa,
+      transparent: true,
+      opacity: 0.82
+    });
+    const waterSpout = new THREE.Mesh(waterSpoutGeo, waterSpoutMat);
+    waterSpout.position.y = 0.95;
+    portalGroup.add(waterSpout);
+
+    // 4. 喷出的飞溅水滴颗粒 (Low-poly 飞溅颗粒)
+    const particleMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.08), particleMat);
+    p1.position.set(0.12, 1.35, 0.08);
+    portalGroup.add(p1);
+
+    const p2 = p1.clone();
+    p2.position.set(-0.14, 1.4, -0.1);
+    portalGroup.add(p2);
+
+    const p3 = p1.clone();
+    p3.position.set(0.05, 1.25, -0.15);
+    portalGroup.add(p3);
+
+    // 5. 旁边歪插着的治愈系小木指示牌 (前往天池的方向牌，自然清秀)
+    const signPost = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.8, 8), new THREE.MeshLambertMaterial({ color: 0x4e342e }));
+    signPost.position.set(1.0, 0.4, 0.4);
+    signPost.rotation.z = 0.15; // 稍微歪一点点
+    signPost.castShadow = true;
+    portalGroup.add(signPost);
+
+    const signBoard = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.16, 0.03), new THREE.MeshLambertMaterial({ color: 0x8d6e63 }));
+    signBoard.position.set(1.05, 0.72, 0.4);
+    signBoard.rotation.z = 0.15;
+    signBoard.rotation.y = 0.2; // 稍微偏向玩家方向
     signBoard.castShadow = true;
     portalGroup.add(signBoard);
 
-    // 指示字样
-    const textMesh = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.1, 0.06), new THREE.MeshBasicMaterial({ color: 0x00e5ff }));
-    textMesh.position.set(0, 2.3, 0.01);
-    portalGroup.add(textMesh);
+    // 蓝色小发光指示条
+    const signText = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.06, 0.04), new THREE.MeshBasicMaterial({ color: 0x00e5ff }));
+    signText.position.set(1.04, 0.72, 0.42);
+    signText.rotation.z = 0.15;
+    signText.rotation.y = 0.2;
+    portalGroup.add(signText);
 
     this.scene.add(portalGroup);
 

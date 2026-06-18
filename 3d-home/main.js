@@ -4927,47 +4927,80 @@ class GameApp {
     const exitPortalGroup = new THREE.Group();
     exitPortalGroup.position.set(0, 0.6, 9.5);
 
-    // 门底座
-    const pBase = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.8, 0.18, 8), borderMat);
-    pBase.position.y = 0.09;
-    exitPortalGroup.add(pBase);
+    // 1. 喷泉石质双层水盆底座
+    const stoneMat = borderMat; // 天池原本的边框材质
 
-    // 门石柱
-    const pillarL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 1.8, 0.18), borderMat);
-    pillarL.position.set(-0.55, 1.0, 0);
-    pillarL.castShadow = true;
-    exitPortalGroup.add(pillarL);
+    // 下层大底座
+    const bottomBasin = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.9, 0.22, 12), stoneMat);
+    bottomBasin.position.y = 0.11;
+    bottomBasin.castShadow = true;
+    bottomBasin.receiveShadow = true;
+    exitPortalGroup.add(bottomBasin);
 
-    const pillarR = pillarL.clone();
-    pillarR.position.x = 0.55;
-    exitPortalGroup.add(pillarR);
+    // 上层水盆
+    const topBasin = new THREE.Mesh(new THREE.CylinderGeometry(0.68, 0.58, 0.35, 12), stoneMat);
+    topBasin.position.y = 0.38;
+    topBasin.castShadow = true;
+    topBasin.receiveShadow = true;
+    exitPortalGroup.add(topBasin);
 
-    const pTop = new THREE.Mesh(new THREE.BoxGeometry(1.28, 0.18, 0.18), borderMat);
-    pTop.position.set(0, 1.9, 0);
-    pTop.castShadow = true;
-    exitPortalGroup.add(pTop);
+    // 2. 水盆中的积水面 (治愈半透明蓝色)
+    const poolWaterMat = new THREE.MeshBasicMaterial({
+      color: 0x00b0ff,
+      transparent: true,
+      opacity: 0.65,
+      side: THREE.DoubleSide
+    });
+    const poolWater = new THREE.Mesh(new THREE.CircleGeometry(0.64, 12), poolWaterMat);
+    poolWater.rotateX(-Math.PI / 2);
+    poolWater.position.y = 0.54;
+    exitPortalGroup.add(poolWater);
 
-    // 淡蓝色半透明传送光幕
-    const pScreen = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.9, 1.6),
-      new THREE.MeshBasicMaterial({
-        color: 0x00e5ff,
-        transparent: true,
-        opacity: 0.45,
-        side: THREE.DoubleSide
-      })
-    );
-    pScreen.position.set(0, 1.0, 0);
-    exitPortalGroup.add(pScreen);
+    // 3. 喷水柱 (白色/青蓝色半透明涌泉效果)
+    const waterSpoutGeo = new THREE.CylinderGeometry(0.07, 0.14, 0.8, 8);
+    const waterSpoutMat = new THREE.MeshBasicMaterial({
+      color: 0xe0f7fa,
+      transparent: true,
+      opacity: 0.82
+    });
+    const waterSpout = new THREE.Mesh(waterSpoutGeo, waterSpoutMat);
+    waterSpout.position.y = 0.9;
+    exitPortalGroup.add(waterSpout);
 
-    // 指示字牌
-    const pSign = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.2, 0.04), new THREE.MeshLambertMaterial({ color: 0x3e2723 }));
-    pSign.position.set(0, 2.1, 0);
-    exitPortalGroup.add(pSign);
+    // 4. 喷出的飞溅水滴颗粒 (Low-poly 飞溅颗粒)
+    const particleMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 0.07), particleMat);
+    p1.position.set(0.1, 1.25, 0.07);
+    exitPortalGroup.add(p1);
 
-    const pSignText = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.08, 0.05), new THREE.MeshBasicMaterial({ color: 0x00e5ff }));
-    pSignText.position.set(0, 2.1, 0.01);
-    exitPortalGroup.add(pSignText);
+    const p2 = p1.clone();
+    p2.position.set(-0.12, 1.3, -0.09);
+    exitPortalGroup.add(p2);
+
+    const p3 = p1.clone();
+    p3.position.set(0.04, 1.15, -0.13);
+    exitPortalGroup.add(p3);
+
+    // 5. 旁边歪插着的治愈系小木指示牌 (返回大厅的方向牌)
+    const signPost = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.8, 8), new THREE.MeshLambertMaterial({ color: 0x4e342e }));
+    signPost.position.set(0.9, 0.4, 0.4);
+    signPost.rotation.z = -0.15; // 稍微往另一边歪一点
+    signPost.castShadow = true;
+    exitPortalGroup.add(signPost);
+
+    const signBoard = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.16, 0.03), new THREE.MeshLambertMaterial({ color: 0x8d6e63 }));
+    signBoard.position.set(0.85, 0.72, 0.4);
+    signBoard.rotation.z = -0.15;
+    signBoard.rotation.y = -0.2;
+    signBoard.castShadow = true;
+    exitPortalGroup.add(signBoard);
+
+    // 蓝色小发光指示条
+    const signText = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.06, 0.04), new THREE.MeshBasicMaterial({ color: 0x00e5ff }));
+    signText.position.set(0.86, 0.72, 0.42);
+    signText.rotation.z = -0.15;
+    signText.rotation.y = -0.2;
+    exitPortalGroup.add(signText);
 
     this.lakeGroup.add(exitPortalGroup);
 
