@@ -849,9 +849,15 @@ export class Player {
       this.isGrounded = true;
       this.group.position.copy(this.position);
       
-      this.group.rotation.x = -Math.PI / 2; // Lie flat
-      this.group.rotation.y = 0; 
-      this.group.rotation.z = 0;
+      if (this.lyingRotation) {
+        this.group.rotation.x = this.lyingRotation.x;
+        this.group.rotation.y = this.lyingRotation.y;
+        this.group.rotation.z = this.lyingRotation.z;
+      } else {
+        this.group.rotation.x = -Math.PI / 2; // Lie flat
+        this.group.rotation.y = 0; 
+        this.group.rotation.z = 0;
+      }
 
       this.body.rotation.x = 0;
       this.footL.position.set(-0.16, 0.05, 0);
@@ -1115,11 +1121,16 @@ export class Player {
     this.controlsLocked = true;
   }
 
-  lieDown(bedPos) {
+  lieDown(bedPos, customRotation) {
     this.isLyingDown = true;
     this.controlsLocked = true;
     this.position.copy(bedPos);
     this.position.y = bedPos.y + 0.58; // relative bed elevation (lies on top of mattress)
+    if (customRotation) {
+      this.lyingRotation = customRotation;
+    } else {
+      this.lyingRotation = null;
+    }
 
     // 隐藏移动端 HUD 摇杆和按钮，解决触碰事件遮挡的问题
     if (window.parent && window.parent.appShell && typeof window.parent.appShell.hideMobileControls === 'function') {
@@ -1147,8 +1158,15 @@ export class Player {
       this.isLyingDown = false;
       this.controlsLocked = false;
       this.group.rotation.x = 0;
+      this.group.rotation.y = 0;
       this.group.rotation.z = 0;
-      this.position.z += 1.4; // Dismount forward from bed
+      if (this.lyingRotation) {
+        this.lyingRotation = null;
+        // 躺椅起身，向旁边退开
+        this.position.x += 1.0;
+      } else {
+        this.position.z += 1.4; // Dismount forward from bed
+      }
       this.position.y = 0.8; // Set standing height directly to indoor floor level
       
       const bedHud = document.getElementById('bed-hud');

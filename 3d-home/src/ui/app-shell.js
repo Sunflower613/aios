@@ -259,6 +259,14 @@ class AppShell {
         closeSidebar();
       });
     }
+    const btnMapCastle = document.getElementById('btn-map-castle');
+    if (btnMapCastle) {
+      btnMapCastle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.switchMap('castle');
+        closeSidebar();
+      });
+    }
 
     const sidebarButtons = [
       { id: 'btn-sidebar-leaderboard', name: 'leaderboard' },

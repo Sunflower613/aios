@@ -3945,3 +3945,59 @@ body.is-mobile .sitting-hud-content .hud-btn {
   padding: 4px 10px;
 }
 
+/* ==========================================================================
+   粉色庄园 (Barbie Manor) 专属美化样式
+   ========================================================================== */
+
+#page-castle #exit-sitting-hud {
+  background: rgba(253, 226, 236, 0.28) !important;
+  border: 1px solid rgba(244, 143, 177, 0.45) !important;
+  box-shadow: 0 8px 32px rgba(244, 143, 177, 0.3) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+#page-castle #exit-sitting-hud-text {
+  color: #f8bbd0;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  font-weight: 600;
+}
+
+#page-castle .modal-card {
+  background: rgba(36, 24, 32, 0.72) !important;
+  border: 1px solid rgba(244, 143, 177, 0.22) !important;
+  box-shadow: 0 16px 48px rgba(244, 143, 177, 0.2) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+#page-castle .modal-header h2 {
+  color: #f8bbd0 !important;
+  text-shadow: 0 0 6px rgba(244, 143, 177, 0.4);
+}
+
+#page-castle .modal-close {
+  color: #f8bbd0;
+}
+
+#page-castle .modal-close:hover {
+  color: #ff4081;
+}
+
+#page-castle .hud-btn {
+  background: linear-gradient(135deg, #f50057, #ff4081) !important;
+  border: 1px solid rgba(255, 64, 129, 0.3) !important;
+}
+
+#page-castle .hud-btn:hover {
+  box-shadow: 0 0 10px rgba(255, 64, 129, 0.5) !important;
+}
+
+#page-castle .tasks-left {
+  border-right: 1px solid rgba(244, 143, 177, 0.15) !important;
+}
+
+#page-castle #tasks-progress-bar {
+  background: linear-gradient(90deg, #ff4081, #f50057) !important;
+}
+

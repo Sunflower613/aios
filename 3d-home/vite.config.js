@@ -82,7 +82,8 @@ export default defineConfig({
         house: path.resolve(__dirname, 'house.html'),
         farm: path.resolve(__dirname, 'farm.html'),
         pvp: path.resolve(__dirname, 'pvp.html'),
-        lake: path.resolve(__dirname, 'lake.html')
+        lake: path.resolve(__dirname, 'lake.html'),
+        castle: path.resolve(__dirname, 'castle.html')
       }
     }
   }

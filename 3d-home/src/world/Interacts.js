@@ -264,6 +264,14 @@ export class InteractsManager {
       return;
     }
 
+    if (zone.id === 'enter_castle') {
+      if (this.player.carriedBall) {
+        this.dropCarriedBall();
+      }
+      this.app.switchMap('castle');
+      return;
+    }
+
     if (zone.id === 'exit_house') {
       if (this.player.carriedBall) {
         this.dropCarriedBall();
@@ -296,7 +304,7 @@ export class InteractsManager {
       return;
     }
 
-    if (zone.id === 'house_bed') {
+    if (zone.id === 'house_bed' || zone.id === 'lie_bed') {
       if (this.player.isLyingDown) {
         this.player.standUp();
       } else {
@@ -307,9 +315,82 @@ export class InteractsManager {
         this.player.lieDown(bedPos);
         this.hidePrompt();
         
-        // Show bed HUD panel
-        const bedHud = document.getElementById('bed-hud');
+        // Show bed/sitting HUD panel
+        const bedHud = document.getElementById('bed-hud') || document.getElementById('exit-sitting-hud');
         if (bedHud) bedHud.style.display = 'flex';
+      }
+      return;
+    }
+
+    if (zone.id === 'lake_seat_1' || zone.id === 'lake_seat_2') {
+      if (this.player.isSitting) {
+        this.player.standUp();
+      } else {
+        if (this.player.carriedBall) {
+          this.dropCarriedBall();
+        }
+        const isSeat1 = zone.id === 'lake_seat_1';
+        const seatObj = {
+          isStatic: true,
+          position: new THREE.Vector3(isSeat1 ? 7.5 : -7.5, 0.78, 0),
+          rotationY: isSeat1 ? -Math.PI / 2 : Math.PI / 2
+        };
+        this.player.sit(seatObj);
+        
+        const exitSittingHud = document.getElementById('exit-sitting-hud');
+        if (exitSittingHud) {
+          const textEl = document.getElementById('exit-sitting-hud-text');
+          if (textEl) textEl.textContent = '🧘 您正在静坐观赏中';
+          exitSittingHud.style.display = 'flex';
+        }
+        this.hidePrompt();
+      }
+      return;
+    }
+
+    if (zone.id === 'sit_sofa') {
+      if (this.player.isSitting) {
+        this.player.standUp();
+      } else {
+        if (this.player.carriedBall) {
+          this.dropCarriedBall();
+        }
+        const seatObj = {
+          isStatic: true,
+          position: new THREE.Vector3(0, 0.72 + 0.1, -8.7),
+          rotationY: Math.PI // 面向南
+        };
+        this.player.sit(seatObj);
+        
+        const exitSittingHud = document.getElementById('exit-sitting-hud');
+        if (exitSittingHud) {
+          const textEl = document.getElementById('exit-sitting-hud-text');
+          if (textEl) textEl.textContent = '🧘 您正在沙发小憩中';
+          exitSittingHud.style.display = 'flex';
+        }
+        this.hidePrompt();
+      }
+      return;
+    }
+
+    if (zone.id === 'lie_lounger_1' || zone.id === 'lie_lounger_2') {
+      if (this.player.isLyingDown) {
+        this.player.standUp();
+      } else {
+        if (this.player.carriedBall) {
+          this.dropCarriedBall();
+        }
+        const loungerPos = new THREE.Vector3(zone.x, zone.y, zone.z);
+        const chairRot = { x: -Math.PI / 6, y: -Math.PI / 2, z: 0 }; // 朝西斜躺 30 度
+        this.player.lieDown(loungerPos, chairRot);
+        
+        const exitSittingHud = document.getElementById('exit-sitting-hud');
+        if (exitSittingHud) {
+          const textEl = document.getElementById('exit-sitting-hud-text');
+          if (textEl) textEl.textContent = '☀️ 您正在享受日光浴中';
+          exitSittingHud.style.display = 'flex';
+        }
+        this.hidePrompt();
       }
       return;
     }
@@ -335,7 +416,7 @@ export class InteractsManager {
       return;
     }
 
-    if (zone.id === 'house_wardrobe') {
+    if (zone.id === 'house_wardrobe' || zone.id === 'wardrobe') {
       // Save camera settings for restoration later
       this.cameraSavedState = {
         distance: this.player.cameraDistance,
