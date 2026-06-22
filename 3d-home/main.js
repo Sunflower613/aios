@@ -6035,6 +6035,7 @@ class GameApp {
     waterSpout.position.y = 0.9;
     exitPortalGroup.add(waterSpout);
 
+    const particleMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
     const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 0.07), particleMat);
     p1.position.set(0.1, 1.25, 0.07);
     exitPortalGroup.add(p1);
