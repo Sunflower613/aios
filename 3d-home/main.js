@@ -559,7 +559,7 @@ class GameApp {
         this.player.group.rotation.y = Math.PI; // 面朝池中心 (0,0)
         this.player.cameraAngleH = Math.PI;
       } else if (this.currentMap === 'castle') {
-        this.player.position.set(0, 0.6 + 0.1, 10.0);
+        this.player.position.set(-2.5, 0.6 + 0.1, 11.5);
         this.player.group.position.copy(this.player.position);
         this.player.group.rotation.y = Math.PI; // 面朝城堡北边
         this.player.cameraAngleH = Math.PI;
@@ -5485,7 +5485,7 @@ class GameApp {
   buildCastlePlatform() {
     this.castleGroup.clear();
     this.castleColliders = [
-      // 城堡岛的 floor 碰撞体，Y = 0.6，半径 24.0 覆盖绝大部分岛屿
+      // 整个草地基盘物理碰撞体，Y = 0.6，半径 24
       { type: 'floor', worldX: 0, worldZ: 0, worldY: 0.6, radius: 24.0 }
     ];
     this.castleInteractables = [];
@@ -5493,492 +5493,1104 @@ class GameApp {
     this.castleRipples = [];
     this.lastCastleWaterStepTime = 0;
 
-    // 1. 梦幻心形浮空岛基座 (Y=0.6，双耳朵朝北，尖端朝南)
-    const scale = 2.0;
-    const heartShape = new THREE.Shape();
-    heartShape.moveTo(0, -6 * scale);
-    heartShape.bezierCurveTo(-5 * scale, -3 * scale, -8 * scale, 2 * scale, -5 * scale, 6 * scale);
-    heartShape.bezierCurveTo(-2 * scale, 9 * scale, 0, 5 * scale, 0, 4 * scale);
-    heartShape.bezierCurveTo(0, 5 * scale, 2 * scale, 9 * scale, 5 * scale, 6 * scale);
-    heartShape.bezierCurveTo(8 * scale, 2 * scale, 5 * scale, -3 * scale, 0, -6 * scale);
-
-    const extrudeSettings = {
-      depth: 1.2,
-      bevelEnabled: true,
-      bevelSegments: 2,
-      steps: 1,
-      bevelSize: 0.1,
-      bevelThickness: 0.1
-    };
-    const islandGeo = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
-    islandGeo.rotateX(-Math.PI / 2); // 铺平在 XZ 平面上
-    
-    // 梦幻樱花粉大理石底色
-    const islandMat = new THREE.MeshLambertMaterial({ color: 0xffe5ec, flatShading: true });
-    const island = new THREE.Mesh(islandGeo, islandMat);
-    island.position.y = -0.6; // 挤出深度为 1.2，所以 y=-0.6 时，表面刚好 Y = 0.6
-    island.receiveShadow = true;
-    island.castShadow = true;
-    this.castleGroup.add(island);
-
-    // 泥土与底部基底 (粉紫色梦幻底座)
-    const dirtGeo = new THREE.ExtrudeGeometry(heartShape, {
-      depth: 2.2,
-      bevelEnabled: true,
-      bevelSegments: 2,
-      steps: 1,
-      bevelSize: 0.05,
-      bevelThickness: 0.1
-    });
-    dirtGeo.rotateX(-Math.PI / 2);
-    const dirtMat = new THREE.MeshLambertMaterial({ color: 0x9c27b0, flatShading: true }); // 粉紫色泥底
-    const dirt = new THREE.Mesh(dirtGeo, dirtMat);
-    dirt.position.y = -2.8;
-    this.castleGroup.add(dirt);
-
-    // 2. 在表面平铺粉白相间的大理石地砖 (心形内部拼花)
+    // --- 材质与颜色定义 ---
+    const wallColor = 0xff85a1; // 芭比粉外墙
+    const trimColor = 0xffffff; // 白色装饰与柱子
+    const roofColor = 0xb71c1c; // 西班牙红瓦顶
+    const grassColor = 0x81c784; // 翠绿草坪
+    const roadColor = 0xd7ccc8; // 温暖沙石色车道
+    const poolColor = 0xff4d6d; // 泳池粉红底
+    const waterColor = 0x80deea; // 清凉水蓝色
+    const heartPinkMat = new THREE.MeshBasicMaterial({ color: 0xff4081 });
     const tilePink = new THREE.MeshLambertMaterial({ color: 0xffb3c6, flatShading: true });
     const tileWhite = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true });
-    const tileGeo = new THREE.BoxGeometry(1.9, 0.02, 1.9);
+    
+    const wallMat = new THREE.MeshLambertMaterial({ color: wallColor, flatShading: true });
+    const trimMat = new THREE.MeshLambertMaterial({ color: trimColor, flatShading: true });
+    const roofMat = new THREE.MeshLambertMaterial({ color: roofColor, flatShading: true });
+    const grassMat = new THREE.MeshLambertMaterial({ color: grassColor, flatShading: true });
+    const roadMat = new THREE.MeshLambertMaterial({ color: roadColor, flatShading: true });
+    const poolMat = new THREE.MeshLambertMaterial({ color: poolColor, flatShading: true });
+    const waterMat = new THREE.MeshBasicMaterial({ color: waterColor, transparent: true, opacity: 0.65, side: THREE.DoubleSide });
+    const glassMat = new THREE.MeshLambertMaterial({ color: 0x80deea, transparent: true, opacity: 0.7, flatShading: true });
+    
+    // 长拱窗内发光材质
+    const windowLightMat = new THREE.MeshLambertMaterial({
+      color: 0xe0f7fa,
+      emissive: 0x80deea,
+      emissiveIntensity: 0.4,
+      transparent: true,
+      opacity: 0.9,
+      flatShading: true
+    });
+    const barkMat = new THREE.MeshLambertMaterial({ color: 0x5d4037, flatShading: true }); // 树干棕
+    const leafMat = new THREE.MeshLambertMaterial({ color: 0x2e7d32, flatShading: true }); // 树叶深绿
+    const coconutMat = new THREE.MeshLambertMaterial({ color: 0x8d6e63, flatShading: true }); // 椰子
 
-    const insideHeart = (x, z) => {
-      const r1 = Math.sqrt((x + 4.5) * (x + 4.5) + (z + 6) * (z + 6));
-      const r2 = Math.sqrt((x - 4.5) * (x - 4.5) + (z + 6) * (z + 6));
-      if (r1 < 6.5 || r2 < 6.5) return true;
-      if (z >= -6 && z <= 14) {
-        const halfWidth = 11.0 * (1.0 - (z + 6) / 20.0);
-        if (Math.abs(x) <= halfWidth) return true;
+    // =========================================================================
+    // 1. 宽广庭院绿地基座 (33x33) 与粉色泥土底座
+    // =========================================================================
+    const baseWidth = 33.0;
+    const baseDepth = 33.0;
+    const halfW = baseWidth / 2 - 0.3;
+    const halfD = baseDepth / 2 - 0.3;
+    
+    // 绿色草坪顶盖 Y=0.60
+    const lawn = new THREE.Mesh(new THREE.BoxGeometry(baseWidth, 1.2, baseDepth), grassMat);
+    lawn.position.set(0, 0, 0); // 顶面正好在 Y = 0.6
+    lawn.receiveShadow = true;
+    lawn.castShadow = true;
+    this.castleGroup.add(lawn);
+
+    // 紫色底泥土 (厚度 2.2)
+    const dirt = new THREE.Mesh(new THREE.BoxGeometry(baseWidth - 0.2, 2.2, baseDepth - 0.2), new THREE.MeshLambertMaterial({ color: 0x9c27b0, flatShading: true }));
+    dirt.position.set(0, -1.7, 0);
+    this.castleGroup.add(dirt);
+
+    // =========================================================================
+    // 2. 欧式粉白铁艺围栏
+    // =========================================================================
+    const fenceHeight = 0.8;
+    const pillarGeo = new THREE.CylinderGeometry(0.16, 0.16, fenceHeight + 0.2, 8);
+
+    const drawFenceLine = (x1, z1, x2, z2, step = 2.2) => {
+      const dx = x2 - x1;
+      const dz = z2 - z1;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      const count = Math.round(dist / step);
+      
+      const posts = [];
+      for (let i = 0; i <= count; i++) {
+        const t = i / count;
+        const px = x1 + dx * t;
+        const pz = z1 + dz * t;
+        
+        // 南侧开口在大门开口内 (-4 到 4)，则跳过柱子
+        if (Math.abs(pz - halfD) < 0.5 && Math.abs(px) < 4.0) {
+          continue;
+        }
+
+        const p = new THREE.Mesh(pillarGeo, trimMat);
+        p.position.set(px, 0.6 + (fenceHeight + 0.2) / 2, pz);
+        p.castShadow = true;
+        this.castleGroup.add(p);
+        posts.push({ x: px, z: pz });
       }
-      return false;
+
+      for (let i = 0; i < posts.length - 1; i++) {
+        const pA = posts[i];
+        const pB = posts[i + 1];
+        
+        const gap = Math.sqrt((pB.x - pA.x) * (pB.x - pA.x) + (pB.z - pA.z) * (pB.z - pA.z));
+        if (gap > step * 1.5) continue; // 跳过大门开口
+
+        const mx = (pA.x + pB.x) / 2;
+        const mz = (pA.z + pB.z) / 2;
+        const angle = Math.atan2(pB.z - pA.z, pB.x - pA.x);
+
+        const rGroup = new THREE.Group();
+        rGroup.position.set(mx, 0.6 + fenceHeight / 2, mz);
+        rGroup.rotation.y = -angle;
+
+        const segRailGeo = new THREE.BoxGeometry(gap - 0.1, 0.05, 0.05);
+        
+        const rail1 = new THREE.Mesh(segRailGeo, tilePink);
+        rail1.position.set(0, 0.16, 0);
+        rGroup.add(rail1);
+
+        const rail2 = new THREE.Mesh(segRailGeo, tilePink);
+        rail2.position.set(0, -0.16, 0);
+        rGroup.add(rail2);
+
+        // 中间的心形花纹
+        const heartDeco = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.24, 6), heartPinkMat);
+        heartDeco.rotation.x = Math.PI;
+        heartDeco.position.set(0, 0, 0);
+        rGroup.add(heartDeco);
+
+        this.castleGroup.add(rGroup);
+      }
     };
 
-    // 平铺地砖
-    let colorToggle = false;
-    for (let xOffset = -16; xOffset <= 16; xOffset += 2) {
-      for (let zOffset = -12; zOffset <= 18; zOffset += 2) {
-        // 水池区域不铺地砖
-        const inPool = Math.sqrt((xOffset - (-9)) * (xOffset - (-9)) + (zOffset - 2) * (zOffset - 2)) < 3.2;
-        // 城堡核心地基部分不铺，城堡自身有专门的地板
-        const inCastle = xOffset >= -6.5 && xOffset <= 6.5 && zOffset >= -12.5 && zOffset <= -2.5;
+    drawFenceLine(-halfW, -halfD, halfW, -halfD, 2.2); // 北侧
+    drawFenceLine(-halfW, -halfD, -halfW, halfD, 2.2); // 左侧
+    drawFenceLine(halfW, -halfD, halfW, halfD, 2.2);  // 右侧
+    drawFenceLine(-halfW, halfD, halfW, halfD, 2.2);  // 南侧
 
-        if (insideHeart(xOffset, zOffset) && !inPool && !inCastle) {
-          const tile = new THREE.Mesh(tileGeo, colorToggle ? tilePink : tileWhite);
-          tile.position.set(xOffset, 0.605, zOffset);
-          tile.receiveShadow = true;
-          tile.castShadow = true;
-          this.castleGroup.add(tile);
-          colorToggle = !colorToggle;
-        }
-      }
+    // =========================================================================
+    // 3. 前院环形车道 (Arched Driveway) 与叠水喷泉 (Central Fountain)
+    // =========================================================================
+    const fountainX = 0;
+    const fountainZ = 4.5;
+
+    // 环形车道路面
+    const roadRingGeo = new THREE.RingGeometry(4.8, 7.8, 32);
+    roadRingGeo.rotateX(-Math.PI / 2);
+    const roadRing = new THREE.Mesh(roadRingGeo, roadMat);
+    roadRing.position.set(fountainX, 0.605, fountainZ);
+    roadRing.receiveShadow = true;
+    this.castleGroup.add(roadRing);
+
+    // 直通道连向南边入口
+    const roadStraight = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.01, 9.0), roadMat);
+    roadStraight.position.set(0, 0.605, fountainZ + 6.3);
+    roadStraight.receiveShadow = true;
+    this.castleGroup.add(roadStraight);
+
+    // 大门廊连接车道
+    const porchConnectRoad = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.01, 3.5), roadMat);
+    porchConnectRoad.position.set(-2.5, 0.605, 0.0);
+    porchConnectRoad.receiveShadow = true;
+    this.castleGroup.add(porchConnectRoad);
+
+    // 车库连接车道 (斜向弯道)
+    const garageConnectRoad = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.01, 5.0), roadMat);
+    garageConnectRoad.position.set(6.5, 0.605, 0.5);
+    garageConnectRoad.rotation.y = -Math.PI / 6;
+    garageConnectRoad.receiveShadow = true;
+    this.castleGroup.add(garageConnectRoad);
+
+    // 中央叠水大喷泉
+    const fountainGroup = new THREE.Group();
+    fountainGroup.position.set(fountainX, 0.6, fountainZ);
+
+    const fBasin1 = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.4, 0.35, 16), trimMat);
+    fBasin1.position.y = 0.175;
+    fBasin1.castShadow = true;
+    fBasin1.receiveShadow = true;
+    fountainGroup.add(fBasin1);
+
+    const fWater = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 2.0, 0.05, 16), waterMat);
+    fWater.position.y = 0.28;
+    fountainGroup.add(fWater);
+
+    const fPillar = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 1.2, 8), trimMat);
+    fPillar.position.y = 0.7;
+    fPillar.castShadow = true;
+    fountainGroup.add(fPillar);
+
+    const fBasin2 = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.3, 0.25, 12), trimMat);
+    fBasin2.position.y = 1.325;
+    fBasin2.castShadow = true;
+    fountainGroup.add(fBasin2);
+
+    const fSpout = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.22, 0.4, 8), trimMat);
+    fSpout.position.y = 1.6;
+    fountainGroup.add(fSpout);
+
+    const waterSpoutMat = new THREE.MeshBasicMaterial({ color: 0xfff0f3, transparent: true, opacity: 0.75 });
+    for (let i = 0; i < 8; i++) {
+      const angle = (i * Math.PI * 2) / 8;
+      const arcGroup = new THREE.Group();
+      arcGroup.rotation.y = angle;
+      arcGroup.position.set(0, 1.6, 0);
+
+      const wSeg1 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.6, 6), waterSpoutMat);
+      wSeg1.rotation.z = -0.4;
+      wSeg1.position.set(0.15, 0.25, 0);
+      arcGroup.add(wSeg1);
+
+      const wSeg2 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 1.2, 6), waterSpoutMat);
+      wSeg2.rotation.z = -1.1;
+      wSeg2.position.set(0.85, 0.05, 0);
+      arcGroup.add(wSeg2);
+
+      fountainGroup.add(arcGroup);
+    }
+    
+    const fLight = new THREE.PointLight(0x80deea, 1.5, 4.0);
+    fLight.position.set(0, 1.8, 0);
+    fountainGroup.add(fLight);
+
+    const particleMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    for (let i = 0; i < 8; i++) {
+      const p = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.08), particleMat);
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 0.6 + Math.random() * 1.3;
+      p.position.set(Math.cos(angle) * radius, 1.0 + Math.random() * 0.9, Math.sin(angle) * radius);
+      fountainGroup.add(p);
     }
 
-    // 3. 心形边缘环绕的白色围栏与爱心路灯
-    const fenceMat = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true });
-    const fencePillarGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.8, 8);
-    const lampPostMat = fenceMat;
-    const heartPinkMat = new THREE.MeshBasicMaterial({ color: 0xff4081 });
+    this.castleGroup.add(fountainGroup);
 
-    const edgePoints = heartShape.getPoints(42);
-    edgePoints.forEach((p, idx) => {
-      // 转换到世界坐标
-      const wx = p.x;
-      const wz = -p.y;
-
-      // 距离城堡、水池和出生点不要太近的边缘才建围栏，留出空当
-      if (wz > 13.5 || (Math.abs(wx) < 3.0 && wz > 11.0)) return; // 出生点和入口留出开口
-
-      // 放置围栏短柱
-      const fencePillar = new THREE.Mesh(fencePillarGeo, fenceMat);
-      fencePillar.position.set(wx, 0.6 + 0.4, wz);
-      fencePillar.castShadow = true;
-      fencePillar.receiveShadow = true;
-      this.castleGroup.add(fencePillar);
-
-      // 每隔 6 个点放置一个精致的心形路灯
-      if (idx % 6 === 0) {
-        const lampGroup = new THREE.Group();
-        lampGroup.position.set(wx, 0.6, wz);
-
-        // 灯柱
-        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 2.5, 8), lampPostMat);
-        post.position.y = 1.25;
-        post.castShadow = true;
-        lampGroup.add(post);
-
-        // 心形灯罩
-        const heartGroup = new THREE.Group();
-        heartGroup.position.set(0, 2.6, 0);
-
-        const sphereL = new THREE.Mesh(new THREE.SphereGeometry(0.18, 6, 6), heartPinkMat);
-        sphereL.position.set(-0.1, 0.1, 0);
-        heartGroup.add(sphereL);
-
-        const sphereR = sphereL.clone();
-        sphereR.position.x = 0.1;
-        heartGroup.add(sphereR);
-
-        const cone = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.32, 6), heartPinkMat);
-        cone.rotation.x = Math.PI; // 倒过来
-        cone.position.set(0, -0.1, 0);
-        heartGroup.add(cone);
-
-        lampGroup.add(heartGroup);
-
-        // 点光源 (粉色温和微光)
-        const light = new THREE.PointLight(0xff69b4, 1.2, 5.0);
-        light.position.set(0, 2.6, 0);
-        lampGroup.add(light);
-
-        this.castleGroup.add(lampGroup);
-      }
+    this.castleInteractables.push({
+      id: 'exit_portal',
+      name: '返航传送泉 (传送回海岛)',
+      x: fountainX,
+      y: 0.6,
+      z: fountainZ,
+      triggerRadius: 2.2
     });
 
-    // 4. 双层大城堡主体 (位于北边 z = -7.5 处，做大尺寸)
-    const castleCenterZ = -7.5;
-    const castleWidth = 14.0;
-    const castleDepth = 10.0;
-    const firstFloorHeight = 4.2;
+    // =========================================================================
+    // 4. 3D 热带椰子树生成
+    // =========================================================================
+    const createPalmTree = (tx, tz, treeScale = 1.0) => {
+      const tree = new THREE.Group();
+      tree.position.set(tx, 0.6, tz);
+      tree.scale.set(treeScale, treeScale, treeScale);
 
-    const wallColor = 0xff85a1; // 经典明亮芭比粉
-    const wallMat = new THREE.MeshLambertMaterial({ color: wallColor, flatShading: true });
-    const trimMat = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true }); // 白色装饰
+      let currentY = 0;
+      let currentX = 0;
+      let currentZ = 0;
+      const trunkSegments = 6;
+      const segHeight = 1.0;
+      
+      for (let i = 0; i < trunkSegments; i++) {
+        const segGeo = new THREE.CylinderGeometry(0.18 - i * 0.018, 0.22 - i * 0.018, segHeight, 8);
+        const seg = new THREE.Mesh(segGeo, barkMat);
+        
+        seg.position.set(currentX, currentY + segHeight / 2, currentZ);
+        const tiltX = tx > 0 ? 0.07 : -0.07;
+        const tiltZ = tz > 0 ? 0.07 : -0.07;
+        seg.rotation.set(tiltZ * (i + 1), 0, -tiltX * (i + 1));
+        
+        seg.castShadow = true;
+        tree.add(seg);
 
-    // 一楼地板 (白色大理石)
-    const cFloor = new THREE.Mesh(new THREE.BoxGeometry(castleWidth, 0.12, castleDepth), tileWhite);
-    cFloor.position.set(0, 0.6 + 0.06, castleCenterZ);
-    cFloor.receiveShadow = true;
-    cFloor.castShadow = true;
-    this.castleGroup.add(cFloor);
+        currentY += segHeight - 0.06;
+        currentX += Math.sin(-tiltX * (i + 1)) * segHeight;
+        currentZ += Math.sin(tiltZ * (i + 1)) * segHeight;
+      }
 
-    // 城堡一楼地板碰撞体 (Y = 0.72)
+      const leafCenterY = currentY;
+      const leafCenterX = currentX;
+      const leafCenterZ = currentZ;
+
+      const leafCount = 8;
+      for (let l = 0; l < leafCount; l++) {
+        const angle = (l * Math.PI * 2) / leafCount;
+        const leafGroup = new THREE.Group();
+        leafGroup.position.set(leafCenterX, leafCenterY, leafCenterZ);
+        leafGroup.rotation.y = angle;
+
+        let lx = 0;
+        let ly = 0;
+        const sW = 0.26;
+        
+        const s1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.02, sW), leafMat);
+        s1.rotation.z = 0.42;
+        s1.rotation.x = (l % 2 === 0 ? 0.15 : -0.15);
+        s1.position.set(0.36, 0.12, 0);
+        s1.castShadow = true;
+        leafGroup.add(s1);
+        lx += Math.cos(0.42) * 0.8;
+        ly += Math.sin(0.42) * 0.8;
+
+        const s2 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.02, sW - 0.04), leafMat);
+        s2.rotation.z = -0.18;
+        s2.rotation.x = (l % 2 === 0 ? 0.1 : -0.1);
+        s2.position.set(lx + 0.38, ly - 0.04, 0);
+        s2.castShadow = true;
+        leafGroup.add(s2);
+        lx += Math.cos(-0.18) * 0.8;
+        ly += Math.sin(-0.18) * 0.8;
+
+        const s3 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.02, sW - 0.08), leafMat);
+        s3.rotation.z = -0.85;
+        s3.position.set(lx + 0.32, ly - 0.28, 0);
+        s3.castShadow = true;
+        leafGroup.add(s3);
+
+        tree.add(leafGroup);
+      }
+
+      for (let c = 0; c < 3; c++) {
+        const coco = new THREE.Mesh(new THREE.SphereGeometry(0.18, 6, 6), coconutMat);
+        const ca = (c * Math.PI * 2) / 3;
+        coco.position.set(leafCenterX + Math.cos(ca) * 0.24, leafCenterY - 0.15, leafCenterZ + Math.sin(ca) * 0.24);
+        tree.add(coco);
+      }
+
+      this.castleGroup.add(tree);
+    };
+
+    createPalmTree(-14.0, 9.0, 1.15);
+    createPalmTree(14.0, 9.0, 1.15);
+    createPalmTree(-15.0, -1.0, 1.1);
+    createPalmTree(15.0, -1.0, 1.1);
+    createPalmTree(-13.0, -12.0, 1.0);
+    createPalmTree(13.0, -12.0, 1.0);
+
+    // =========================================================================
+    // 5. 模块化构建多房间城堡主体 (西班牙巴洛克风格)
+    // =========================================================================
+    const mZ = -7.5;
+    const f1Height = 4.2;
+    const secondFloorY = 0.6 + f1Height; // 二楼地面 Y = 4.8
+
+    // 辅助函数：创建高品质欧式窗户
+    const createArchWindow = (parentGroup, wx, wy, wz, rotY = 0) => {
+      const wGroup = new THREE.Group();
+      wGroup.position.set(wx, wy, wz);
+      wGroup.rotation.y = rotY;
+
+      // 白色窗框 (带圆角拱门框效果)
+      const frameMain = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.7, 0.25), trimMat);
+      frameMain.castShadow = true;
+      wGroup.add(frameMain);
+
+      const frameTopArch = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 0.25, 10, 1, false, 0, Math.PI), trimMat);
+      frameTopArch.rotation.x = Math.PI / 2;
+      frameTopArch.position.y = 0.85;
+      frameTopArch.castShadow = true;
+      wGroup.add(frameTopArch);
+
+      // 发光拱形玻璃
+      const glass = new THREE.Mesh(new THREE.BoxGeometry(1.05, 1.45, 0.12), windowLightMat);
+      glass.position.y = 0.05;
+      wGroup.add(glass);
+
+      // 窗沿托石
+      const sill = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.1, 0.35), trimMat);
+      sill.position.y = -0.9;
+      sill.position.z = 0.05;
+      sill.castShadow = true;
+      wGroup.add(sill);
+
+      parentGroup.add(wGroup);
+    };
+
+    // --- 5.1 中央大厅 (Central Hall - 一楼) ---
+    const hallWidth = 6.0;
+    const hallDepth = 7.5;
+    const hallX = -2.5;
+
+    const hallGroup = new THREE.Group();
+    hallGroup.position.set(hallX, 0.6, mZ);
+    this.castleGroup.add(hallGroup);
+
+    // 地板与物理碰撞
+    const hallFloor = new THREE.Mesh(new THREE.BoxGeometry(hallWidth, 0.12, hallDepth), tileWhite);
+    hallFloor.position.y = 0.06;
+    hallFloor.receiveShadow = true;
+    hallFloor.castShadow = true;
+    hallGroup.add(hallFloor);
+
     this.castleColliders.push({
       type: 'floor',
-      worldX: 0,
-      worldZ: castleCenterZ,
+      worldX: hallX,
+      worldZ: mZ,
       worldY: 0.72,
-      radius: 8.0
+      radius: hallWidth / 2 + 1.0
     });
 
-    // 左右外墙
-    const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, firstFloorHeight, castleDepth), wallMat);
-    leftWall.position.set(-castleWidth / 2 + 0.15, 0.6 + firstFloorHeight / 2, castleCenterZ);
-    leftWall.castShadow = true;
-    leftWall.receiveShadow = true;
-    this.castleGroup.add(leftWall);
+    // 墙壁
+    const hallBackWall = new THREE.Mesh(new THREE.BoxGeometry(hallWidth, f1Height, 0.3), wallMat);
+    hallBackWall.position.set(0, f1Height / 2, -hallDepth / 2 + 0.15);
+    hallBackWall.castShadow = true;
+    hallGroup.add(hallBackWall);
 
-    const rightWall = leftWall.clone();
-    rightWall.position.x = castleWidth / 2 - 0.15;
-    this.castleGroup.add(rightWall);
+    const hallFrontWallL = new THREE.Mesh(new THREE.BoxGeometry(1.8, f1Height, 0.3), wallMat);
+    hallFrontWallL.position.set(-hallWidth / 2 + 0.9, f1Height / 2, hallDepth / 2 - 0.15);
+    hallFrontWallL.castShadow = true;
+    hallGroup.add(hallFrontWallL);
 
-    // 后墙
-    const backWall = new THREE.Mesh(new THREE.BoxGeometry(castleWidth, firstFloorHeight, 0.3), wallMat);
-    backWall.position.set(0, 0.6 + firstFloorHeight / 2, castleCenterZ - castleDepth / 2 + 0.15);
-    backWall.castShadow = true;
-    backWall.receiveShadow = true;
-    this.castleGroup.add(backWall);
+    const hallFrontWallR = new THREE.Mesh(new THREE.BoxGeometry(1.8, f1Height, 0.3), wallMat);
+    hallFrontWallR.position.set(hallWidth / 2 - 0.9, f1Height / 2, hallDepth / 2 - 0.15);
+    hallFrontWallR.castShadow = true;
+    hallGroup.add(hallFrontWallR);
 
-    // 前方门廊白色立柱
-    const pillarHeight = firstFloorHeight;
-    const pillarGeo = new THREE.CylinderGeometry(0.32, 0.38, pillarHeight, 12);
-    for (let i = 0; i < 4; i++) {
-      const px = -5.0 + i * 3.33;
-      if (Math.abs(px) < 1.0) continue;
-      const pillar = new THREE.Mesh(pillarGeo, trimMat);
-      pillar.position.set(px, 0.6 + pillarHeight / 2, castleCenterZ + castleDepth / 2 - 0.3);
-      pillar.castShadow = true;
-      pillar.receiveShadow = true;
-      this.castleGroup.add(pillar);
-    }
+    // --- 5.2 大门廊 (Entry Porch - 一楼大门入口) ---
+    // 正大门设在中央大厅前方 (z 轴突出，x 轴对齐大厅中心)
+    const porchWidth = 2.4;
+    const porchDepth = 1.6;
+    const porchX = hallX;
+    const porchZ = mZ + hallDepth / 2; // -3.75
 
-    // 5. 一楼会客厅沙发与梳妆台
-    // 弧形大沙发
-    const sofaGroup = new THREE.Group();
-    sofaGroup.position.set(0, 0.72, castleCenterZ - 1.5);
+    const porchGroup = new THREE.Group();
+    porchGroup.position.set(porchX, 0.6, porchZ);
+    this.castleGroup.add(porchGroup);
 
-    const sofaBase = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.42, 1.2), tilePink);
-    sofaBase.position.y = 0.21;
-    sofaBase.castShadow = true;
-    sofaGroup.add(sofaBase);
+    // 两侧的双立柱 (每侧 2 根圆柱)
+    const colR = 0.12;
+    const colH = f1Height;
+    const colGeo = new THREE.CylinderGeometry(colR, colR * 1.2, colH, 12);
+    
+    // 左侧罗马柱对
+    const colL1 = new THREE.Mesh(colGeo, trimMat);
+    colL1.position.set(-porchWidth / 2 - 0.1, colH / 2, porchDepth - 0.3);
+    colL1.castShadow = true;
+    porchGroup.add(colL1);
 
-    // 左右沙发扶手
-    const armGeo = new THREE.BoxGeometry(0.5, 0.72, 1.2);
-    const armL = new THREE.Mesh(armGeo, tilePink);
-    armL.position.set(-2.1 + 0.25, 0.36, 0);
-    armL.castShadow = true;
-    sofaGroup.add(armL);
+    const colL2 = colL1.clone();
+    colL2.position.z -= 0.45;
+    porchGroup.add(colL2);
 
-    const armR = armL.clone();
-    armR.position.x = 2.1 - 0.25;
-    sofaGroup.add(armR);
+    // 右侧罗马柱对
+    const colR1 = new THREE.Mesh(colGeo, trimMat);
+    colR1.position.set(porchWidth / 2 + 0.1, colH / 2, porchDepth - 0.3);
+    colR1.castShadow = true;
+    porchGroup.add(colR1);
 
-    // 沙发后靠背
-    const backGeo = new THREE.BoxGeometry(4.2, 0.72, 0.4);
-    const sofaBack = new THREE.Mesh(backGeo, tilePink);
-    sofaBack.position.set(0, 0.52, -0.4);
-    sofaBack.castShadow = true;
-    sofaGroup.add(sofaBack);
+    const colR2 = colR1.clone();
+    colR2.position.z -= 0.45;
+    porchGroup.add(colR2);
 
-    this.castleGroup.add(sofaGroup);
+    // 柱头白色方帽
+    const capGeo = new THREE.BoxGeometry(0.38, 0.12, 0.85);
+    const capL = new THREE.Mesh(capGeo, trimMat);
+    capL.position.set(-porchWidth / 2 - 0.1, colH - 0.06, porchDepth - 0.52);
+    porchGroup.add(capL);
 
-    // 注册坐沙发交互点
-    this.castleInteractables.push({
-      id: 'sit_sofa',
-      name: '坐下大沙发',
-      x: 0,
-      y: 0.72,
-      z: castleCenterZ - 1.5 + 0.8,
-      triggerRadius: 1.5
-    });
+    const capR = capL.clone();
+    capR.position.x = porchWidth / 2 + 0.1;
+    porchGroup.add(capR);
 
-    // 公主梳妆交互台与试衣镜
-    const vanityGroup = new THREE.Group();
-    vanityGroup.position.set(-4.0, 0.72, castleCenterZ - 3.0);
+    // 拱门大梁 (带有雕花装饰感觉)
+    const porchArchBeam = new THREE.Mesh(new THREE.BoxGeometry(porchWidth + 0.6, 0.45, 1.2), trimMat);
+    porchArchBeam.position.set(0, colH + 0.225, porchDepth - 0.52);
+    porchArchBeam.castShadow = true;
+    porchGroup.add(porchArchBeam);
 
-    const vanityTable = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.75, 0.7), trimMat);
-    vanityTable.position.y = 0.375;
-    vanityTable.castShadow = true;
-    vanityGroup.add(vanityTable);
+    // 门廊斜瓦屋顶 (西班牙红瓦)
+    const porchRoof = new THREE.Mesh(new THREE.BoxGeometry(porchWidth + 0.8, 0.18, 1.4), roofMat);
+    porchRoof.rotation.x = 0.22;
+    porchRoof.position.set(0, colH + 0.48, porchDepth - 0.42);
+    porchRoof.castShadow = true;
+    porchGroup.add(porchRoof);
 
-    // 圆形镜子
-    const mirrorBack = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.05, 16), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
-    mirrorBack.rotateX(Math.PI / 2);
-    mirrorBack.position.set(0, 1.35, -0.3);
-    mirrorBack.castShadow = true;
-    vanityGroup.add(mirrorBack);
+    // 挑高大门 (粉色木门，镶嵌金色包边)
+    const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(2.4, 3.2, 0.22), trimMat);
+    doorFrame.position.set(0, 1.6, -0.05);
+    porchGroup.add(doorFrame);
 
-    const mirrorGlass = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.06, 16), new THREE.MeshBasicMaterial({ color: 0x80deea, transparent: true, opacity: 0.8 }));
-    mirrorGlass.rotateX(Math.PI / 2);
-    mirrorGlass.position.set(0, 1.35, -0.28);
-    vanityGroup.add(mirrorGlass);
+    const f1Door = new THREE.Mesh(new THREE.BoxGeometry(2.0, 3.0, 0.12), tilePink);
+    f1Door.position.set(0, 1.5, -0.05);
+    f1Door.castShadow = true;
+    porchGroup.add(f1Door);
+    
+    // 金色门拉手
+    const handleL = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
+    handleL.position.set(-0.1, 1.45, 0.05);
+    porchGroup.add(handleL);
+    const handleR = handleL.clone();
+    handleR.position.x = 0.1;
+    porchGroup.add(handleR);
 
-    // 凳子
-    const vanityChair = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.45, 12), tilePink);
-    vanityChair.position.set(0, 0.225, 0.6);
-    vanityChair.castShadow = true;
-    vanityGroup.add(vanityChair);
+    // --- 5.3 左翼起居室与起伏露台 (Left Wing & Terrace - 一楼) ---
+    const leftWingWidth = 5.0;
+    const leftWingDepth = 7.5;
+    const leftWingX = -8.0;
 
-    this.castleGroup.add(vanityGroup);
+    const leftWingGroup = new THREE.Group();
+    leftWingGroup.position.set(leftWingX, 0.6, mZ);
+    this.castleGroup.add(leftWingGroup);
 
-    // 注册更衣室试衣镜交互
-    this.castleInteractables.push({
-      id: 'wardrobe',
-      name: '整理仪容 (试衣间)',
-      x: -4.0,
-      y: 0.72,
-      z: castleCenterZ - 3.0 + 0.6,
-      triggerRadius: 1.5
-    });
+    // 一层左翼地板与物理碰撞
+    const leftWingFloor = new THREE.Mesh(new THREE.BoxGeometry(leftWingWidth, 0.12, leftWingDepth), tileWhite);
+    leftWingFloor.position.y = 0.06;
+    leftWingFloor.receiveShadow = true;
+    leftWingFloor.castShadow = true;
+    leftWingGroup.add(leftWingFloor);
 
-    // 6. 二楼露天大露台平台 (Y = 0.6 + firstFloorHeight)
-    const secondFloorY = 0.6 + firstFloorHeight;
-    const cSecondFloor = new THREE.Mesh(new THREE.BoxGeometry(castleWidth, 0.15, castleDepth), trimMat);
-    cSecondFloor.position.set(0, secondFloorY + 0.075, castleCenterZ);
-    cSecondFloor.receiveShadow = true;
-    cSecondFloor.castShadow = true;
-    this.castleGroup.add(cSecondFloor);
-
-    // 注册二楼露台 floor 物理碰撞体
     this.castleColliders.push({
       type: 'floor',
-      worldX: 0,
-      worldZ: castleCenterZ,
-      worldY: secondFloorY + 0.15,
-      radius: 8.5
+      worldX: leftWingX,
+      worldZ: mZ,
+      worldY: 0.72,
+      radius: leftWingWidth / 2 + 0.5
     });
 
-    // 二楼围栏 (左右和前方)
-    const rPillarGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.72, 8);
-    const rRailGeo = new THREE.BoxGeometry(castleWidth, 0.08, 0.08);
-    const rRailSideGeo = new THREE.BoxGeometry(0.08, 0.08, castleDepth);
+    // 左翼一楼外墙
+    const f1LeftWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, f1Height, leftWingDepth), wallMat);
+    f1LeftWall.position.set(-leftWingWidth / 2 + 0.15, f1Height / 2, 0);
+    f1LeftWall.castShadow = true;
+    leftWingGroup.add(f1LeftWall);
 
-    const fFenceGroup = new THREE.Group();
-    fFenceGroup.position.set(0, secondFloorY + 0.15, castleCenterZ);
+    const f1LeftBackWall = new THREE.Mesh(new THREE.BoxGeometry(leftWingWidth, f1Height, 0.3), wallMat);
+    f1LeftBackWall.position.set(0, f1Height / 2, -leftWingDepth / 2 + 0.15);
+    f1LeftBackWall.castShadow = true;
+    leftWingGroup.add(f1LeftBackWall);
 
-    const frontRail = new THREE.Mesh(rRailGeo, trimMat);
-    frontRail.position.set(0, 0.72, castleDepth / 2 - 0.1);
-    frontRail.castShadow = true;
-    fFenceGroup.add(frontRail);
+    const f1LeftFrontWall = new THREE.Mesh(new THREE.BoxGeometry(leftWingWidth, f1Height, 0.3), wallMat);
+    f1LeftFrontWall.position.set(0, f1Height / 2, leftWingDepth / 2 - 0.15);
+    f1LeftFrontWall.castShadow = true;
+    leftWingGroup.add(f1LeftFrontWall);
 
-    for (let x = -castleWidth / 2 + 0.4; x <= castleWidth / 2 - 0.4; x += 0.8) {
-      const p = new THREE.Mesh(rPillarGeo, trimMat);
-      p.position.set(x, 0.36, castleDepth / 2 - 0.1);
+    // 左翼前墙和左侧墙开大拱窗
+    createArchWindow(leftWingGroup, 0, f1Height / 2 + 0.2, leftWingDepth / 2 - 0.05); // 朝南前窗
+    createArchWindow(leftWingGroup, -leftWingWidth / 2 + 0.05, f1Height / 2 + 0.2, 0, -Math.PI / 2); // 朝西侧窗
+
+    // --- ④ 左侧起伏柱廊露台 (Left Terrace) ---
+    const terraceWidth = 3.0;
+    const terraceDepth = 7.5;
+    const terraceX = leftWingX - leftWingWidth / 2 - terraceWidth / 2; // -12.0
+
+    const terraceGroup = new THREE.Group();
+    terraceGroup.position.set(terraceX, 0.6, mZ);
+    this.castleGroup.add(terraceGroup);
+
+    // 露台水泥地板 (略微抬高 Y = 0.15)
+    const terraceFloor = new THREE.Mesh(new THREE.BoxGeometry(terraceWidth, 0.18, terraceDepth), tileWhite);
+    terraceFloor.position.y = 0.09;
+    terraceFloor.receiveShadow = true;
+    terraceFloor.castShadow = true;
+    terraceGroup.add(terraceFloor);
+
+    this.castleColliders.push({
+      type: 'floor',
+      worldX: terraceX,
+      worldZ: mZ,
+      worldY: 0.78,
+      radius: terraceWidth / 2 + 0.5
+    });
+
+    // 露台白罗马柱廊 (立于四周)
+    const tColH = 3.2;
+    const tColGeo = new THREE.CylinderGeometry(0.1, 0.1, tColH, 8);
+    for (let tz = -terraceDepth / 2 + 0.6; tz <= terraceDepth / 2 - 0.6; tz += 2.0) {
+      const tc = new THREE.Mesh(tColGeo, trimMat);
+      tc.position.set(-terraceWidth / 2 + 0.2, 0.18 + tColH / 2, tz);
+      tc.castShadow = true;
+      terraceGroup.add(tc);
+    }
+
+    // 露台柱廊顶部的装饰顶梁盖
+    const terraceBeam = new THREE.Mesh(new THREE.BoxGeometry(terraceWidth + 0.2, 0.24, terraceDepth + 0.2), trimMat);
+    terraceBeam.position.set(0, 0.18 + tColH + 0.12, 0);
+    terraceBeam.castShadow = true;
+    terraceGroup.add(terraceBeam);
+
+    // 露台周边的白色雕花格栅矮栏杆 (高 0.72)
+    const tRailPillarGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.6, 6);
+    const drawTerraceRail = (rx1, rz1, rx2, rz2) => {
+      const rdx = rx2 - rx1;
+      const rdz = rz2 - rz1;
+      const rdist = Math.sqrt(rdx * rdx + rdz * rdz);
+      const rstep = 0.5;
+      const rcount = Math.round(rdist / rstep);
+      for (let i = 0; i <= rcount; i++) {
+        const rt = i / rcount;
+        const rp = new THREE.Mesh(tRailPillarGeo, trimMat);
+        rp.position.set(rx1 + rdx * rt, 0.18 + 0.3, rz1 + rdz * rt);
+        rp.castShadow = true;
+        terraceGroup.add(rp);
+      }
+      // 上横栏
+      const railH = new THREE.Mesh(new THREE.BoxGeometry(rdist + 0.1, 0.06, 0.06), trimMat);
+      railH.position.set((rx1 + rx2) / 2, 0.18 + 0.6, (rz1 + rz2) / 2);
+      railH.rotation.y = -Math.atan2(rz2 - rz1, rx2 - rx1);
+      terraceGroup.add(railH);
+    };
+    // 围栏画在左侧和前后边缘
+    drawTerraceRail(-terraceWidth / 2 + 0.2, -terraceDepth / 2 + 0.2, -terraceWidth / 2 + 0.2, terraceDepth / 2 - 0.2); // 西面
+    drawTerraceRail(-terraceWidth / 2 + 0.2, terraceDepth / 2 - 0.2, terraceWidth / 2 - 0.2, terraceDepth / 2 - 0.2);  // 南面
+    drawTerraceRail(-terraceWidth / 2 + 0.2, -terraceDepth / 2 + 0.2, terraceWidth / 2 - 0.2, -terraceDepth / 2 + 0.2); // 北面
+
+    // --- 层间白色腰线 (Belt Course) ---
+    // 围在中央大厅与左翼大块屋檐的四周
+    const beltW = hallWidth + leftWingWidth + 0.4;
+    const beltD = hallDepth + 0.4;
+    const mainBelt = new THREE.Mesh(new THREE.BoxGeometry(beltW, 0.25, beltD), trimMat);
+    mainBelt.position.set((hallX + leftWingX) / 2, secondFloorY + 0.125, mZ);
+    mainBelt.receiveShadow = true;
+    mainBelt.castShadow = true;
+    this.castleGroup.add(mainBelt);
+
+    // =========================================================================
+    // 6. 二层房间群 (Master & Secondary Bedrooms - F2)
+    // =========================================================================
+    // 二楼地板承载面
+    const f2MainFloor = new THREE.Mesh(new THREE.BoxGeometry(hallWidth + leftWingWidth, 0.15, hallDepth), trimMat);
+    f2MainFloor.position.set((hallX + leftWingX) / 2, secondFloorY + 0.075, mZ);
+    f2MainFloor.receiveShadow = true;
+    f2MainFloor.castShadow = true;
+    this.castleGroup.add(f2MainFloor);
+
+    this.castleColliders.push({
+      type: 'floor',
+      worldX: (hallX + leftWingX) / 2,
+      worldZ: mZ,
+      worldY: secondFloorY + 0.15,
+      radius: (hallWidth + leftWingWidth) / 2 + 0.5
+    });
+
+    const f2RoomHeight = 3.5;
+
+    // --- 6.1 主卧套房 (Master Bedroom Suite - 二楼中央偏右) ---
+    const masterWidth = 4.5;
+    const masterDepth = 7.5;
+    const masterX = -1.5;
+
+    const masterGroup = new THREE.Group();
+    masterGroup.position.set(masterX, secondFloorY + 0.15, mZ);
+    this.castleGroup.add(masterGroup);
+
+    const masterBackWall = new THREE.Mesh(new THREE.BoxGeometry(masterWidth, f2RoomHeight, 0.3), wallMat);
+    masterBackWall.position.set(0, f2RoomHeight / 2, -masterDepth / 2 + 0.15);
+    masterBackWall.castShadow = true;
+    masterGroup.add(masterBackWall);
+
+    const masterFrontWall = new THREE.Mesh(new THREE.BoxGeometry(masterWidth, f2RoomHeight, 0.3), wallMat);
+    masterFrontWall.position.set(0, f2RoomHeight / 2, masterDepth / 2 - 0.15);
+    masterFrontWall.castShadow = true;
+    masterGroup.add(masterFrontWall);
+
+    const masterRightWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, f2RoomHeight, masterDepth), wallMat);
+    masterRightWall.position.set(masterWidth / 2 - 0.15, f2RoomHeight / 2, 0);
+    masterRightWall.castShadow = true;
+    masterGroup.add(masterRightWall);
+
+    // 主卧前侧开两个豪华双联圆拱窗
+    createArchWindow(masterGroup, -1.1, f2RoomHeight / 2 + 0.1, masterDepth / 2 - 0.05);
+    createArchWindow(masterGroup, 1.1, f2RoomHeight / 2 + 0.1, masterDepth / 2 - 0.05);
+
+    // --- 6.2 次卧1 (Secondary Bedroom - 二楼左翼) ---
+    // 比一层左翼收缩 0.5 米，让前方留出一个阳台小走道
+    const bed1Width = 4.0;
+    const bed1Depth = 6.5;
+    const bed1X = -8.5;
+    const bed1Z = mZ - 0.5; // 向北微移，南面留白
+
+    const bed1Group = new THREE.Group();
+    bed1Group.position.set(bed1X, secondFloorY + 0.15, bed1Z);
+    this.castleGroup.add(bed1Group);
+
+    const bed1BackWall = new THREE.Mesh(new THREE.BoxGeometry(bed1Width, f2RoomHeight, 0.3), wallMat);
+    bed1BackWall.position.set(0, f2RoomHeight / 2, -bed1Depth / 2 + 0.15);
+    bed1BackWall.castShadow = true;
+    bed1Group.add(bed1BackWall);
+
+    const bed1LeftWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, f2RoomHeight, bed1Depth), wallMat);
+    bed1LeftWall.position.set(-bed1Width / 2 + 0.15, f2RoomHeight / 2, 0);
+    bed1LeftWall.castShadow = true;
+    bed1Group.add(bed1LeftWall);
+
+    const bed1RightWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, f2RoomHeight, bed1Depth), wallMat);
+    bed1RightWall.position.set(bed1Width / 2 - 0.15, f2RoomHeight / 2, 0);
+    bed1RightWall.castShadow = true;
+    bed1Group.add(bed1RightWall);
+
+    const bed1FrontWall = new THREE.Mesh(new THREE.BoxGeometry(bed1Width, f2RoomHeight, 0.3), wallMat);
+    bed1FrontWall.position.set(0, f2RoomHeight / 2, bed1Depth / 2 - 0.15);
+    bed1FrontWall.castShadow = true;
+    bed1Group.add(bed1FrontWall);
+
+    createArchWindow(bed1Group, 0, f2RoomHeight / 2 + 0.1, bed1Depth / 2 - 0.05); // 正面窗户
+    createArchWindow(bed1Group, -bed1Width / 2 + 0.05, f2RoomHeight / 2 + 0.1, 0, -Math.PI / 2); // 西面窗户
+
+    // --- 6.3 次卧2/书房 (Study Room - 二楼中部凹凸感) ---
+    // 比主卧更朝南突出 0.5 米，制造强烈的凹凸感
+    const studyWidth = 3.0;
+    const studyDepth = 6.5;
+    const studyX = -5.0;
+    const studyZ = mZ + 0.5; // 向南凸出
+
+    const studyGroup = new THREE.Group();
+    studyGroup.position.set(studyX, secondFloorY + 0.15, studyZ);
+    this.castleGroup.add(studyGroup);
+
+    const studyBackWall = new THREE.Mesh(new THREE.BoxGeometry(studyWidth, f2RoomHeight, 0.3), wallMat);
+    studyBackWall.position.set(0, f2RoomHeight / 2, -studyDepth / 2 + 0.15);
+    studyBackWall.castShadow = true;
+    studyGroup.add(studyBackWall);
+
+    const studyFrontWall = new THREE.Mesh(new THREE.BoxGeometry(studyWidth, f2RoomHeight, 0.3), wallMat);
+    studyFrontWall.position.set(0, f2RoomHeight / 2, studyDepth / 2 - 0.15);
+    studyFrontWall.castShadow = true;
+    studyGroup.add(studyFrontWall);
+
+    const studyLeftWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, f2RoomHeight, studyDepth), wallMat);
+    studyLeftWall.position.set(-studyWidth / 2 + 0.15, f2RoomHeight / 2, 0);
+    studyLeftWall.castShadow = true;
+    studyGroup.add(studyLeftWall);
+
+    createArchWindow(studyGroup, 0, f2RoomHeight / 2 + 0.1, studyDepth / 2 - 0.05); // 正面单拱窗
+
+    // --- 二层南侧前露台护栏 (二楼阳台) ---
+    // 围住左翼前方的未占满区域
+    const f2PillarGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.72, 8);
+    const f2RailGeo = new THREE.BoxGeometry(hallWidth + leftWingWidth, 0.08, 0.08);
+
+    const f2FenceGroup = new THREE.Group();
+    f2FenceGroup.position.set((hallX + leftWingX) / 2, secondFloorY + 0.15, mZ);
+    
+    // 前横栏
+    const f2FrontRail = new THREE.Mesh(f2RailGeo, trimMat);
+    f2FrontRail.position.set(0, 0.72, hallDepth / 2 - 0.1);
+    f2FrontRail.castShadow = true;
+    f2FenceGroup.add(f2FrontRail);
+
+    // 罗马短栏杆柱
+    for (let x = -(hallWidth + leftWingWidth) / 2 + 0.4; x <= (hallWidth + leftWingWidth) / 2 - 0.4; x += 0.8) {
+      // 跳过被二层突出房间（次卧2）和主卧挡住的区间坐标
+      const worldX = x + (hallX + leftWingX) / 2;
+      if (worldX > studyX - studyWidth / 2 - 0.2 && worldX < studyX + studyWidth / 2 + 0.2) continue;
+      if (worldX > masterX - masterWidth / 2 - 0.2) continue;
+
+      const p = new THREE.Mesh(f2PillarGeo, trimMat);
+      p.position.set(x, 0.36, hallDepth / 2 - 0.1);
       p.castShadow = true;
-      fFenceGroup.add(p);
+      f2FenceGroup.add(p);
+    }
+    this.castleGroup.add(f2FenceGroup);
+
+    // =========================================================================
+    // 7. 西班牙红色斜屋顶群 (Roofs)
+    // =========================================================================
+    const roofY = secondFloorY + 0.15 + f2RoomHeight; // 屋顶高度 Y = 8.45
+    
+    // 7.1 左翼次卧1屋顶 (Spain-style slope roof)
+    const r1Width = 4.6;
+    const r1Depth = 3.8;
+    const r1RoofGroup = new THREE.Group();
+    r1RoofGroup.position.set(bed1X, roofY, bed1Z);
+    
+    const roofSlopeL1 = new THREE.Mesh(new THREE.BoxGeometry(r1Width, 0.18, r1Depth), roofMat);
+    roofSlopeL1.position.set(0, 0.82, -1.6);
+    roofSlopeL1.rotation.x = -0.42;
+    roofSlopeL1.castShadow = true;
+    r1RoofGroup.add(roofSlopeL1);
+
+    const roofSlopeR1 = new THREE.Mesh(new THREE.BoxGeometry(r1Width, 0.18, r1Depth), roofMat);
+    roofSlopeR1.position.set(0, 0.82, 1.6);
+    roofSlopeR1.rotation.x = 0.42;
+    roofSlopeR1.castShadow = true;
+    r1RoofGroup.add(roofSlopeR1);
+
+    // 屋顶侧面粉色三角形山墙 (Gable Wall)
+    const triangleWallL = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.3, bed1Depth - 0.6), wallMat);
+    triangleWallL.position.set(-bed1Width / 2 + 0.15, 0.6, 0);
+    r1RoofGroup.add(triangleWallL);
+    
+    const triangleWallR = triangleWallL.clone();
+    triangleWallR.position.x = bed1Width / 2 - 0.15;
+    r1RoofGroup.add(triangleWallR);
+    this.castleGroup.add(r1RoofGroup);
+
+    // 7.2 主卧套房高斜屋顶 (Master Roof - 略高且深)
+    const rMasterWidth = 5.0;
+    const rMasterDepth = 4.2;
+    const rMasterGroup = new THREE.Group();
+    rMasterGroup.position.set(masterX, roofY + 0.15, mZ); // 高出 15 厘米以错开
+
+    const roofSlopeLMaster = new THREE.Mesh(new THREE.BoxGeometry(rMasterWidth, 0.18, rMasterDepth), roofMat);
+    roofSlopeLMaster.position.set(0, 0.9, -1.8);
+    roofSlopeLMaster.rotation.x = -0.42;
+    roofSlopeLMaster.castShadow = true;
+    rMasterGroup.add(roofSlopeLMaster);
+
+    const roofSlopeRMaster = new THREE.Mesh(new THREE.BoxGeometry(rMasterWidth, 0.18, rMasterDepth), roofMat);
+    roofSlopeRMaster.position.set(0, 0.9, 1.8);
+    roofSlopeRMaster.rotation.x = 0.42;
+    roofSlopeRMaster.castShadow = true;
+    rMasterGroup.add(roofSlopeRMaster);
+
+    const triangleWallMasterL = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.45, masterDepth - 0.6), wallMat);
+    triangleWallMasterL.position.set(-masterWidth / 2 + 0.15, 0.65, 0);
+    rMasterGroup.add(triangleWallMasterL);
+
+    const triangleWallMasterR = triangleWallMasterL.clone();
+    triangleWallMasterR.position.x = masterWidth / 2 - 0.15;
+    rMasterGroup.add(triangleWallMasterR);
+    this.castleGroup.add(rMasterGroup);
+
+    // 7.3 次卧2/书房前倾小斜坡屋顶
+    const rStudyWidth = 3.6;
+    const rStudyDepth = 3.8;
+    const rStudyGroup = new THREE.Group();
+    rStudyGroup.position.set(studyX, roofY - 0.1, studyZ);
+
+    const roofSlopeLStudy = new THREE.Mesh(new THREE.BoxGeometry(rStudyWidth, 0.18, rStudyDepth), roofMat);
+    roofSlopeLStudy.position.set(0, 0.8, -1.6);
+    roofSlopeLStudy.rotation.x = -0.42;
+    roofSlopeLStudy.castShadow = true;
+    rStudyGroup.add(roofSlopeLStudy);
+
+    const roofSlopeRStudy = new THREE.Mesh(new THREE.BoxGeometry(rStudyWidth, 0.18, rStudyDepth), roofMat);
+    roofSlopeRStudy.position.set(0, 0.8, 1.6);
+    roofSlopeRStudy.rotation.x = 0.42;
+    roofSlopeRStudy.castShadow = true;
+    rStudyGroup.add(roofSlopeRStudy);
+    this.castleGroup.add(rStudyGroup);
+
+    // =========================================================================
+    // 8. 贯穿两层的圆顶城堡塔楼 (Domed Tower - ⑤)
+    // =========================================================================
+    const towerX = 1.8; // 紧贴中央大厅右侧
+    const towerZ = mZ + 0.2;
+    const towerRadius = 1.5;
+    const towerHeight = secondFloorY + 0.15 + 3.8; // 总高约 8.75
+
+    const towerGroup = new THREE.Group();
+    towerGroup.position.set(towerX, 0.6, towerZ);
+
+    const towerCylinder = new THREE.Mesh(new THREE.CylinderGeometry(towerRadius, towerRadius, towerHeight, 18), wallMat);
+    towerCylinder.position.y = towerHeight / 2;
+    towerCylinder.castShadow = true;
+    towerCylinder.receiveShadow = true;
+    towerGroup.add(towerCylinder);
+
+    // 塔腰饰线圈
+    const createTowerRing = (ry) => {
+      const ring = new THREE.Mesh(new THREE.CylinderGeometry(towerRadius + 0.12, towerRadius + 0.12, 0.12, 18), trimMat);
+      ring.position.y = ry;
+      towerGroup.add(ring);
+    };
+    createTowerRing(0.12);
+    createTowerRing(secondFloorY - 0.05);
+    createTowerRing(towerHeight - 0.06);
+
+    // 塔楼高大拱形玻璃窗
+    const towerWinGeo = new THREE.CylinderGeometry(0.48, 0.48, 2.2, 10);
+    const towerWin = new THREE.Mesh(towerWinGeo, windowLightMat);
+    towerWin.position.set(0, secondFloorY + 1.2, towerRadius - 0.1);
+    towerWin.rotation.y = Math.PI / 2;
+    towerGroup.add(towerWin);
+
+    const towerWinFrame = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.52, 2.22, 10, 1, true), trimMat);
+    towerWinFrame.position.set(0, secondFloorY + 1.2, towerRadius - 0.08);
+    towerWinFrame.rotation.y = Math.PI / 2;
+    towerGroup.add(towerWinFrame);
+
+    // 塔楼穹顶 (Domed Roof)
+    const domeGeo = new THREE.SphereGeometry(towerRadius + 0.1, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+    const towerDome = new THREE.Mesh(domeGeo, trimMat);
+    towerDome.position.y = towerHeight;
+    towerDome.castShadow = true;
+    towerGroup.add(towerDome);
+
+    // 塔尖金色避雷针
+    const towerSpire = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.05, 1.6, 8), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
+    towerSpire.position.set(0, towerHeight + 1.2, 0);
+    towerDome.add(towerSpire);
+    
+    const spireBall = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
+    spireBall.position.y = 0.8;
+    towerSpire.add(spireBall);
+
+    this.castleGroup.add(towerGroup);
+
+    // =========================================================================
+    // 9. 一层白色拱廊连廊与平顶露台 (Service Core - ⑩)
+    // =========================================================================
+    // 原 Colonnade 区域改建为平顶平房作为服务核，顶部是二楼露台
+    const galleryStartX = 3.3;
+    const galleryEndX = 6.7;
+    const galleryZ = mZ - 0.4;
+    const galleryHeight = 3.6;
+
+    const coreWidth = galleryEndX - galleryStartX + 0.6; // 约 4.0
+    const coreDepth = 6.5;
+    const coreX = (galleryStartX + galleryEndX) / 2;
+
+    const coreGroup = new THREE.Group();
+    coreGroup.position.set(coreX, 0.6, galleryZ);
+    this.castleGroup.add(coreGroup);
+
+    // 一层连廊墙体与平顶
+    const coreBody = new THREE.Mesh(new THREE.BoxGeometry(coreWidth, galleryHeight, coreDepth), wallMat);
+    coreBody.position.y = galleryHeight / 2;
+    coreBody.castShadow = true;
+    coreBody.receiveShadow = true;
+    coreGroup.add(coreBody);
+
+    // 连廊一楼正面有白色拱廊装饰 (贴附在墙面外)
+    for (let gx = -coreWidth / 2 + 0.6; gx <= coreWidth / 2 - 0.6; gx += 1.6) {
+      const p = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, galleryHeight, 8), trimMat);
+      p.position.set(gx, galleryHeight / 2, coreDepth / 2 + 0.05);
+      p.castShadow = true;
+      coreGroup.add(p);
+
+      const gArch = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.3, 0.2), trimMat);
+      gArch.position.set(gx + 0.8, galleryHeight - 0.15, coreDepth / 2 + 0.05);
+      coreGroup.add(gArch);
     }
 
-    const leftRail = new THREE.Mesh(rRailSideGeo, trimMat);
-    leftRail.position.set(-castleWidth / 2 + 0.1, 0.72, 0);
-    leftRail.castShadow = true;
-    fFenceGroup.add(leftRail);
+    // 连廊顶部白色屋檐腰线
+    const coreBelt = new THREE.Mesh(new THREE.BoxGeometry(coreWidth + 0.3, 0.16, coreDepth + 0.3), trimMat);
+    coreBelt.position.y = galleryHeight + 0.08;
+    coreGroup.add(coreBelt);
 
-    const rightRail = leftRail.clone();
-    rightRail.position.x = castleWidth / 2 - 0.1;
-    fFenceGroup.add(rightRail);
+    // 二层平顶阳台地面物理碰撞
+    this.castleColliders.push({
+      type: 'floor',
+      worldX: coreX,
+      worldZ: galleryZ,
+      worldY: 0.6 + galleryHeight + 0.16,
+      radius: coreWidth / 2 + 0.5
+    });
 
-    for (let z = -castleDepth / 2 + 0.4; z <= castleDepth / 2 - 0.4; z += 0.8) {
-      const pL = new THREE.Mesh(rPillarGeo, trimMat);
-      pL.position.set(-castleWidth / 2 + 0.1, 0.36, z);
-      pL.castShadow = true;
-      fFenceGroup.add(pL);
+    // 连廊顶部的平顶露台围栏 (白色格栅)
+    const colFenceGroup = new THREE.Group();
+    colFenceGroup.position.set(coreX, 0.6 + galleryHeight + 0.16, galleryZ);
+    
+    const colRailFront = new THREE.Mesh(new THREE.BoxGeometry(coreWidth, 0.06, 0.06), trimMat);
+    colRailFront.position.set(0, 0.72, coreDepth / 2 - 0.1);
+    colRailFront.castShadow = true;
+    colFenceGroup.add(colRailFront);
 
-      const pR = pL.clone();
-      pR.position.x = castleWidth / 2 - 0.1;
-      fFenceGroup.add(pR);
+    for (let cx = -coreWidth / 2 + 0.3; cx <= coreWidth / 2 - 0.3; cx += 0.7) {
+      const p = new THREE.Mesh(f2PillarGeo, trimMat);
+      p.position.set(cx, 0.36, coreDepth / 2 - 0.1);
+      p.castShadow = true;
+      colFenceGroup.add(p);
     }
+    this.castleGroup.add(colFenceGroup);
 
-    this.castleGroup.add(fFenceGroup);
+    // =========================================================================
+    // 10. 精细化双车位车库 (Garage - ⑤)
+    // =========================================================================
+    const garageX = 11.2;
+    const garageZ = mZ - 0.4;
+    const garageHeight = 3.8;
+    const garageWidth = 7.0;
+    const garageDepth = 7.0;
+    
+    const garageBody = new THREE.Mesh(new THREE.BoxGeometry(garageWidth, garageHeight, garageDepth), wallMat);
+    garageBody.position.set(garageX, 0.6 + garageHeight / 2, garageZ);
+    garageBody.castShadow = true;
+    garageBody.receiveShadow = true;
+    this.castleGroup.add(garageBody);
 
-    // 7. 楼梯拼装：白色螺旋上升楼梯 (位于城堡右前方，踩踏直接上楼)
-    const stairCount = 18;
-    const stairAngleStep = Math.PI / 11;
-    const stairHeightStep = firstFloorHeight / stairCount;
-    const stairRadius = 2.8;
-    const stairCenterX = castleWidth / 2 - 0.5;
-    const stairCenterZ = castleCenterZ + castleDepth / 2 - 1.2;
+    this.castleColliders.push({
+      type: 'floor',
+      worldX: garageX,
+      worldZ: garageZ,
+      worldY: 0.72,
+      radius: garageWidth / 2 + 0.5
+    });
+
+    // 车库顶腰线
+    const garageBelt = new THREE.Mesh(new THREE.BoxGeometry(garageWidth + 0.4, 0.15, garageDepth + 0.4), trimMat);
+    garageBelt.position.set(garageX, 0.6 + garageHeight + 0.075, garageZ);
+    this.castleGroup.add(garageBelt);
+
+    // 双车库白色饰边拱门与卷帘门
+    const doorW = 2.4;
+    const doorH = 2.5;
+    const createGarageDoor = (gDoorX) => {
+      // 白色装饰外边框
+      const outerFrame = new THREE.Mesh(new THREE.BoxGeometry(doorW + 0.3, doorH + 0.15, 0.2), trimMat);
+      outerFrame.position.set(gDoorX, 0.6 + doorH / 2 + 0.075, garageZ + garageDepth / 2 - 0.05);
+      outerFrame.castShadow = true;
+      this.castleGroup.add(outerFrame);
+
+      // 白色大板门
+      const gDoor = new THREE.Mesh(new THREE.BoxGeometry(doorW, doorH, 0.1), trimMat);
+      gDoor.position.set(gDoorX, 0.6 + doorH / 2, garageZ + garageDepth / 2 - 0.02);
+      this.castleGroup.add(gDoor);
+
+      // 车库门横向凸起细线条纹 (具有真实质感)
+      for (let yOffset = -doorH / 2 + 0.3; yOffset < doorH / 2; yOffset += 0.4) {
+        const stripe = new THREE.Mesh(new THREE.BoxGeometry(doorW - 0.15, 0.06, 0.05), roadMat);
+        stripe.position.set(gDoorX, 0.6 + doorH / 2 + yOffset, garageZ + garageDepth / 2 + 0.03);
+        this.castleGroup.add(stripe);
+      }
+    };
+    
+    createGarageDoor(garageX - 1.6);
+    createGarageDoor(garageX + 1.6);
+
+    // 车库人字瓦坡屋顶
+    const garageRoofSlopeL = new THREE.Mesh(new THREE.BoxGeometry(garageWidth + 0.6, 0.18, 4.2), roofMat);
+    garageRoofSlopeL.position.set(garageX, 0.6 + garageHeight + 0.75, garageZ - 1.7);
+    garageRoofSlopeL.rotation.x = -0.42;
+    garageRoofSlopeL.castShadow = true;
+    this.castleGroup.add(garageRoofSlopeL);
+
+    const garageRoofSlopeR = new THREE.Mesh(new THREE.BoxGeometry(garageWidth + 0.6, 0.18, 4.2), roofMat);
+    garageRoofSlopeR.position.set(garageX, 0.6 + garageHeight + 0.75, garageZ + 1.7);
+    garageRoofSlopeR.rotation.x = 0.42;
+    garageRoofSlopeR.castShadow = true;
+    this.castleGroup.add(garageRoofSlopeR);
+
+    // 车库侧墙三角形山墙
+    const gTriangleL = new THREE.Mesh(new THREE.BoxGeometry(garageDepth, 1.2, 0.3), wallMat);
+    gTriangleL.position.set(garageX - garageWidth / 2 + 0.15, 0.6 + garageHeight + 0.5, garageZ);
+    gTriangleL.rotation.y = Math.PI / 2;
+    this.castleGroup.add(gTriangleL);
+    
+    const gTriangleR = gTriangleL.clone();
+    gTriangleR.position.x = garageX + garageWidth / 2 - 0.15;
+    this.castleGroup.add(gTriangleR);
+
+    // =========================================================================
+    // 11. 室内直跑台阶楼梯 (Main Stairs, 通往二楼 - ⑦)
+    // =========================================================================
+    // 对齐大厅内右侧，由 x = -0.8 到 x = 2.4
+    const stairCount = 14;
+    const stairStartX = -0.5;
+    const stairEndX = 2.3;
+    const stairZ = mZ - 1.0;
+    const stairW = 1.3;
+    const stairH = 0.16;
+    
+    const stairHeightStep = (secondFloorY + 0.15 - 0.6) / stairCount;
+    const stairWidthStep = (stairEndX - stairStartX) / stairCount;
 
     for (let i = 0; i < stairCount; i++) {
-      const angle = Math.PI + i * stairAngleStep;
-      const tx = stairCenterX + Math.cos(angle) * stairRadius;
-      const tz = stairCenterZ + Math.sin(angle) * stairRadius;
+      const tx = stairStartX + i * stairWidthStep;
       const ty = 0.6 + i * stairHeightStep;
+      const tz = stairZ;
 
-      const stairGeo = new THREE.BoxGeometry(1.6, 0.15, 0.65);
-      const stair = new THREE.Mesh(stairGeo, trimMat);
-      stair.position.set(tx, ty + 0.075, tz);
-      stair.rotation.y = -angle + Math.PI / 2;
+      const stair = new THREE.Mesh(new THREE.BoxGeometry(stairW, stairH, 0.45), trimMat);
+      stair.position.set(tx, ty + stairH / 2, tz);
       stair.castShadow = true;
       stair.receiveShadow = true;
       this.castleGroup.add(stair);
 
-      // 每一阶注册为 floor 物理碰撞体
       this.castleColliders.push({
         type: 'floor',
         worldX: tx,
         worldZ: tz,
-        worldY: ty + 0.15,
-        radius: 0.95
+        worldY: ty + stairH,
+        radius: 0.85
       });
     }
 
-    // 8. 二楼豪华双人公主床
-    const bedGroup = new THREE.Group();
-    bedGroup.position.set(0, secondFloorY + 0.15, castleCenterZ - 2.5);
-
-    // 床架
-    const frameMat = new THREE.MeshLambertMaterial({ color: 0xffd700, flatShading: true });
-    const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.35, 2.4), frameMat);
-    bedFrame.position.y = 0.175;
-    bedFrame.castShadow = true;
-    bedGroup.add(bedFrame);
-
-    // 床垫
-    const mattress = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.3, 2.2), tileWhite);
-    mattress.position.set(0, 0.35, 0);
-    mattress.castShadow = true;
-    mattress.receiveShadow = true;
-    bedGroup.add(mattress);
-
-    // 枕头
-    const pillowGeo = new THREE.BoxGeometry(0.8, 0.12, 0.45);
-    const pillowL = new THREE.Mesh(pillowGeo, tilePink);
-    pillowL.position.set(-0.6, 0.54, -0.8);
-    pillowL.rotation.x = 0.15;
-    pillowL.castShadow = true;
-    bedGroup.add(pillowL);
-
-    const pillowR = pillowL.clone();
-    pillowR.position.x = 0.6;
-    bedGroup.add(pillowR);
-
-    // 帷幔柱与篷顶
-    const poleGeo = new THREE.CylinderGeometry(0.04, 0.04, 2.2, 8);
-    const pole1 = new THREE.Mesh(poleGeo, frameMat);
-    pole1.position.set(-1.3, 1.1, -1.1);
-    pole1.castShadow = true;
-    bedGroup.add(pole1);
-
-    const pole2 = pole1.clone();
-    pole2.position.x = 1.3;
-    bedGroup.add(pole2);
-
-    const canopyMat = new THREE.MeshLambertMaterial({ color: 0xffc2d1, transparent: true, opacity: 0.55, side: THREE.DoubleSide });
-    const canopy = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.6, 0.4, 12, 1, true), canopyMat);
-    canopy.position.set(0, 2.2, -0.6);
-    canopy.castShadow = true;
-    bedGroup.add(canopy);
-
-    this.castleGroup.add(bedGroup);
-
-    // 注册二楼床交互区
-    this.castleInteractables.push({
-      id: 'lie_bed',
-      name: '小憩睡下',
-      x: 0,
-      y: secondFloorY + 0.15,
-      z: castleCenterZ - 2.5,
-      triggerRadius: 1.8
-    });
-
-    // 9. 左侧心形粉色日光浴泳池 (中心在 x = -9.0, z = 2.0)
-    const poolCenterX = -9.0;
+    // =========================================================================
+    // 12. 左翼粉色圆形日光浴泳池与躺椅
+    // =========================================================================
+    // 泳池向南移动一些以适应露台的延伸
+    const poolCenterX = -11.0;
     const poolCenterZ = 2.0;
-    const poolRadius = 3.2;
+    const poolRadius = 2.6;
 
-    const poolBottom = new THREE.Mesh(new THREE.CircleGeometry(poolRadius, 16), new THREE.MeshBasicMaterial({ color: 0xff4d6d, side: THREE.DoubleSide }));
+    const poolBottom = new THREE.Mesh(new THREE.CircleGeometry(poolRadius, 16), poolMat);
     poolBottom.rotateX(-Math.PI / 2);
     poolBottom.position.set(poolCenterX, 0.602, poolCenterZ);
     poolBottom.receiveShadow = true;
     this.castleGroup.add(poolBottom);
 
-    const waterGeo = new THREE.CircleGeometry(poolRadius, 16);
-    waterGeo.rotateX(-Math.PI / 2);
-    const waterMat = new THREE.MeshBasicMaterial({
-      color: 0xffc2d1,
-      transparent: true,
-      opacity: 0.6,
-      side: THREE.DoubleSide
-    });
-    const water = new THREE.Mesh(waterGeo, waterMat);
+    const water = new THREE.Mesh(new THREE.CircleGeometry(poolRadius - 0.1, 16), waterMat);
+    water.rotateX(-Math.PI / 2);
     water.position.set(poolCenterX, 0.61, poolCenterZ);
     this.castleGroup.add(water);
 
-    const pBorderMat = trimMat;
-    const borderStoneGeo = new THREE.BoxGeometry(0.85, 0.15, 0.3);
-    const pStoneCount = 16;
+    const pStoneGeo = new THREE.BoxGeometry(0.7, 0.12, 0.25);
+    const pStoneCount = 14;
     for (let i = 0; i < pStoneCount; i++) {
       const angle = (i * Math.PI * 2) / pStoneCount;
-      const sx = poolCenterX + Math.cos(angle) * (poolRadius + 0.12);
-      const sz = poolCenterZ + Math.sin(angle) * (poolRadius + 0.12);
+      const sx = poolCenterX + Math.cos(angle) * (poolRadius + 0.1);
+      const sz = poolCenterZ + Math.sin(angle) * (poolRadius + 0.1);
 
-      const bStone = new THREE.Mesh(borderStoneGeo, pBorderMat);
-      bStone.position.set(sx, 0.65, sz);
+      const bStone = new THREE.Mesh(pStoneGeo, trimMat);
+      bStone.position.set(sx, 0.64, sz);
       bStone.rotation.y = -angle + Math.PI / 2;
       bStone.castShadow = true;
-      bStone.receiveShadow = true;
       this.castleGroup.add(bStone);
     }
 
-    // 池畔放置两个粉色太阳躺椅
-    const loungerGroup1 = new THREE.Group();
     const lMat = new THREE.MeshLambertMaterial({ color: 0xff85a1, flatShading: true });
-    const lx1 = poolCenterX + poolRadius + 0.9;
-    const lz1 = poolCenterZ - 0.8;
-    loungerGroup1.position.set(lx1, 0.6, lz1);
-    loungerGroup1.rotation.y = -Math.PI / 2;
+    const lx1 = poolCenterX + poolRadius + 0.8;
+    const lz1 = poolCenterZ - 0.7;
+    const lounger1 = new THREE.Group();
+    lounger1.position.set(lx1, 0.6, lz1);
+    lounger1.rotation.y = -Math.PI / 2.5;
 
-    const lBase = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.08, 0.65), lMat);
+    const lBase = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.08, 0.6), lMat);
     lBase.position.y = 0.04;
     lBase.castShadow = true;
-    lBase.receiveShadow = true;
-    loungerGroup1.add(lBase);
+    lounger1.add(lBase);
 
-    const lBack = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.08, 0.65), lMat);
-    lBack.position.set(-0.62, 0.22, 0);
-    lBack.rotation.z = 0.45;
+    const lBack = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.08, 0.6), lMat);
+    lBack.position.set(-0.55, 0.18, 0);
+    lBack.rotation.z = 0.42;
     lBack.castShadow = true;
-    loungerGroup1.add(lBack);
-
-    this.castleGroup.add(loungerGroup1);
+    lounger1.add(lBack);
+    this.castleGroup.add(lounger1);
 
     this.castleInteractables.push({
       id: 'lie_lounger_1',
@@ -5989,11 +6601,11 @@ class GameApp {
       triggerRadius: 1.3
     });
 
-    const loungerGroup2 = loungerGroup1.clone();
-    const lx2 = poolCenterX + poolRadius + 0.9;
-    const lz2 = poolCenterZ + 0.8;
-    loungerGroup2.position.set(lx2, 0.6, lz2);
-    this.castleGroup.add(loungerGroup2);
+    const lx2 = poolCenterX + poolRadius + 0.8;
+    const lz2 = poolCenterZ + 0.7;
+    const lounger2 = lounger1.clone();
+    lounger2.position.set(lx2, 0.6, lz2);
+    this.castleGroup.add(lounger2);
 
     this.castleInteractables.push({
       id: 'lie_lounger_2',
@@ -6004,83 +6616,141 @@ class GameApp {
       triggerRadius: 1.3
     });
 
-    // 10. 大门口返航传送小喷泉 (位于 x = 0, z = 7.0)
-    const exitPortalGroup = new THREE.Group();
-    exitPortalGroup.position.set(0, 0.6, 7.0);
+    // =========================================================================
+    // 13. 家具重定位与交互关联 (沙发、试衣镜、公主床)
+    // =========================================================================
+    // 13.1 大沙发坐在中央大厅里
+    const sofaGroup = new THREE.Group();
+    sofaGroup.position.set(hallX, 0.72, mZ);
 
-    const bottomBasin = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.9, 0.22, 12), trimMat);
-    bottomBasin.position.y = 0.11;
-    bottomBasin.castShadow = true;
-    bottomBasin.receiveShadow = true;
-    exitPortalGroup.add(bottomBasin);
+    const sofaBase = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.4, 1.2), tilePink);
+    sofaBase.position.y = 0.2;
+    sofaBase.castShadow = true;
+    sofaGroup.add(sofaBase);
 
-    const topBasin = new THREE.Mesh(new THREE.CylinderGeometry(0.68, 0.58, 0.35, 12), trimMat);
-    topBasin.position.y = 0.38;
-    topBasin.castShadow = true;
-    topBasin.receiveShadow = true;
-    exitPortalGroup.add(topBasin);
+    const armGeo = new THREE.BoxGeometry(0.48, 0.68, 1.2);
+    const armL = new THREE.Mesh(armGeo, tilePink);
+    armL.position.set(-2.0 + 0.24, 0.34, 0);
+    armL.castShadow = true;
+    sofaGroup.add(armL);
 
-    const poolWater = new THREE.Mesh(new THREE.CircleGeometry(0.64, 12), waterMat);
-    poolWater.rotateX(-Math.PI / 2);
-    poolWater.position.y = 0.54;
-    exitPortalGroup.add(poolWater);
+    const armR = armL.clone();
+    armR.position.x = 2.0 - 0.24;
+    sofaGroup.add(armR);
 
-    const waterSpoutGeo = new THREE.CylinderGeometry(0.07, 0.14, 0.8, 8);
-    const waterSpoutMat = new THREE.MeshBasicMaterial({
-      color: 0xfff0f3,
-      transparent: true,
-      opacity: 0.85
-    });
-    const waterSpout = new THREE.Mesh(waterSpoutGeo, waterSpoutMat);
-    waterSpout.position.y = 0.9;
-    exitPortalGroup.add(waterSpout);
-
-    const particleMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 0.07), particleMat);
-    p1.position.set(0.1, 1.25, 0.07);
-    exitPortalGroup.add(p1);
-
-    const p2 = p1.clone();
-    p2.position.set(-0.12, 1.3, -0.09);
-    exitPortalGroup.add(p2);
-
-    const signPost = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.8, 8), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
-    signPost.position.set(0.9, 0.4, 0.4);
-    signPost.rotation.z = -0.15;
-    signPost.castShadow = true;
-    exitPortalGroup.add(signPost);
-
-    const signBoard = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.16, 0.03), new THREE.MeshLambertMaterial({ color: 0xff8da1 }));
-    signBoard.position.set(0.85, 0.72, 0.4);
-    signBoard.rotation.z = -0.15;
-    signBoard.rotation.y = -0.2;
-    signBoard.castShadow = true;
-    exitPortalGroup.add(signBoard);
-
-    const signText = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.06, 0.04), heartPinkMat);
-    signText.position.set(0.86, 0.72, 0.42);
-    signText.rotation.z = -0.15;
-    signText.rotation.y = -0.2;
-    exitPortalGroup.add(signText);
-
-    this.castleGroup.add(exitPortalGroup);
+    const backGeo = new THREE.BoxGeometry(4.0, 0.68, 0.35);
+    const sofaBack = new THREE.Mesh(backGeo, tilePink);
+    sofaBack.position.set(0, 0.5, -0.42);
+    sofaBack.castShadow = true;
+    sofaGroup.add(sofaBack);
+    this.castleGroup.add(sofaGroup);
 
     this.castleInteractables.push({
-      id: 'exit_house',
-      name: '返回海岛大厅',
-      x: 0,
-      y: 0.6,
-      z: 6.0,
+      id: 'sit_sofa',
+      name: '坐下大沙发',
+      x: hallX,
+      y: 0.72,
+      z: mZ + 0.8,
       triggerRadius: 1.5
     });
 
-    // 11. 初始化 20 个飘落樱花瓣
-    const sakuraMat = new THREE.MeshBasicMaterial({ color: 0xffb7c5, transparent: true, opacity: 0.8 });
-    const sakuraGeo = new THREE.BoxGeometry(0.08, 0.08, 0.02);
-    for (let i = 0; i < 20; i++) {
+    // 13.2 试衣镜移到左翼起居室
+    const vanityGroup = new THREE.Group();
+    vanityGroup.position.set(leftWingX, 0.72, mZ - 1.2);
+
+    const vanityTable = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.72, 0.65), trimMat);
+    vanityTable.position.y = 0.36;
+    vanityTable.castShadow = true;
+    vanityGroup.add(vanityTable);
+
+    const mirrorBack = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.05, 16), new THREE.MeshLambertMaterial({ color: 0xffd700 }));
+    mirrorBack.rotateX(Math.PI / 2);
+    mirrorBack.position.set(0, 1.3, -0.28);
+    mirrorBack.castShadow = true;
+    vanityGroup.add(mirrorBack);
+
+    const mirrorGlass = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.44, 0.06, 16), new THREE.MeshBasicMaterial({ color: 0x80deea, transparent: true, opacity: 0.85 }));
+    mirrorGlass.rotateX(Math.PI / 2);
+    mirrorGlass.position.set(0, 1.3, -0.26);
+    vanityGroup.add(mirrorGlass);
+
+    const vanityChair = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.42, 12), tilePink);
+    vanityChair.position.set(0, 0.21, 0.55);
+    vanityChair.castShadow = true;
+    vanityGroup.add(vanityChair);
+    this.castleGroup.add(vanityGroup);
+
+    this.castleInteractables.push({
+      id: 'wardrobe',
+      name: '整理仪容 (试衣镜)',
+      x: leftWingX,
+      y: 0.72,
+      z: mZ - 0.6,
+      triggerRadius: 1.5
+    });
+
+    // 13.3 精美公主床移到二楼的主卧套房
+    const bedGroup = new THREE.Group();
+    bedGroup.position.set(masterX, secondFloorY + 0.15, mZ - 1.2);
+
+    const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.32, 2.2), new THREE.MeshLambertMaterial({ color: 0xffd700, flatShading: true }));
+    bedFrame.position.y = 0.16;
+    bedFrame.castShadow = true;
+    bedGroup.add(bedFrame);
+
+    const mattress = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.28, 2.0), tileWhite);
+    mattress.position.set(0, 0.32, 0);
+    mattress.castShadow = true;
+    mattress.receiveShadow = true;
+    bedGroup.add(mattress);
+
+    const pillowGeo = new THREE.BoxGeometry(0.72, 0.1, 0.42);
+    const pillowL = new THREE.Mesh(pillowGeo, tilePink);
+    pillowL.position.set(-0.55, 0.5, -0.75);
+    pillowL.rotation.x = 0.12;
+    pillowL.castShadow = true;
+    bedGroup.add(pillowL);
+
+    const pillowR = pillowL.clone();
+    pillowR.position.x = 0.55;
+    bedGroup.add(pillowR);
+
+    const poleMat = new THREE.MeshLambertMaterial({ color: 0xffd700, flatShading: true });
+    const pPoleGeo = new THREE.CylinderGeometry(0.03, 0.03, 2.0, 8);
+    const p1 = new THREE.Mesh(pPoleGeo, poleMat);
+    p1.position.set(-1.2, 1.0, -0.9);
+    p1.castShadow = true;
+    bedGroup.add(p1);
+
+    const p2 = p1.clone();
+    p2.position.x = 1.2;
+    bedGroup.add(p2);
+
+    const canopyMat = new THREE.MeshLambertMaterial({ color: 0xffc2d1, transparent: true, opacity: 0.5, side: THREE.DoubleSide });
+    const canopy = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.4, 0.35, 12, 1, true), canopyMat);
+    canopy.position.set(0, 2.0, -0.45);
+    canopy.castShadow = true;
+    bedGroup.add(canopy);
+    this.castleGroup.add(bedGroup);
+
+    this.castleInteractables.push({
+      id: 'lie_bed',
+      name: '小憩睡下 (公主床)',
+      x: masterX,
+      y: secondFloorY + 0.15,
+      z: mZ - 1.2,
+      triggerRadius: 1.6
+    });
+
+    // =========================================================================
+    // 14. 浪漫樱花飘落系统 (初始化 25 片樱花瓣)
+    // =========================================================================
+    const sakuraGeo = new THREE.BoxGeometry(0.18, 0.02, 0.18);
+    const sakuraMat = new THREE.MeshBasicMaterial({ color: 0xffb7c5, transparent: true, opacity: 0.85 });
+    for (let i = 0; i < 25; i++) {
       const petal = new THREE.Mesh(sakuraGeo, sakuraMat);
-      const px = (Math.random() - 0.5) * 22.0;
-      const pz = (Math.random() - 0.5) * 22.0 - 2.0;
+      const px = (Math.random() - 0.5) * 26.0;
+      const pz = (Math.random() - 0.5) * 26.0 - 2.0;
       const py = 1.0 + Math.random() * 11.0;
       petal.position.set(px, py, pz);
       petal.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
@@ -6090,12 +6760,12 @@ class GameApp {
         mesh: petal,
         velocity: new THREE.Vector3(
           (Math.random() - 0.5) * 0.4,
-          -0.6 - Math.random() * 0.6,
+          -0.5 - Math.random() * 0.5,
           (Math.random() - 0.5) * 0.4
         ),
         rotSpeed: new THREE.Vector3(
-          Math.random() * 1.5,
-          Math.random() * 1.5,
+          Math.random() * 1.2,
+          Math.random() * 1.2,
           0
         ),
         phase: Math.random() * Math.PI * 2
@@ -6124,7 +6794,7 @@ class GameApp {
     if (this.player) {
       const px = this.player.position.x;
       const pz = this.player.position.z;
-      const distToPool = Math.sqrt((px - (-9.0)) * (px - (-9.0)) + (pz - 2.0) * (pz - 2.0));
+      const distToPool = Math.sqrt((px - (-11.0)) * (px - (-11.0)) + (pz - (-4.0)) * (pz - (-4.0)));
 
       if (distToPool < 3.0) {
         if (this.player.position.y >= 0.58) {
