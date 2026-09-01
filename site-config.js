@@ -114,6 +114,14 @@ export const siteConfig = {
       icon: "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%2210%22%20fill%3D%22%23ffb3ba%22%20stroke%3D%22white%22/%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%224%22%20fill%3D%22white%22/%3E%3Ctext%20x%3D%2212%22%20y%3D%2215.5%22%20font-size%3D%227%22%20font-family%3D%22system-ui%22%20font-weight%3D%22bold%22%20fill%3D%22%23ff6b81%22%20text-anchor%3D%22middle%22%3E8%3C/text%3E%3C/svg%3E",
       color: "#ff8fa3",
       emoji: "🎱"
+    },
+    { 
+      id: "svg",
+      name: "矢量绘图", 
+      path: "./games/SVG/svg.html", 
+      icon: "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%2022a1%201%200%200%201%200-20%2010%209%200%200%201%2010%209%205%205%200%200%201-5%205h-2.25a1.75%201.75%200%200%200-1.4%202.8l.3.4a1.75%201.75%200%200%201-1.4%202.8z%22%3E%3C/path%3E%3Ccircle%20cx%3D%2213.5%22%20cy%3D%226.5%22%20r%3D%22.5%22%20fill%3D%22white%22%3E%3C/circle%3E%3Ccircle%20cx%3D%2217.5%22%20cy%3D%2210.5%22%20r%3D%22.5%22%20fill%3D%22white%22%3E%3C/circle%3E%3Ccircle%20cx%3D%226.5%22%20cy%3D%2212.5%22%20r%3D%22.5%22%20fill%3D%22white%22%3E%3C/circle%3E%3Ccircle%20cx%3D%228.5%22%20cy%3D%227.5%22%20r%3D%22.5%22%20fill%3D%22white%22%3E%3C/circle%3E%3C/svg%3E", 
+      color: "#7c3aed",
+      emoji: "🎨"
     }
   ],
 
@@ -129,7 +137,7 @@ export const siteConfig = {
         sky: 0xb2ebf2,        // Light cyan blue
         sand: 0xffe082,       // Warm yellow sand
         dirt: 0xd7ccc8,       // Sandy brown rim
-        seaWater: 0x00e5ff,   // Bright glowing turquoise ocean
+        seaWater: 0x4fc3f7,   // Light turquoise blue ocean
         fog: 0xb2ebf2
       },
       player: {
@@ -153,5 +161,40 @@ export const siteConfig = {
         clothingColor: 0xc62828 // Warm red winter coat
       }
     }
+  },
+
+  // Shop goods available in the digital store
+  shopGoods: {
+    agriculture: [
+      {
+        id: 'sunflower_seed',
+        name: '向日葵种子 🌻',
+        price: 10,
+        desc: '成熟需要 30 秒。收割可获得 20 金币 + 15 经验。',
+        quality: 'green',
+        type: 'seed',
+        icon: '🌻'
+      },
+      {
+        id: 'strawberry_seed',
+        name: '草莓种子 🍓',
+        price: 20,
+        desc: '成熟需要 60 秒。收割可获得 45 金币 + 35 经验。',
+        quality: 'blue',
+        type: 'seed',
+        icon: '🍓'
+      }
+    ],
+    decorations: [
+      { id: 'painting_1', name: '浮空岛日落挂画 🖼️', price: 50, desc: '悬挂在墙壁上的精美装饰，带来悠闲的落日余晖。', type: 'decor', quality: 'purple', icon: '🖼️' },
+      { id: 'tree_1', name: '闪烁圣诞树 🎄', price: 100, desc: '闪耀着七彩微光的圣诞树，散发节日温馨氛围。', type: 'decor', quality: 'purple', icon: '🎄' },
+      { id: 'sofa_1', name: '粉嫩兔子沙发 🛋️', price: 150, desc: '兔耳设计的粉色单人沙发，触感松软，极度舒适。', type: 'decor', quality: 'purple', icon: '🛋️' },
+      { id: 'swing_1', name: '室内网兜秋千 🎪', price: 200, desc: '挂在天花板上的编织网秋千，轻轻摇曳，治愈满满。', type: 'decor', quality: 'purple', icon: '🎪' }
+    ],
+    topup: [
+      { id: 'coin_100', name: '免费金币充值包 🪙', amount: 100, desc: '白嫖小包。免费充值 100 金币，附赠吃到金币声效！', type: 'topup', quality: 'gold', price: 0, icon: '🪙' },
+      { id: 'coin_500', name: '金币充值礼包 🎁', amount: 500, desc: '免费大包。点击即刻免费充值 500 金币！', type: 'topup', quality: 'gold', price: 0, icon: '🎁' },
+      { id: 'coin_1000', name: '超级金币充值包 💎', amount: 1000, desc: '免费巨包！狂揽 1000 金币，金币爆屏！', type: 'topup', quality: 'gold', price: 0, icon: '💎' }
+    ]
   }
 };

@@ -1,154 +1,836 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>颜色转换工具</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .converter {
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 5px;
-        }
-        input, button {
-            padding: 8px;
-            margin: 5px 0;
-        }
-        button {
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .result {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 4px;
-            min-height: 20px;
-        }
-        h2 {
-            color: #333;
-            margin-top: 0;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="converter">
-            <h2>十六进制转RGB</h2>
-            <p>输入十六进制颜色代码（如 #723456、723456 或 #777）:</p>
-            <input type="text" id="hexInput" placeholder="#723456 或 #777">
-            <button onclick="hexToRgb()">转换</button>
-            <div class="result" id="rgbResult"></div>
-        </div>
 
-        <div class="converter">
-            <h2>RGB转十六进制</h2>
-            <p>输入RGB颜色值（如 rgb(114, 52, 86) 或 114, 52, 86）:</p>
-            <input type="text" id="rgbInput" placeholder="rgb(114, 52, 86)">
-            <button onclick="rgbToHex()">转换</button>
-            <div class="result" id="hexResult"></div>
-        </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>色彩工具</title>
+  <style>
+    :root {
+      --primary: #FEA1A3;
+      --primary-hover: #f98b8d;
+      --primary-light: #fff0f1;
+      --primary-text: #e6676a;
+      --surface: #ffffff;
+      --background: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      padding: 16px 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* 顶部标题栏 */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 2px;
+    }
+
+    .header h1 {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .header-badge {
+      font-size: 12px;
+      background: var(--primary-light);
+      color: var(--primary-text);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    /* 主色卡 */
+    .color-display-card {
+      height: 84px;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      color: #fff;
+      font-family: var(--font-mono);
+      transition: background-color 0.15s ease;
+    }
+
+    .display-hex {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .display-sub {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      font-size: 11px;
+      gap: 2px;
+      opacity: 0.95;
+    }
+
+    /* 工具按钮栏 */
+    .picker-toolbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .picker-wrapper {
+      position: relative;
+    }
+
+    .tool-btn {
+      width: 100%;
+      height: 38px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tool-btn:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary-text);
+    }
+
+    .tool-btn .color-indicator {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1.5px solid #fff;
+      box-shadow: 0 0 0 1px var(--border);
+    }
+
+    #nativeColorPicker,
+    #imageFileInput {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* 转换输入区 */
+    .converter-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .field-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .field-desc {
+      display: none;
+    }
+
+    .status-msg {
+      font-size: 11px;
+    }
+
+    .status-msg.error {
+      color: #ef4444;
+    }
+
+    .status-msg.success {
+      color: #10b981;
+    }
+
+    .input-wrapper {
+      height: 38px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0 6px 0 12px;
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      transition: border-color 0.15s ease;
+    }
+
+    .input-wrapper:focus-within {
+      border-color: var(--primary);
+    }
+
+    .input-wrapper input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 13.5px;
+      font-family: var(--font-mono);
+      color: var(--text);
+    }
+
+    .btn-copy {
+      height: 26px;
+      padding: 0 8px;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-copy:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary-text);
+    }
+
+    /* 图片取色板块 */
+    .image-picker-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .image-upload-trigger {
+      position: relative;
+      height: 38px;
+      background: var(--primary-light);
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      color: var(--primary-text);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .image-upload-trigger:hover {
+      background: #ffe4e6;
+    }
+
+    .image-display-area {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .image-display-area.active {
+      display: flex;
+    }
+
+    .image-picker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .image-picker-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .btn-clear-img {
+      border: none;
+      background: transparent;
+      color: #ef4444;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f1f5f9;
+      cursor: crosshair;
+      user-select: none;
+    }
+
+    #imageCanvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .color-pointer {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      display: none;
+      z-index: 10;
+    }
+
+    /* 浮层 Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: rgba(15, 23, 42, 0.92);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.2s ease;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* 移动端全屏适配 */
+    @media (max-width: 600px) {
+      body {
+        padding: 0;
+        background: var(--surface);
+        display: block;
+      }
+
+      .container {
+        max-width: 100%;
+        min-height: 100vh;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 12px 14px 20px;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>色彩工具</h1>
+      <span class="header-badge">双向同步</span>
     </div>
 
-    <script>
-        function hexToRgb() {
-            const hexInput = document.getElementById('hexInput').value.trim();
-            const resultElement = document.getElementById('rgbResult');
-            
-            // 移除#号
-            let hex = hexInput.replace('#', '');
-            
-            // 检查3位简写格式（如 #777 → #777777）
-            if (hex.length === 3 && /^[0-9A-Fa-f]{3}$/.test(hex)) {
-                hex = hex.split('').map(c => c + c).join('');
-            }
-            
-            // 验证6位十六进制格式
-            if (!/^[0-9A-Fa-f]{6}$/.test(hex)) {
-                resultElement.textContent = "请输入有效的十六进制颜色代码（如 #723456、723456 或 #777）";
-                resultElement.style.color = "red";
-                return;
-            }
-            
-            // 转换为RGB
-            const r = parseInt(hex.substring(0, 2), 16);
-            const g = parseInt(hex.substring(2, 4), 16);
-            const b = parseInt(hex.substring(4, 6), 16);
-            
-            resultElement.textContent = `RGB值: rgb(${r}, ${g}, ${b})`;
-            resultElement.style.color = "black";
-        }
+    <div class="preview-section">
+      <div class="color-display-card" id="colorCard">
+        <div class="display-hex" id="cardHex">#FEA1A3</div>
+        <div class="display-sub">
+          <span id="cardRgb">rgb(254, 161, 163)</span>
+          <span id="cardHsl">hsl(358, 96%, 81%)</span>
+        </div>
+      </div>
 
-        function rgbToHex() {
-            const rgbInput = document.getElementById('rgbInput').value.trim();
-            const resultElement = document.getElementById('hexResult');
-            
-            let rgbValues;
-            
-            // 尝试匹配rgb(r, g, b)格式
-            const rgbRegex = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i;
-            const match = rgbInput.match(rgbRegex);
-            
-            if (match) {
-                rgbValues = [match[1], match[2], match[3]];
-            } else {
-                // 尝试匹配r, g, b格式
-                const numbers = rgbInput.split(/\s*,\s*/);
-                if (numbers.length === 3) {
-                    rgbValues = numbers;
-                } else {
-                    resultElement.textContent = "请输入有效的RGB颜色值（如 rgb(114, 52, 86) 或 114, 52, 86）";
-                    resultElement.style.color = "red";
-                    return;
-                }
+      <div class="picker-toolbar">
+        <div class="picker-wrapper">
+          <div class="tool-btn">
+            <span class="color-indicator" id="indicator"></span>
+            <span>自由选色</span>
+          </div>
+          <input type="color" id="nativeColorPicker" value="#FEA1A3">
+        </div>
+
+        <button class="tool-btn" id="eyeDropperBtn" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="m2 22 1-1h3l9-9" />
+            <path d="M3 21v-3l9-9" />
+            <path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1 3 3l-3.8 3.8a2 2 0 0 1-1.4.6H15l-2-2" />
+            <path d="m14 7 3 3" />
+          </svg>
+          <span>屏幕吸色</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="converter-section">
+      <div class="field-group">
+        <div class="field-head">
+          <span class="field-label">
+            十六进制
+            <span class="field-desc">（#RRGGBB 或 #RGB）</span>
+          </span>
+          <span class="status-msg" id="hexStatus"></span>
+        </div>
+        <div class="input-wrapper">
+          <input type="text" id="hexInput" placeholder="#FEA1A3" spellcheck="false" autocomplete="off">
+          <button class="btn-copy" onclick="copyValue('hex')">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+            </svg>
+            <span>复制</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-head">
+          <span class="field-label">
+            RGB值
+            <span class="field-desc">（rgb(r,g,b) 或 r,g,b）</span>
+          </span>
+          <span class="status-msg" id="rgbStatus"></span>
+        </div>
+        <div class="input-wrapper">
+          <input type="text" id="rgbInput" placeholder="rgb(254, 161, 163)" spellcheck="false" autocomplete="off">
+          <button class="btn-copy" onclick="copyValue('rgb')">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+            </svg>
+            <span>复制</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-head">
+          <span class="field-label">
+            HSL值
+            <span class="field-desc">（hsl(h,s%,l%) 或 h,s,l）</span>
+          </span>
+          <span class="status-msg" id="hslStatus"></span>
+        </div>
+        <div class="input-wrapper">
+          <input type="text" id="hslInput" placeholder="hsl(358, 96%, 81%)" spellcheck="false" autocomplete="off">
+          <button class="btn-copy" onclick="copyValue('hsl')">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+            </svg>
+            <span>复制</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="image-picker-card">
+      <div class="image-upload-trigger">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+          <circle cx="9" cy="9" r="2" />
+          <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+        </svg>
+        <span>图片取色</span>
+        <input type="file" id="imageFileInput" accept="image/*" title="上传本地图片取色">
+      </div>
+
+      <div class="image-display-area" id="imageDisplayArea">
+        <div class="image-picker-header">
+          <span class="image-picker-title">
+            <span>点击取色</span>
+            <span class="field-desc">（点击图片任意像素）</span>
+          </span>
+          <button class="btn-clear-img" id="clearImageBtn" type="button">关闭图片</button>
+        </div>
+        <div class="canvas-container" id="canvasContainer">
+          <canvas id="imageCanvas"></canvas>
+          <div class="color-pointer" id="colorPointer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <span id="toastMsg">复制成功</span>
+  </div>
+  <script>
+    const hexInput = document.getElementById('hexInput');
+    const rgbInput = document.getElementById('rgbInput');
+    const hslInput = document.getElementById('hslInput');
+    const nativeColorPicker = document.getElementById('nativeColorPicker');
+    const eyeDropperBtn = document.getElementById('eyeDropperBtn');
+    const imageFileInput = document.getElementById('imageFileInput');
+    const imageDisplayArea = document.getElementById('imageDisplayArea');
+    const clearImageBtn = document.getElementById('clearImageBtn');
+    const imageCanvas = document.getElementById('imageCanvas');
+    const canvasContainer = document.getElementById('canvasContainer');
+    const colorPointer = document.getElementById('colorPointer');
+    const colorCard = document.getElementById('colorCard');
+    const cardHex = document.getElementById('cardHex');
+    const cardRgb = document.getElementById('cardRgb');
+    const cardHsl = document.getElementById('cardHsl');
+    const indicator = document.getElementById('indicator');
+    const hexStatus = document.getElementById('hexStatus');
+    const rgbStatus = document.getElementById('rgbStatus');
+    const hslStatus = document.getElementById('hslStatus');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+
+    let isUpdating = false;
+    let activeImage = null;
+
+    function init() {
+      setupEyeDropper();
+      setupImagePicker();
+      setColor('#FEA1A3', 'init');
+
+      nativeColorPicker.addEventListener('input', (e) => setColor(e.target.value, 'picker'));
+      hexInput.addEventListener('input', (e) => handleHexInput(e.target.value));
+      rgbInput.addEventListener('input', (e) => handleRgbInput(e.target.value));
+      hslInput.addEventListener('input', (e) => handleHslInput(e.target.value));
+    }
+
+    function setupEyeDropper() {
+      if ('EyeDropper' in window) {
+        eyeDropperBtn.addEventListener('click', async () => {
+          try {
+            const eyeDropper = new EyeDropper();
+            const result = await eyeDropper.open();
+            if (result && result.sRGBHex) {
+              setColor(result.sRGBHex, 'eyedropper');
+              showToast('吸色成功');
             }
-            
-            // 验证RGB值是否在0-255范围内
-            const r = parseInt(rgbValues[0]);
-            const g = parseInt(rgbValues[1]);
-            const b = parseInt(rgbValues[2]);
-            
-            if (isNaN(r) || isNaN(g) || isNaN(b)) {
-                resultElement.textContent = "RGB值必须是数字";
-                resultElement.style.color = "red";
-                return;
-            }
-            
-            if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
-                resultElement.textContent = "RGB值必须在0-255之间";
-                resultElement.style.color = "red";
-                return;
-            }
-            
-            // 转换为十六进制
-            const toHex = (c) => {
-                const hex = c.toString(16);
-                return hex.length === 1 ? "0" + hex : hex;
-            };
-            
-            const hex = `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
-            
-            resultElement.textContent = `十六进制值: ${hex}`;
-            resultElement.style.color = "black";
+          } catch (e) { }
+        });
+      } else {
+        eyeDropperBtn.style.display = 'none';
+      }
+    }
+
+    function setupImagePicker() {
+      imageFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            activeImage = img;
+            renderCanvasImage();
+            imageDisplayArea.classList.add('active');
+            showToast('点击取色');
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+        imageFileInput.value = '';
+      });
+
+      clearImageBtn.addEventListener('click', () => {
+        imageDisplayArea.classList.remove('active');
+        activeImage = null;
+        colorPointer.style.display = 'none';
+      });
+
+      const pickColorFromEvent = (e) => {
+        if (!activeImage) return;
+        const rect = imageCanvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
+
+        const scaleX = imageCanvas.width / rect.width;
+        const scaleY = imageCanvas.height / rect.height;
+        const ctx = imageCanvas.getContext('2d');
+        const pixel = ctx.getImageData(Math.floor(x * scaleX), Math.floor(y * scaleY), 1, 1).data;
+
+        const toHex = (n) => n.toString(16).padStart(2, '0');
+        const hex = `#${toHex(pixel[0])}${toHex(pixel[1])}${toHex(pixel[2])}`;
+
+        const containerRect = canvasContainer.getBoundingClientRect();
+        colorPointer.style.left = `${clientX - containerRect.left}px`;
+        colorPointer.style.top = `${clientY - containerRect.top}px`;
+        colorPointer.style.backgroundColor = hex;
+        colorPointer.style.display = 'block';
+
+        setColor(hex, 'image');
+        showToast('取色成功');
+      };
+
+      imageCanvas.addEventListener('click', pickColorFromEvent);
+      imageCanvas.addEventListener('touchstart', pickColorFromEvent, { passive: true });
+    }
+
+    function renderCanvasImage() {
+      if (!activeImage) return;
+      const ctx = imageCanvas.getContext('2d');
+      imageCanvas.width = activeImage.naturalWidth;
+      imageCanvas.height = activeImage.naturalHeight;
+      ctx.drawImage(activeImage, 0, 0);
+    }
+
+    function setColor(hex, source = '') {
+      if (isUpdating) return;
+      isUpdating = true;
+
+      const normalizedHex = normalizeHex(hex);
+      if (!normalizedHex) { isUpdating = false; return; }
+
+      const rgb = hexToRgbValues(normalizedHex);
+      if (!rgb) { isUpdating = false; return; }
+
+      const hsl = rgbToHslValues(rgb.r, rgb.g, rgb.b);
+      const hexFormatted = '#' + normalizedHex.toUpperCase();
+      const rgbFormatted = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+      const hslFormatted = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+
+      colorCard.style.backgroundColor = hexFormatted;
+      cardHex.textContent = hexFormatted;
+      cardRgb.textContent = rgbFormatted;
+      cardHsl.textContent = hslFormatted;
+      indicator.style.backgroundColor = hexFormatted;
+
+      const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+      const textColor = luminance > 0.6 ? '#0f172a' : '#ffffff';
+      cardHex.style.color = textColor;
+      cardRgb.style.color = textColor;
+      cardHsl.style.color = textColor;
+
+      if (source !== 'hex') { hexInput.value = hexFormatted; hexStatus.textContent = ''; }
+      if (source !== 'rgb') { rgbInput.value = rgbFormatted; rgbStatus.textContent = ''; }
+      if (source !== 'hsl') { hslInput.value = hslFormatted; hslStatus.textContent = ''; }
+      if (source !== 'picker') { nativeColorPicker.value = hexFormatted; }
+
+      isUpdating = false;
+    }
+
+    function handleHexInput(val) {
+      const clean = val.trim().replace('#', '');
+      if (!clean) { hexStatus.textContent = ''; return; }
+
+      let hex = clean;
+      if (hex.length === 3 && /^[0-9A-Fa-f]{3}$/.test(hex)) {
+        hex = hex.split('').map(c => c + c).join('');
+      }
+
+      if (/^[0-9A-Fa-f]{6}$/.test(hex)) {
+        hexStatus.textContent = '有效';
+        hexStatus.className = 'status-msg success';
+        setColor('#' + hex, 'hex');
+      } else {
+        hexStatus.textContent = '错误';
+        hexStatus.className = 'status-msg error';
+      }
+    }
+
+    function handleRgbInput(val) {
+      const clean = val.trim();
+      if (!clean) { rgbStatus.textContent = ''; return; }
+
+      let rgbValues = null;
+      const match = clean.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i);
+      if (match) {
+        rgbValues = [match[1], match[2], match[3]];
+      } else {
+        const parts = clean.split(/[,\s]+/).filter(Boolean);
+        if (parts.length === 3) rgbValues = parts;
+      }
+
+      if (!rgbValues) {
+        rgbStatus.textContent = '格式错误';
+        rgbStatus.className = 'status-msg error';
+        return;
+      }
+
+      const r = parseInt(rgbValues[0], 10), g = parseInt(rgbValues[1], 10), b = parseInt(rgbValues[2], 10);
+      if (isNaN(r) || isNaN(g) || isNaN(b) || r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
+        rgbStatus.textContent = '数值错误';
+        rgbStatus.className = 'status-msg error';
+        return;
+      }
+
+      rgbStatus.textContent = '有效';
+      rgbStatus.className = 'status-msg success';
+      setColor(`#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`, 'rgb');
+    }
+
+    function handleHslInput(val) {
+      const clean = val.trim();
+      if (!clean) { hslStatus.textContent = ''; return; }
+
+      let hslValues = null;
+      const match = clean.match(/^hsl\(\s*(\d{1,3})\s*,\s*(\d{1,3})%?\s*,\s*(\d{1,3})%?\s*\)$/i);
+      if (match) {
+        hslValues = [match[1], match[2], match[3]];
+      } else {
+        const parts = clean.replace(/[%]/g, '').split(/[,\s]+/).filter(Boolean);
+        if (parts.length === 3) hslValues = parts;
+      }
+
+      if (!hslValues) {
+        hslStatus.textContent = '格式错误';
+        hslStatus.className = 'status-msg error';
+        return;
+      }
+
+      const h = parseFloat(hslValues[0]), s = parseFloat(hslValues[1]), l = parseFloat(hslValues[2]);
+      if (isNaN(h) || isNaN(s) || isNaN(l) || h < 0 || h > 360 || s < 0 || s > 100 || l < 0 || l > 100) {
+        hslStatus.textContent = '数值错误';
+        hslStatus.className = 'status-msg error';
+        return;
+      }
+
+      hslStatus.textContent = '有效';
+      hslStatus.className = 'status-msg success';
+      const rgb = hslToRgb(h, s, l);
+      setColor(`#${rgb.r.toString(16).padStart(2, '0')}${rgb.g.toString(16).padStart(2, '0')}${rgb.b.toString(16).padStart(2, '0')}`, 'hsl');
+    }
+
+    function normalizeHex(hexStr) {
+      if (!hexStr) return null;
+      let hex = hexStr.replace('#', '').trim();
+      if (hex.length === 3 && /^[0-9A-Fa-f]{3}$/.test(hex)) {
+        hex = hex.split('').map(c => c + c).join('');
+      }
+      return /^[0-9A-Fa-f]{6}$/.test(hex) ? hex : null;
+    }
+
+    function hexToRgbValues(hex) {
+      if (!hex || hex.length !== 6) return null;
+      return {
+        r: parseInt(hex.substring(0, 2), 16),
+        g: parseInt(hex.substring(2, 4), 16),
+        b: parseInt(hex.substring(4, 6), 16)
+      };
+    }
+
+    function rgbToHslValues(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+      if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
         }
-    </script>
+        h /= 6;
+      }
+      return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+    }
+
+    function hslToRgb(h, s, l) {
+      h /= 360; s /= 100; l /= 100;
+      if (s === 0) {
+        const val = Math.round(l * 255);
+        return { r: val, g: val, b: val };
+      }
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      return {
+        r: Math.round(hue2rgb(p, q, h + 1 / 3) * 255),
+        g: Math.round(hue2rgb(p, q, h) * 255),
+        b: Math.round(hue2rgb(p, q, h - 1 / 3) * 255)
+      };
+    }
+
+    async function copyValue(type) {
+      let val = '';
+      if (type === 'hex') val = hexInput.value;
+      if (type === 'rgb') val = rgbInput.value;
+      if (type === 'hsl') val = hslInput.value;
+      if (!val) return;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(val);
+        } else {
+          const temp = document.createElement('input');
+          temp.value = val;
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand('copy');
+          document.body.removeChild(temp);
+        }
+        showToast('复制成功');
+      } catch (err) {
+        showToast('复制失败');
+      }
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      toastMsg.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 1500);
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
 </body>
+
 </html>

@@ -1,0 +1,2826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimalist Lavender SVG Studio | 优雅简约的矢量绘图室</title>
+    <!-- 引入高品质现代无衬线字体与等宽字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 引入 Lucide 图标库 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            /* 优雅紫色简约配色系统 */
+            --bg-main: #faf9fc; /* 极轻柔的粉紫灰大背景 */
+            --bg-panel: #ffffff; /* 纯白面板 */
+            --border-light: #f1eff7; /* 淡紫灰极细边框 */
+            --border-hover: #e4dff0;
+            
+            --purple-primary: #7c3aed; /* 核心深薰衣草紫 */
+            --purple-hover: #6d28d9;
+            --purple-light: #f5f3ff; /* 激活态超浅背景 */
+            --purple-border: #ddd6fe;
+            --purple-glow: rgba(124, 58, 237, 0.08);
+            
+            --text-main: #0f172a; /* 炭黑 */
+            --text-muted: #64748b; /* 哑光灰 */
+            --text-white: #ffffff;
+            
+            --shadow-sm: 0 2px 8px rgba(124, 58, 237, 0.02);
+            --shadow-md: 0 10px 30px -5px rgba(124, 58, 237, 0.05);
+            --shadow-lg: 0 20px 40px -15px rgba(124, 58, 237, 0.08);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            letter-spacing: -0.01em;
+        }
+
+        /* 统一的磨砂玻璃卡片 */
+        .glass-card {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* 左侧控制面板 */
+        .sidebar {
+            width: 320px;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            border-right: 1px solid var(--border-light);
+            background-color: var(--bg-panel);
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .logo-icon {
+            color: var(--purple-primary);
+            width: 22px;
+            height: 22px;
+        }
+
+        .logo-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+
+        .sidebar-section {
+            margin-bottom: 14px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        /* 工具模式选择按钮：4列精干纯图标 */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .tool-option {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 0;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            background-color: var(--bg-panel);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .tool-option:hover {
+            border-color: var(--border-hover);
+            color: var(--text-main);
+            background-color: #fafafc;
+        }
+
+        .tool-option.active {
+            background-color: var(--purple-light);
+            border-color: var(--purple-primary);
+            color: var(--purple-primary);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.08);
+        }
+
+        .tool-option svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* 画布尺寸预设网格 */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .preset-btn {
+            padding: 8px 12px;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.75rem;
+            background-color: var(--bg-panel);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .preset-btn:hover {
+            border-color: var(--border-hover);
+            color: var(--text-main);
+        }
+
+        .preset-btn.active {
+            background-color: var(--purple-primary);
+            border-color: var(--purple-primary);
+            color: var(--text-white);
+            box-shadow: 0 4px 10px rgba(124, 58, 237, 0.15);
+        }
+
+        .custom-size-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .input-group {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 6px 10px;
+            background-color: #fafafc;
+            transition: var(--transition);
+        }
+
+        .input-group:focus-within {
+            border-color: var(--purple-primary);
+            background-color: var(--bg-panel);
+            box-shadow: 0 0 0 3px var(--purple-glow);
+        }
+
+        .input-group span {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-right: 6px;
+        }
+
+        .input-group input {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.8rem;
+            color: var(--text-main);
+        }
+
+        .icon-btn-apply {
+            padding: 8px 12px;
+            background-color: var(--text-main);
+            color: var(--text-white);
+            border: none;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .icon-btn-apply:hover {
+            background-color: #1e293b;
+        }
+
+        /* 样式控制区（线条与填充） */
+        .style-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .style-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .style-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .style-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .style-value {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .color-selector-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .custom-color-picker {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border-light);
+            border-radius: 50%;
+            background: none;
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .custom-color-picker::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        .custom-color-picker::-webkit-color-swatch {
+            border: none;
+            border-radius: 50%;
+        }
+
+        /* 网格对齐/填充使能开关 */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #fafafc;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-light);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: .3s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--purple-primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+        /* 精细滑动条 */
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--purple-primary);
+            cursor: pointer;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(124, 58, 237, 0.3);
+            transition: var(--transition);
+        }
+
+        .range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        /* 中间主视口 */
+        .main-workspace {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background-color: var(--bg-main);
+            overflow: hidden;
+        }
+
+        /* 顶部悬浮工具条 */
+        .top-toolbar {
+            position: absolute;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            z-index: 100;
+        }
+
+        .toolbar-divider {
+            width: 1px;
+            height: 20px;
+            background-color: var(--border-light);
+            margin: 0 4px;
+        }
+
+        .action-icon-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            background-color: var(--bg-panel);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-icon-btn:hover {
+            border-color: var(--border-hover);
+            color: var(--text-main);
+            background-color: #fafafc;
+        }
+
+        .action-icon-btn.active {
+            border-color: var(--purple-primary);
+            color: var(--purple-primary);
+            background-color: rgba(124, 58, 237, 0.08);
+            box-shadow: 0 0 8px rgba(124, 58, 237, 0.18);
+        }
+
+        .action-icon-btn.active:hover {
+            background-color: rgba(124, 58, 237, 0.12);
+        }
+
+        .action-icon-btn.danger:hover {
+            border-color: #fca5a5;
+            color: #ef4444;
+            background-color: #fef2f2;
+        }
+
+        .action-icon-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background-color: #fafafc;
+            border-color: var(--border-light);
+        }
+
+        .action-icon-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* 画布装载与外围包裹 */
+        .canvas-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+        }
+
+        /* 画布本身，像悬浮的精美画纸 */
+        .canvas-paper {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(124, 58, 237, 0.04);
+            position: relative;
+            /* 自定义双色高对比度游标（紫色芯线 + 白色高亮描边保护），热点精确位于十字中心 12 12 */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20" stroke="%23ffffff" stroke-width="3.5" stroke-linecap="round"/><path d="M12 3v18M3 12h18" stroke="%237c3aed" stroke-width="1.5" stroke-linecap="round"/></svg>') 12 12, crosshair;
+            transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1), height 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: visible;
+        }
+
+        /* 智能线性像素网格背景 */
+        svg#paint-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            /* 细线网络背景 */
+            background-image: 
+                linear-gradient(to right, rgba(124, 58, 237, var(--grid-opacity, 0.05)) var(--grid-stroke-width, 1px), transparent var(--grid-stroke-width, 1px)),
+                linear-gradient(to bottom, rgba(124, 58, 237, var(--grid-opacity, 0.05)) var(--grid-stroke-width, 1px), transparent var(--grid-stroke-width, 1px));
+            background-size: var(--grid-size, 20px) var(--grid-size, 20px);
+            background-color: #ffffff;
+            overflow: visible;
+        }
+
+        /* 底部精密状态栏 */
+        .status-bar {
+            height: 38px;
+            border-top: 1px solid var(--border-light);
+            background-color: var(--bg-panel);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            z-index: 10;
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #10b981; /* 默认运行中绿色 */
+        }
+        
+        .status-dot.working {
+            background-color: var(--purple-primary);
+            animation: pulse-glow 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+
+        /* 右侧代码抽屉栏 */
+        .code-drawer {
+            width: 360px;
+            min-width: 360px;
+            border-left: 1px solid var(--border-light);
+            background-color: var(--bg-panel);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            z-index: 10;
+            transition: var(--transition);
+            overflow-y: auto;
+        }
+
+        /* 示例模板卡片样式 */
+        .template-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 8px;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            background-color: var(--bg-panel);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            gap: 6px;
+        }
+
+        .template-card:hover {
+            border-color: var(--purple-primary);
+            background-color: var(--purple-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.06);
+        }
+
+        .template-card svg {
+            width: 32px;
+            height: 32px;
+            transition: var(--transition);
+        }
+
+        .template-card:hover svg {
+            transform: scale(1.1);
+        }
+
+        .template-card-title {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .template-card:hover .template-card-title {
+            color: var(--purple-primary);
+        }
+
+        .code-drawer.collapsed {
+            width: 0px;
+            min-width: 0px;
+            padding: 0;
+            overflow: hidden;
+            border-left: none;
+        }
+
+        .code-area-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            margin-bottom: 20px;
+        }
+
+        textarea#code-output {
+            flex-grow: 1;
+            width: 100%;
+            padding: 16px;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.78rem;
+            line-height: 1.5;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            background-color: #FAF9FB;
+            color: #474354;
+            resize: none;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        textarea#code-output:focus {
+            border-color: var(--purple-primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px var(--purple-glow);
+        }
+
+        .drawer-action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--purple-primary);
+            color: var(--text-white);
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+        }
+
+        .drawer-action-btn:hover {
+            background-color: var(--purple-hover);
+            box-shadow: 0 6px 16px rgba(124, 58, 237, 0.3);
+        }
+
+        .drawer-action-btn.secondary {
+            background-color: var(--text-main);
+            box-shadow: none;
+        }
+        .drawer-action-btn.secondary:hover {
+            background-color: #1e293b;
+        }
+
+        /* 展开/折叠代码区的悬浮按钮 */
+        .toggle-drawer-btn {
+            position: absolute;
+            right: 24px;
+            top: 24px;
+            z-index: 100;
+        }
+
+        /* 气泡提示 */
+        .toast {
+            position: fixed;
+            bottom: 60px;
+            right: 40px;
+            background-color: #10b981;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);
+            transform: translateY(30px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.30s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* 默认情况下，画布里的子图形不响应任何鼠标事件，防止干扰绘图 */
+        svg#paint-canvas > *:not(.bezier-helper) {
+            pointer-events: none;
+        }
+
+        /* 仅在橡皮擦或油漆桶激活时，子图形才响应事件并改为 pointer */
+        body.eraser-mode svg#paint-canvas > *:not(.bezier-helper),
+        body.paintbucket-mode svg#paint-canvas > *:not(.bezier-helper) {
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        /* 橡皮擦激活时的鼠标游标：红芯白边小圆圈，指代擦除圈 */
+        body.eraser-mode .canvas-paper {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" stroke="%23ffffff" stroke-width="2.5" fill="none"/><circle cx="12" cy="12" r="6" stroke="%23ef4444" stroke-width="1.2" fill="rgba(239,68,68,0.15)"/></svg>') 12 12, pointer;
+        }
+
+        /* 油漆桶激活时的鼠标游标：紫色小圆圈 */
+        body.paintbucket-mode .canvas-paper {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" stroke="%23ffffff" stroke-width="2.5" fill="none"/><circle cx="12" cy="12" r="5" stroke="%237c3aed" stroke-width="1.5" fill="rgba(124,58,237,0.2)"/></svg>') 12 12, pointer;
+        }
+
+        /* 橡皮擦悬浮：红色滤镜和高亮外发光 */
+        .erase-highlight {
+            filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.8)) !important;
+            opacity: 0.6 !important;
+        }
+
+        /* 油漆桶悬浮：紫色滤镜和发光轮廓 */
+        .fill-highlight {
+            filter: drop-shadow(0 0 4px rgba(124, 58, 237, 0.8)) !important;
+        }
+
+        /* 画布预设分类选项卡样式 */
+        .cat-tab {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .cat-tab:hover {
+            color: var(--text-main);
+            background-color: rgba(124, 58, 237, 0.04);
+        }
+
+        .cat-tab.active {
+            background-color: var(--purple-primary) !important;
+            color: var(--text-white) !important;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* ================= 移动端响应式与自适应适配 ================= */
+        
+        /* 1. 移动端及中等屏幕设备 (手机与平板，宽度 <= 1024px) */
+        @media (max-width: 1024px) {
+            .app-container {
+                position: relative;
+            }
+
+            /* 侧边栏转换为侧滑抽屉 */
+            .sidebar {
+                position: fixed;
+                left: -320px;
+                top: 0;
+                bottom: 0;
+                height: 100vh;
+                box-shadow: var(--shadow-lg);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 1000;
+            }
+
+            .sidebar.sidebar-open {
+                transform: translateX(320px);
+            }
+
+            /* 遮罩层 */
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background-color: rgba(15, 23, 42, 0.4);
+                backdrop-filter: blur(4px);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+                z-index: 999;
+            }
+
+            .sidebar-overlay.active {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            /* 汉堡按钮显现 */
+            #btn-toggle-sidebar {
+                display: flex !important;
+            }
+
+            /* 代码抽屉转换为侧滑抽屉（限制平板下最大宽度，防止 100% 拉伸） */
+            .code-drawer {
+                position: fixed;
+                right: -380px;
+                top: 0;
+                bottom: 0;
+                width: 380px !important;
+                min-width: 380px !important;
+                z-index: 1010;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: var(--shadow-lg);
+            }
+
+            .code-drawer:not(.collapsed) {
+                transform: translateX(-380px);
+            }
+
+            /* 在窄屏手机上代码抽屉强制 100% 宽度 */
+            @media (max-width: 480px) {
+                .code-drawer {
+                    right: -100%;
+                    width: 100% !important;
+                    min-width: 100% !important;
+                }
+                .code-drawer:not(.collapsed) {
+                    transform: translateX(-100%);
+                }
+            }
+
+            /* 缩微顶部工具条以适配移动端宽度，支持横卷 */
+            .top-toolbar {
+                top: 12px;
+                padding: 6px 8px;
+                gap: 4px;
+                max-width: calc(100vw - 80px); /* 留出右侧代码按钮空间 */
+                left: 12px;
+                transform: none;
+                overflow-x: auto;
+                scrollbar-width: none; /* 隐藏滚动条 */
+            }
+            .top-toolbar::-webkit-scrollbar {
+                display: none;
+            }
+
+            .action-icon-btn {
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                flex-shrink: 0;
+            }
+
+            .action-icon-btn svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            #zoom-value {
+                font-size: 0.7rem;
+                min-width: 44px;
+            }
+
+            .toolbar-divider {
+                height: 16px;
+                margin: 0 2px;
+            }
+            
+            /* 代码抽屉折叠展开按钮：提高层级，使其永不被展开的代码抽屉遮挡 */
+            .toggle-drawer-btn {
+                right: 12px;
+                top: 12px;
+                width: 34px;
+                height: 34px;
+                border-radius: 8px;
+                z-index: 1020 !important;
+            }
+
+            /* 移动端状态栏极致简化排版，防止挤压折行 */
+            .status-bar {
+                padding: 0 16px !important;
+                font-size: 0.7rem;
+            }
+            .status-divider,
+            #status-sys-item,
+            #status-coords-item,
+            #status-count-item,
+            .status-label {
+                display: none !important;
+            }
+            .status-left, .status-right {
+                gap: 8px !important;
+            }
+        }
+
+        /* 2. 横屏/极矮屏幕手机自适应适配 (高度 <= 500px) */
+        @media (max-height: 500px) {
+            .top-toolbar {
+                top: 6px !important;
+                padding: 4px 6px;
+            }
+            .toggle-drawer-btn {
+                top: 6px !important;
+                right: 6px !important;
+            }
+            .status-bar {
+                display: none !important; /* 横屏隐藏状态栏以腾出空间 */
+            }
+            .sidebar {
+                padding-top: 10px;
+            }
+            .logo-area {
+                margin-bottom: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 移动端侧滑遮罩层 -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- 左侧参数与控制面板 -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <i class="logo-icon" data-lucide="palette"></i>
+            <h1 class="logo-title">Lavender SVG</h1>
+        </div>
+
+            <!-- 绘图工具模式 (精干的4列纯图标按钮) -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <span class="section-title">绘图工具</span>
+                </div>
+                <div class="tool-grid">
+                    <div class="tool-option active" data-mode="pencil" id="tool-pencil" title="自由笔刷 (Pencil)">
+                        <i data-lucide="pencil"></i>
+                    </div>
+                    <div class="tool-option" data-mode="line" id="tool-line" title="直线段模式 (Line)">
+                        <i data-lucide="minus"></i>
+                    </div>
+                    <div class="tool-option" data-mode="bezier" id="tool-bezier" title="二次贝塞尔曲线 (Bezier)">
+                        <i data-lucide="spline"></i>
+                    </div>
+                    <div class="tool-option" data-mode="rect" id="tool-rect" title="正/长方形 (Rect)">
+                        <i data-lucide="square"></i>
+                    </div>
+                    <div class="tool-option" data-mode="circle" id="tool-circle" title="圆形模式 (Circle)">
+                        <i data-lucide="circle"></i>
+                    </div>
+                    <div class="tool-option" data-mode="triangle" id="tool-triangle" title="等腰三角形 (Triangle)">
+                        <i data-lucide="triangle"></i>
+                    </div>
+                    <div class="tool-option" data-mode="star" id="tool-star" title="黄金分割五角星 (Star)">
+                        <i data-lucide="star"></i>
+                    </div>
+                    <div class="tool-option" data-mode="sector" id="tool-sector" title="双阶段扇形 (Sector)">
+                        <i data-lucide="pie-chart"></i>
+                    </div>
+                    <div class="tool-option" data-mode="eraser" id="tool-eraser" title="矢量橡皮擦 (Eraser)">
+                        <i data-lucide="eraser"></i>
+                    </div>
+                    <div class="tool-option" data-mode="paintbucket" id="tool-paintbucket" title="油漆桶填充上色 (Paint)">
+                        <i data-lucide="paint-bucket"></i>
+                    </div>
+                </div>
+            </div>
+
+        <!-- 画布预设与配置 -->
+        <div class="sidebar-section">
+            <div class="section-header">
+                <span class="section-title">画布尺寸</span>
+            </div>
+            
+            <!-- 分类选项卡 -->
+            <div class="size-category-tabs" style="display: flex; gap: 4px; margin-bottom: 12px; background-color: #fafafc; padding: 4px; border-radius: 10px; border: 1px solid var(--border-light);">
+                <button class="cat-tab active" data-category="icons" title="常用 UI 图标尺寸">
+                    <i data-lucide="square" style="width: 14px; height: 14px;"></i>
+                    <span>图标</span>
+                </button>
+                <button class="cat-tab" data-category="illustrations" title="网页插画与动效画布">
+                    <i data-lucide="image" style="width: 14px; height: 14px;"></i>
+                    <span>插画</span>
+                </button>
+                <button class="cat-tab" data-category="charts" title="折线图、柱状图等可视化图表">
+                    <i data-lucide="bar-chart-3" style="width: 14px; height: 14px;"></i>
+                    <span>图表</span>
+                </button>
+                <button class="cat-tab" data-category="docs" title="标准印刷纸张与文档">
+                    <i data-lucide="file-text" style="width: 14px; height: 14px;"></i>
+                    <span>文档</span>
+                </button>
+            </div>
+
+            <!-- 画布尺寸预设网格 (由 JS 动态渲染) -->
+            <div class="preset-grid" id="size-preset-container">
+            </div>
+
+            <div class="custom-size-row">
+                <div class="input-group">
+                    <span>W</span>
+                    <input type="number" id="custom-width" value="800" min="10" max="4000">
+                </div>
+                <div class="input-group">
+                    <span>H</span>
+                    <input type="number" id="custom-height" value="600" min="10" max="4000">
+                </div>
+                <button id="apply-size-btn" class="icon-btn-apply">应用</button>
+            </div>
+        </div>
+
+        <!-- 图形样式配置 (多合一极速紧凑版) -->
+        <div class="sidebar-section">
+            <div class="section-header">
+                <span class="section-title">图形样式</span>
+            </div>
+            <div class="style-grid" style="gap: 10px;">
+                <!-- 描边与填充颜色并列一行，显著节省空间 -->
+                <div style="display: flex; gap: 12px; width: 100%;">
+                    <!-- 描边颜色 -->
+                    <div class="style-item" style="flex: 1; gap: 4px;">
+                        <span class="style-label" style="font-size: 0.75rem;">描边</span>
+                        <div class="color-selector-wrapper" style="gap: 6px;">
+                            <input type="color" class="custom-color-picker" id="stroke-color" value="#0f172a" style="width: 28px; height: 28px;">
+                            <span class="style-value" id="stroke-color-val" style="font-size: 0.7rem; font-family: 'JetBrains Mono', monospace;">#0f172a</span>
+                        </div>
+                    </div>
+                    <!-- 填充颜色 -->
+                    <div class="style-item" id="fill-color-wrapper" style="flex: 1; gap: 4px; opacity: 0.5; pointer-events: none; transition: var(--transition);">
+                        <span class="style-label" style="font-size: 0.75rem;">填充</span>
+                        <div class="color-selector-wrapper" style="gap: 6px;">
+                            <input type="color" class="custom-color-picker" id="fill-color" value="#7c3aed" style="width: 28px; height: 28px;">
+                            <span class="style-value" id="fill-color-val" style="font-size: 0.7rem; font-family: 'JetBrains Mono', monospace;">#7c3aed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 描边宽度 -->
+                <div class="style-item" style="gap: 4px;">
+                    <div class="style-label-row">
+                        <span class="style-label" style="font-size: 0.75rem;">描边粗细</span>
+                        <span class="style-value" id="stroke-width-val" style="font-size: 0.7rem;">3 px</span>
+                    </div>
+                    <input type="range" class="range-slider" id="stroke-width" min="1" max="50" value="3" style="height: 4px; margin: 4px 0;">
+                </div>
+
+                <!-- 不透明度 -->
+                <div class="style-item" style="gap: 4px;">
+                    <div class="style-label-row">
+                        <span class="style-label" style="font-size: 0.75rem;">不透明度</span>
+                        <span class="style-value" id="opacity-val" style="font-size: 0.7rem;">100%</span>
+                    </div>
+                    <input type="range" class="range-slider" id="element-opacity" min="10" max="100" value="100" style="height: 4px; margin: 4px 0;">
+                </div>
+
+                <!-- 网格对齐刻度只读指示 (快捷开关移至顶部工具栏) -->
+                <div class="toggle-container" style="justify-content: center; background-color: transparent; border: none; padding: 0; margin-top: 2px;">
+                    <span class="style-label" id="snap-text" style="font-size:0.7rem; color: var(--text-muted); font-weight: 500;">对齐到网格 (20px)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 中间画板视口 -->
+    <div class="main-workspace">
+        
+        <!-- 悬浮撤销重做工具条 + 缩放控制 -->
+        <div class="top-toolbar glass-card">
+            <!-- 手机端汉堡菜单开关 -->
+            <button class="action-icon-btn" id="btn-toggle-sidebar" title="展开控制面板" style="display: none; margin-right: 4px;">
+                <i data-lucide="menu"></i>
+            </button>
+            <button class="action-icon-btn" id="btn-undo" title="撤销 (Ctrl+Z)" disabled>
+                <i data-lucide="undo-2"></i>
+            </button>
+            <button class="action-icon-btn" id="btn-redo" title="重做 (Ctrl+Y)" disabled>
+                <i data-lucide="redo-2"></i>
+            </button>
+            <button class="action-icon-btn danger" id="btn-clear" title="清空画布">
+                <i data-lucide="trash-2"></i>
+            </button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <!-- 快捷绘图控制组 -->
+            <button class="action-icon-btn" id="btn-toggle-snap" title="对齐网格">
+                <i data-lucide="grid"></i>
+            </button>
+            <button class="action-icon-btn" id="btn-toggle-fill" title="启用填充">
+                <i data-lucide="droplet"></i>
+            </button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <!-- 缩放控制组 -->
+            <button class="action-icon-btn" id="btn-zoom-out" title="缩小 (Ctrl+滚轮)">
+                <i data-lucide="zoom-out"></i>
+            </button>
+            <span id="zoom-value" style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; min-width: 52px; text-align: center; font-weight: 600; color: var(--text-main); user-select: none;">100%</span>
+            <button class="action-icon-btn" id="btn-zoom-in" title="放大 (Ctrl+滚轮)">
+                <i data-lucide="zoom-in"></i>
+            </button>
+            <button class="action-icon-btn" id="btn-zoom-fit" title="自适应窗口">
+                <i data-lucide="maximize"></i>
+            </button>
+        </div>
+
+        <!-- 折叠/展开代码抽屉按钮 -->
+        <button class="action-icon-btn toggle-drawer-btn glass-card" id="btn-toggle-drawer" title="展开/收起代码">
+            <i data-lucide="code"></i>
+        </button>
+
+        <!-- 画布工作台 -->
+        <div class="canvas-container">
+            <div class="canvas-paper" id="canvas-wrapper" style="width: 800px; height: 600px;">
+                <svg id="paint-canvas" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 用户图形元素将被动态插入至此 -->
+                </svg>
+            </div>
+        </div>
+
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <div class="status-item">
+                    <span class="status-dot" id="status-pulse"></span>
+                    <span class="status-label">当前工具:</span>
+                    <span id="status-tool" style="color: var(--text-main); font-weight: 600;">自由笔刷</span>
+                </div>
+            </div>
+            <div class="status-right">
+                <div class="status-item" id="status-coords-item">
+                    <i data-lucide="mouse-pointer" style="width: 12px; height: 12px;"></i>
+                    <span id="status-coords">X: 0px | Y: 0px</span>
+                </div>
+                <span class="status-divider">|</span>
+                <div class="status-item">
+                    <span class="status-label">尺寸:</span>
+                    <span id="status-size" style="color: var(--text-main); font-weight: 600;">800 × 600 px</span>
+                </div>
+                <span class="status-divider">|</span>
+                <div class="status-item" id="status-count-item">
+                    <span class="status-label">元素数量:</span>
+                    <span id="status-count" style="color: var(--text-main); font-weight: 600;">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧代码栏 -->
+    <div class="code-drawer" id="code-drawer">
+        <div class="logo-area" style="margin-bottom: 20px;">
+            <i class="logo-icon" data-lucide="code-2" style="color: var(--text-main);"></i>
+            <h2 class="logo-title" style="font-size: 1.05rem;">实时 SVG 代码</h2>
+        </div>
+
+        <div class="code-area-wrapper">
+            <textarea id="code-output" placeholder="绘制图形以生成代码，或在此直接输入/粘帖 SVG 代码..."></textarea>
+        </div>
+
+        <button class="drawer-action-btn" id="btn-copy">
+            <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
+            复制代码
+        </button>
+        <button class="drawer-action-btn secondary" id="btn-download">
+            <i data-lucide="download" style="width: 16px; height: 16px;"></i>
+            下载 SVG 文件
+        </button>
+
+        <!-- 示例模板区域 -->
+        <div class="templates-section" style="margin-top: 20px; border-top: 1px solid var(--border-light); padding-top: 20px; display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;">
+            <div class="logo-area" style="margin-bottom: 0;">
+                <i class="logo-icon" data-lucide="shapes" style="color: var(--text-main); width: 18px; height: 18px;"></i>
+                <h3 class="logo-title" style="font-size: 0.95rem;">内置示例模板</h3>
+            </div>
+            <div class="template-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                <!-- 由 JavaScript 动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast-notify">已成功复制代码到剪贴板！</div>
+
+    <script>
+        // 初始化 Lucide 图标
+        lucide.createIcons();
+
+        // DOM 元素获取
+        const canvas = document.getElementById('paint-canvas');
+        const wrapper = document.getElementById('canvas-wrapper');
+        const codeOutput = document.getElementById('code-output');
+        const canvasContainer = document.querySelector('.canvas-container');
+        
+        // 样式与配置 DOM
+        const strokeColorInput = document.getElementById('stroke-color');
+        const strokeColorVal = document.getElementById('stroke-color-val');
+        const strokeWidthInput = document.getElementById('stroke-width');
+        const strokeWidthVal = document.getElementById('stroke-width-val');
+        // 快捷绘图开关控制按钮
+        const btnToggleSnap = document.getElementById('btn-toggle-snap');
+        const btnToggleFill = document.getElementById('btn-toggle-fill');
+
+        const fillColorInput = document.getElementById('fill-color');
+        const fillColorVal = document.getElementById('fill-color-val');
+        const fillColorWrapper = document.getElementById('fill-color-wrapper');
+        const opacityInput = document.getElementById('element-opacity');
+        const opacityVal = document.getElementById('opacity-val');
+        const snapText = document.getElementById('snap-text');
+
+        // 全局状态布尔变量
+        let fillEnabled = false;
+        let snapGridEnabled = true;
+
+        // 缩放控制 DOM
+        const btnZoomIn = document.getElementById('btn-zoom-in');
+        const btnZoomOut = document.getElementById('btn-zoom-out');
+        const btnZoomFit = document.getElementById('btn-zoom-fit');
+        const zoomValueText = document.getElementById('zoom-value');
+
+        // 控制动作 DOM
+        const btnUndo = document.getElementById('btn-undo');
+        const btnRedo = document.getElementById('btn-redo');
+        const btnClear = document.getElementById('btn-clear');
+        const btnCopy = document.getElementById('btn-copy');
+        const btnDownload = document.getElementById('btn-download');
+        const btnToggleDrawer = document.getElementById('btn-toggle-drawer');
+        const codeDrawer = document.getElementById('code-drawer');
+        const toast = document.getElementById('toast-notify');
+
+        // 状态栏 DOM
+        const statusTool = document.getElementById('status-tool');
+        const statusCoords = document.getElementById('status-coords');
+        const statusSize = document.getElementById('status-size');
+        const statusCount = document.getElementById('status-count');
+        const statusPulse = document.getElementById('status-pulse');
+
+        // 全局运行变量
+        let canvasWidth = 800;
+        let canvasHeight = 600;
+        let activeTool = 'pencil'; // pencil | line | bezier | rect | circle | triangle | star | sector
+        let isDrawing = false;
+        let activeElement = null;
+        let zoomScale = 1.0;
+        let currentSnapStep = 20; // 动态网格吸附精度
+        let currentGridSize = 20; // 动态网格物理尺寸
+
+        // 几何图形通用绘制起点变量
+        let startCoords = { x: 0, y: 0 };
+
+        // 历史堆栈
+        const historyStack = [];
+        let historyIndex = -1;
+
+        // 贝塞尔状态变量
+        let bezierStep = 0; // 0: 闲置, 1: 拖动主干线, 2: 动态调节弧度
+        let bezierStart = { x: 0, y: 0 };
+        let bezierEnd = { x: 0, y: 0 };
+        let bezierControl = { x: 0, y: 0 };
+        
+        // 辅助绘图 DOM (在 Bezier 调节时显示)
+        let helperLine1 = null;
+        let helperLine2 = null;
+        let helperControlCircle = null;
+
+        // 扇形状态变量
+        let sectorStep = 0; // 0: 闲置, 1: 确定半径与起始角, 2: 动态调节角度
+        let sectorCenter = { x: 0, y: 0 };
+        let sectorRadius = 0;
+        let sectorStartAngle = 0;
+        let sectorEndAngle = { x: 0, y: 0 }; // 临时终点
+        // 扇形辅助绘图 DOM
+        let helperSectorCircle = null;
+        let helperSectorLine1 = null;
+        let helperSectorLine2 = null;
+
+        // 自由笔刷采样变量
+        let pathPoints = [];
+
+        // 1. 初始化及样式监听绑定
+        strokeColorInput.addEventListener('input', (e) => {
+            strokeColorVal.innerText = e.target.value;
+        });
+        strokeWidthInput.addEventListener('input', (e) => {
+            strokeWidthVal.innerText = `${e.target.value} px`;
+        });
+        fillColorInput.addEventListener('input', (e) => {
+            fillColorVal.innerText = e.target.value;
+        });
+        // 初始化快捷开关状态亮起
+        if (snapGridEnabled) btnToggleSnap.classList.add('active');
+        if (fillEnabled) {
+            btnToggleFill.classList.add('active');
+            fillColorWrapper.style.opacity = '1';
+            fillColorWrapper.style.pointerEvents = 'auto';
+        } else {
+            fillColorWrapper.style.opacity = '0.5';
+            fillColorWrapper.style.pointerEvents = 'none';
+        }
+
+        // 对齐网格快捷一键 Toggle
+        btnToggleSnap.addEventListener('click', () => {
+            snapGridEnabled = !snapGridEnabled;
+            if (snapGridEnabled) {
+                btnToggleSnap.classList.add('active');
+                snapText.innerText = `对齐到网格 (${currentSnapStep}px)`;
+            } else {
+                btnToggleSnap.classList.remove('active');
+                snapText.innerText = '自由绘制 (无网格吸附)';
+            }
+        });
+
+        // 启用填充快捷一键 Toggle
+        btnToggleFill.addEventListener('click', () => {
+            fillEnabled = !fillEnabled;
+            if (fillEnabled) {
+                btnToggleFill.classList.add('active');
+                fillColorWrapper.style.opacity = '1';
+                fillColorWrapper.style.pointerEvents = 'auto';
+            } else {
+                btnToggleFill.classList.remove('active');
+                fillColorWrapper.style.opacity = '0.5';
+                fillColorWrapper.style.pointerEvents = 'none';
+            }
+        });
+        opacityInput.addEventListener('input', (e) => {
+            opacityVal.innerText = `${e.target.value}%`;
+        });
+
+        // 刷新代码折叠/展开按钮的图标
+        function updateToggleDrawerBtnIcon() {
+            const icon = btnToggleDrawer.querySelector('i');
+            if (icon) {
+                if (codeDrawer.classList.contains('collapsed')) {
+                    icon.setAttribute('data-lucide', 'code-2');
+                } else {
+                    icon.setAttribute('data-lucide', 'code');
+                }
+                lucide.createIcons();
+            }
+        }
+
+        // 展开收起代码抽屉
+        btnToggleDrawer.addEventListener('click', () => {
+            codeDrawer.classList.toggle('collapsed');
+            
+            // 移动端交互互斥与遮罩联动
+            if (window.innerWidth <= 1024) {
+                if (!codeDrawer.classList.contains('collapsed')) {
+                    // 如果代码栏展开了，强制收起左侧侧栏，并展示背景遮罩以方便一键点击空白处收回
+                    sidebar.classList.remove('sidebar-open');
+                    sidebarOverlay.classList.add('active');
+                } else {
+                    sidebarOverlay.classList.remove('active');
+                }
+            }
+            
+            setTimeout(updateToggleDrawerBtnIcon, 150);
+        });
+
+        // 2. 画布缩放核心逻辑
+        function updateZoom(newScale) {
+            // 提高上限到 64.0 以配合小画布的极限撑满
+            zoomScale = Math.min(64.0, Math.max(0.2, newScale));
+            
+            // 改变外层包装器的 CSS 大小以进行清晰的物理缩放
+            wrapper.style.width = `${canvasWidth * zoomScale}px`;
+            wrapper.style.height = `${canvasHeight * zoomScale}px`;
+            
+            zoomValueText.innerText = `${Math.round(zoomScale * 100)}%`;
+            
+            // 实时同步网格物理尺寸，确保网格贴合缩放
+            canvas.style.setProperty('--grid-size', `${currentGridSize * zoomScale}px`);
+        }
+
+        // 自适应窗口撑满
+        function fitCanvas() {
+            const containerWidth = canvasContainer.clientWidth;
+            const containerHeight = canvasContainer.clientHeight;
+            
+            // 判断是否是移动端
+            const isMobile = window.innerWidth <= 1024;
+            
+            if (isMobile) {
+                // 移动端：左右各留10px，上下各留10px
+                const targetW = containerWidth - 20;
+                const targetH = containerHeight - 20;
+                
+                // 判断横竖屏状态
+                const isPortrait = window.innerWidth < window.innerHeight;
+                
+                let scale;
+                if (isPortrait) {
+                    // 竖屏：宽度自适应撑满 (左右铺满)
+                    scale = targetW / canvasWidth;
+                } else {
+                    // 横屏：高度自适应撑满 (上下铺满)
+                    scale = targetH / canvasHeight;
+                }
+                
+                // 针对移动端非整数倍的防锯齿舍入
+                scale = Math.round(scale * 100) / 100;
+                updateZoom(scale);
+            } else {
+                // 桌面端：四周均留出 40px (合 80px) 边距完整显示
+                const targetWidth = containerWidth - 80;
+                const targetHeight = containerHeight - 80;
+                
+                const scaleX = targetWidth / canvasWidth;
+                const scaleY = targetHeight / canvasHeight;
+                
+                let fitScale = Math.min(scaleX, scaleY);
+                
+                // 如果是 24x24 这种超小画布，按整数倍放大，体验更清晰
+                if (canvasWidth <= 64) {
+                    fitScale = Math.min(32.0, Math.floor(fitScale));
+                    if (fitScale < 1) fitScale = 1;
+                } else {
+                    fitScale = Math.round(fitScale * 10) / 10;
+                }
+                
+                updateZoom(fitScale);
+            }
+        }
+
+        // 按钮监听
+        btnZoomIn.addEventListener('click', () => {
+            let target;
+            if (zoomScale < 1.0) target = zoomScale + 0.1;
+            else if (zoomScale < 4.0) target = zoomScale + 0.5;
+            else if (zoomScale < 10.0) target = zoomScale + 1.0;
+            else target = zoomScale + 4.0;
+            updateZoom(target);
+        });
+
+        btnZoomOut.addEventListener('click', () => {
+            let target;
+            if (zoomScale <= 1.0) target = zoomScale - 0.1;
+            else if (zoomScale <= 4.0) target = zoomScale - 0.5;
+            else if (zoomScale <= 10.0) target = zoomScale - 1.0;
+            else target = zoomScale - 4.0;
+            updateZoom(target);
+        });
+
+        btnZoomFit.addEventListener('click', fitCanvas);
+
+        // 监听鼠标在画布区域滚动直接进行缩放
+        canvasContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = -e.deltaY;
+            const factor = delta > 0 ? 1.12 : 0.88; // 稍微调低单次缩放系数，使直接滚轮缩放更平滑
+            updateZoom(zoomScale * factor);
+        }, { passive: false });
+
+        // 3. 画布大小配置逻辑
+        const customWidthInput = document.getElementById('custom-width');
+        const customHeightInput = document.getElementById('custom-height');
+        const applySizeBtn = document.getElementById('apply-size-btn');
+
+        // 中心加粗辅助网格线 DOM 变量
+        let guideH = null;
+        let guideV = null;
+
+        function updateCenterGuides() {
+            if (guideH && guideH.parentNode) guideH.parentNode.removeChild(guideH);
+            if (guideV && guideV.parentNode) guideV.parentNode.removeChild(guideV);
+
+            // 根据画布尺度，自适应计算中心虚线的粗细与间距，防小画布过粗
+            let strokeWidth = 1.2;
+            let dashArray = '4 4';
+            
+            if (canvasWidth <= 32) {
+                strokeWidth = 0.15;
+                dashArray = '0.5 0.5';
+            } else if (canvasWidth <= 64) {
+                strokeWidth = 0.3;
+                dashArray = '1 1';
+            } else if (canvasWidth <= 256) {
+                strokeWidth = 0.6;
+                dashArray = '2 2';
+            }
+            
+            const midX = canvasWidth / 2;
+            const midY = canvasHeight / 2;
+            
+            // 水平中心线
+            guideH = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            guideH.setAttribute('class', 'bezier-helper center-guide'); // 挂载类，防干扰，自动过滤
+            guideH.setAttribute('x1', 0);
+            guideH.setAttribute('y1', midY);
+            guideH.setAttribute('x2', canvasWidth);
+            guideH.setAttribute('y2', midY);
+            guideH.setAttribute('stroke', 'rgba(124, 58, 237, 0.35)'); // 优雅半透明紫色
+            guideH.setAttribute('stroke-width', strokeWidth);
+            guideH.setAttribute('stroke-dasharray', dashArray);
+            
+            // 垂直中心线
+            guideV = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            guideV.setAttribute('class', 'bezier-helper center-guide');
+            guideV.setAttribute('x1', midX);
+            guideV.setAttribute('y1', 0);
+            guideV.setAttribute('x2', midX);
+            guideV.setAttribute('y2', canvasHeight);
+            guideV.setAttribute('stroke', 'rgba(124, 58, 237, 0.35)');
+            guideV.setAttribute('stroke-width', strokeWidth);
+            guideV.setAttribute('stroke-dasharray', dashArray);
+            
+            // 插入在 canvas 最底层
+            if (canvas.firstChild) {
+                canvas.insertBefore(guideH, canvas.firstChild);
+                canvas.insertBefore(guideV, guideH.nextSibling);
+            } else {
+                canvas.appendChild(guideH);
+                canvas.appendChild(guideV);
+            }
+        }
+
+        function setCanvasDimensions(width, height) {
+            canvasWidth = parseInt(width);
+            canvasHeight = parseInt(height);
+            
+            // 智能计算网格线粒度与吸附精度，小画布下切为像素网格
+            let gridSize = 20;
+            let snapStep = 20;
+            let gridOpacity = 0.05;
+
+            if (canvasWidth <= 32) {
+                gridSize = 1;
+                snapStep = 1;
+                gridOpacity = 0.15; // 像素网格对比度调高
+            } else if (canvasWidth <= 64) {
+                gridSize = 2;
+                snapStep = 2;
+                gridOpacity = 0.10;
+            } else if (canvasWidth <= 256) {
+                gridSize = 8;
+                snapStep = 8;
+                gridOpacity = 0.07;
+            } else {
+                gridSize = 20;
+                snapStep = 20;
+                gridOpacity = 0.05;
+            }
+            
+            currentGridSize = gridSize;
+            currentSnapStep = snapStep;
+            
+            // 初始设置 CSS 变量（固定细线宽度为屏幕物理 1px，只缩放格距）
+            canvas.style.setProperty('--grid-size', `${gridSize * zoomScale}px`);
+            canvas.style.setProperty('--grid-stroke-width', '1px');
+            canvas.style.setProperty('--grid-opacity', `${gridOpacity}`);
+            
+            snapText.innerText = `对齐到网格 (${snapStep}px)`;
+
+            canvas.setAttribute('viewBox', `0 0 ${canvasWidth} ${canvasHeight}`);
+            
+            // 创建或更新中心十字轴辅助线
+            updateCenterGuides();
+            
+            // 自动缩放适应窗口大小，让小画布瞬间变大以供绘制
+            fitCanvas();
+
+            // 更新输入框数值
+            customWidthInput.value = canvasWidth;
+            customHeightInput.value = canvasHeight;
+
+            // 智能反推高亮同步：检查当前渲染的预设尺寸按钮，有没有命中新尺寸的
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                if (parseInt(btn.dataset.w) === canvasWidth && parseInt(btn.dataset.h) === canvasHeight) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // 智能描边宽度自适应联动：若切换为 UI 图标模式 (宽度 <= 64px) 自动调为 1px 细描边
+            if (canvasWidth <= 64) {
+                strokeWidthInput.value = 1;
+                strokeWidthVal.innerText = '1 px';
+            } else {
+                // 若从图标规格 (1px) 切换回大画布规格，自动复原到更合适的 3px 经典描边
+                if (parseInt(strokeWidthInput.value) === 1) {
+                    strokeWidthInput.value = 3;
+                    strokeWidthVal.innerText = '3 px';
+                }
+            }
+
+            // 更新状态栏与代码
+            statusSize.innerText = `${canvasWidth} × ${canvasHeight} px`;
+            updateCodeOutput();
+        }
+
+        // 常用尺寸大类数据源
+        const sizePresets = {
+            icons: [
+                { name: '16 × 16', w: 16, h: 16, desc: '表格 / 微型组件 / Favicon' },
+                { name: '24 × 24', w: 24, h: 24, desc: '标准 UI 图标' },
+                { name: '32 × 32', w: 32, h: 32, desc: '大号触控按钮 / 侧栏图标' },
+                { name: '48 × 48', w: 48, h: 48, desc: '功能分区大入口' }
+            ],
+            illustrations: [
+                { name: '400 × 300', w: 400, h: 300, desc: '卡片小插画 (4:3)' },
+                { name: '800 × 600', w: 800, h: 600, desc: '中型弹窗装饰' },
+                { name: '1920 × 1080', w: 1920, h: 1080, desc: '全屏 1080P 首屏插画 (16:9)' }
+            ],
+            charts: [
+                { name: '600 × 400', w: 600, h: 400, desc: '紧凑型可视化图表' },
+                { name: '800 × 400', w: 800, h: 400, desc: '标准折线图/柱状图轴区' }
+            ],
+            docs: [
+                { name: '595 × 842', w: 595, h: 842, desc: '标准 A4 印刷尺寸 (72 DPI)' }
+            ]
+        };
+
+        const sizePresetContainer = document.getElementById('size-preset-container');
+        const catTabs = document.querySelectorAll('.cat-tab');
+        let activeSizeCategory = 'icons';
+
+        function renderSizePresets(category) {
+            activeSizeCategory = category;
+            sizePresetContainer.innerHTML = '';
+            
+            const presets = sizePresets[category] || [];
+            presets.forEach(p => {
+                const btn = document.createElement('button');
+                btn.className = 'preset-btn';
+                btn.dataset.w = p.w;
+                btn.dataset.h = p.h;
+                btn.title = p.desc;
+                btn.innerText = p.name;
+                
+                // 若画布真实大小等于该预设，自动紫色高亮
+                if (canvasWidth === p.w && canvasHeight === p.h) {
+                    btn.classList.add('active');
+                }
+                
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    setCanvasDimensions(p.w, p.h);
+                    autoCloseSidebarOnMobile();
+                });
+                
+                sizePresetContainer.appendChild(btn);
+            });
+        }
+
+        // 绑定预设大小分类 Tabs 点击监听
+        catTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                catTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                renderSizePresets(tab.dataset.category);
+            });
+        });
+
+        // 应用自定义尺寸
+        applySizeBtn.addEventListener('click', () => {
+            const w = customWidthInput.value;
+            const h = customHeightInput.value;
+            if (w && h) {
+                setCanvasDimensions(w, h);
+            }
+        });
+
+        // 4. 工具选择逻辑
+        const toolOptions = document.querySelectorAll('.tool-option');
+        toolOptions.forEach(opt => {
+            opt.addEventListener('click', () => {
+                toolOptions.forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+                
+                // 切工具前，强制中止正在进行的 Bezier 或 Sector 绘制
+                if (activeTool === 'bezier' && bezierStep !== 0) {
+                    abortBezierDrawing();
+                }
+                if (activeTool === 'sector' && sectorStep !== 0) {
+                    abortSectorDrawing();
+                }
+
+                activeTool = opt.dataset.mode;
+                
+                // 更新 body class，控制子图形事件穿透
+                document.body.classList.remove('eraser-mode', 'paintbucket-mode');
+                if (activeTool === 'eraser') {
+                    document.body.classList.add('eraser-mode');
+                } else if (activeTool === 'paintbucket') {
+                    document.body.classList.add('paintbucket-mode');
+                }
+
+                // 更新状态栏
+                let toolName = '自由笔刷';
+                if (activeTool === 'line') toolName = '直线模式';
+                if (activeTool === 'bezier') toolName = '曲线模式';
+                if (activeTool === 'rect') toolName = '矩形模式';
+                if (activeTool === 'circle') toolName = '圆形模式';
+                if (activeTool === 'triangle') toolName = '等腰三角';
+                if (activeTool === 'star') toolName = '五角星';
+                if (activeTool === 'sector') toolName = '扇形模式';
+                if (activeTool === 'eraser') toolName = '橡皮擦';
+                if (activeTool === 'paintbucket') toolName = '油漆桶';
+                statusTool.innerText = toolName;
+            });
+        });
+
+        // 5. 坐标换算与网格对齐
+        function getCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            // 映射到 SVG viewbox 坐标系
+            let x = (e.clientX - rect.left) * (canvasWidth / rect.width);
+            let y = (e.clientY - rect.top) * (canvasHeight / rect.height);
+            
+            // 是否启用网格对齐
+            if (snapGridEnabled) {
+                x = Math.round(x / currentSnapStep) * currentSnapStep;
+                y = Math.round(y / currentSnapStep) * currentSnapStep;
+            } else {
+                // 小画布下提供半像素级舍入以提高点触平滑度
+                if (canvasWidth <= 64) {
+                    x = Math.round(x * 2) / 2;
+                    y = Math.round(y * 2) / 2;
+                } else {
+                    x = Math.round(x);
+                    y = Math.round(y);
+                }
+            }
+            return { x, y };
+        }
+
+        // 监听鼠标移动刷新状态栏坐标
+        canvas.addEventListener('mousemove', (e) => {
+            const coords = getCoordinates(e);
+            statusCoords.innerText = `X: ${coords.x}px | Y: ${coords.y}px`;
+        });
+
+        // 6. 核心绘图状态机
+        
+        // 橡皮擦与油漆桶悬浮高亮及点击事件委托
+        canvas.addEventListener('mouseover', (e) => {
+            if (e.target === canvas || e.target.classList.contains('bezier-helper')) return;
+            
+            if (activeTool === 'eraser') {
+                e.target.classList.add('erase-highlight');
+            } else if (activeTool === 'paintbucket') {
+                e.target.classList.add('fill-highlight');
+            }
+        });
+
+        canvas.addEventListener('mouseout', (e) => {
+            if (e.target === canvas) return;
+            e.target.classList.remove('erase-highlight', 'fill-highlight');
+        });
+
+        canvas.addEventListener('click', (e) => {
+            if (e.target === canvas || e.target.classList.contains('bezier-helper')) return;
+            
+            if (activeTool === 'eraser') {
+                e.target.remove();
+                saveHistory();
+                updateCodeOutput();
+            } else if (activeTool === 'paintbucket') {
+                // 自动开启填充，联动点亮顶部水滴 Toggle 按钮，让颜色面板激活
+                if (!fillEnabled) {
+                    fillEnabled = true;
+                    btnToggleFill.classList.add('active');
+                    fillColorWrapper.style.opacity = '1';
+                    fillColorWrapper.style.pointerEvents = 'auto';
+                }
+                
+                // 填充为当前所选填充色
+                e.target.setAttribute('fill', fillColorInput.value);
+                
+                // 同步透明度
+                const opVal = opacityInput.value / 100;
+                if (opVal < 1.0) {
+                    e.target.setAttribute('opacity', opVal);
+                } else {
+                    e.target.removeAttribute('opacity');
+                }
+                
+                // 涂完色后移除指示高亮
+                e.target.classList.remove('fill-highlight');
+                
+                saveHistory();
+                updateCodeOutput();
+            }
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return; // 仅限鼠标左键
+            const coords = getCoordinates(e);
+
+            if (activeTool === 'pencil') {
+                startPencilDrawing(coords);
+            } else if (activeTool === 'line') {
+                startLineDrawing(coords);
+            } else if (activeTool === 'rect') {
+                startRectDrawing(coords);
+            } else if (activeTool === 'circle') {
+                startCircleDrawing(coords);
+            } else if (activeTool === 'triangle') {
+                startTriangleDrawing(coords);
+            } else if (activeTool === 'star') {
+                startStarDrawing(coords);
+            } else if (activeTool === 'bezier') {
+                handleBezierMousedown(coords);
+            } else if (activeTool === 'sector') {
+                handleSectorMousedown(coords);
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            // 在贝塞尔与扇形偏角调整中，即使松开了鼠标也要监听鼠标移动
+            if (!isDrawing && activeTool !== 'bezier' && activeTool !== 'sector') return;
+            const coords = getCoordinates(e);
+
+            if (activeTool === 'pencil') {
+                continuePencilDrawing(coords);
+            } else if (activeTool === 'line') {
+                continueLineDrawing(coords);
+            } else if (activeTool === 'rect') {
+                continueRectDrawing(coords);
+            } else if (activeTool === 'circle') {
+                continueCircleDrawing(coords);
+            } else if (activeTool === 'triangle') {
+                continueTriangleDrawing(coords);
+            } else if (activeTool === 'star') {
+                continueStarDrawing(coords);
+            } else if (activeTool === 'bezier') {
+                handleBezierMousemove(coords);
+            } else if (activeTool === 'sector') {
+                handleSectorMousemove(coords);
+            }
+        });
+
+        // 全局弹起（以防鼠标滑出画布）
+        window.addEventListener('mouseup', (e) => {
+            if (e.button !== 0) return;
+
+            if (activeTool === 'pencil' && isDrawing) {
+                endPencilDrawing();
+            } else if (activeTool === 'line' && isDrawing) {
+                endLineDrawing();
+            } else if (activeTool === 'rect' && isDrawing) {
+                endRectDrawing();
+            } else if (activeTool === 'circle' && isDrawing) {
+                endCircleDrawing();
+            } else if (activeTool === 'triangle' && isDrawing) {
+                endTriangleDrawing();
+            } else if (activeTool === 'star' && isDrawing) {
+                endStarDrawing();
+            } else if (activeTool === 'bezier' && bezierStep === 1) {
+                const dist = Math.hypot(bezierEnd.x - bezierStart.x, bezierEnd.y - bezierStart.y);
+                const minDist = canvasWidth <= 64 ? 0.5 : 5;
+                
+                if (dist >= minDist) {
+                    bezierStep = 2;
+                    statusPulse.classList.add('working'); // 发光呼吸灯，表示调整中
+                    createBezierHelpers();
+                } else {
+                    isDrawing = false;
+                }
+            } else if (activeTool === 'sector' && sectorStep === 1) {
+                const dist = Math.hypot(sectorEndAngle.x - sectorCenter.x, sectorEndAngle.y - sectorCenter.y);
+                const minDist = canvasWidth <= 64 ? 0.5 : 5;
+                
+                if (dist >= minDist) {
+                    sectorRadius = dist;
+                    sectorStartAngle = Math.atan2(sectorEndAngle.y - sectorCenter.y, sectorEndAngle.x - sectorCenter.x);
+                    sectorStep = 2;
+                    statusPulse.classList.add('working');
+                    createSectorHelpers();
+                } else {
+                    isDrawing = false;
+                }
+            }
+        });
+
+        // 7. 绘图模式函数实现
+
+        // --- 矩形模式 (Rect) ---
+        function startRectDrawing(coords) {
+            isDrawing = true;
+            startCoords = coords;
+            activeElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            applyStyleToElement(activeElement);
+            activeElement.setAttribute('x', coords.x);
+            activeElement.setAttribute('y', coords.y);
+            activeElement.setAttribute('width', 0);
+            activeElement.setAttribute('height', 0);
+            canvas.appendChild(activeElement);
+            updateCodeOutput();
+        }
+
+        function continueRectDrawing(coords) {
+            const x = Math.min(startCoords.x, coords.x);
+            const y = Math.min(startCoords.y, coords.y);
+            const w = Math.abs(coords.x - startCoords.x);
+            const h = Math.abs(coords.y - startCoords.y);
+            activeElement.setAttribute('x', x);
+            activeElement.setAttribute('y', y);
+            activeElement.setAttribute('width', w);
+            activeElement.setAttribute('height', h);
+            updateCodeOutput();
+        }
+
+        function endRectDrawing() {
+            isDrawing = false;
+            activeElement = null;
+            saveHistory();
+        }
+
+        // --- 圆形模式 (Circle) ---
+        function startCircleDrawing(coords) {
+            isDrawing = true;
+            startCoords = coords;
+            activeElement = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            applyStyleToElement(activeElement);
+            activeElement.setAttribute('cx', coords.x);
+            activeElement.setAttribute('cy', coords.y);
+            activeElement.setAttribute('r', 0);
+            canvas.appendChild(activeElement);
+            updateCodeOutput();
+        }
+
+        function continueCircleDrawing(coords) {
+            const r = Math.hypot(coords.x - startCoords.x, coords.y - startCoords.y);
+            activeElement.setAttribute('r', r);
+            updateCodeOutput();
+        }
+
+        function endCircleDrawing() {
+            isDrawing = false;
+            activeElement = null;
+            saveHistory();
+        }
+
+        // --- 三角形模式 (Triangle) ---
+        function startTriangleDrawing(coords) {
+            isDrawing = true;
+            startCoords = coords;
+            activeElement = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            applyStyleToElement(activeElement);
+            activeElement.setAttribute('points', `${coords.x},${coords.y} ${coords.x},${coords.y} ${coords.x},${coords.y}`);
+            canvas.appendChild(activeElement);
+            updateCodeOutput();
+        }
+
+        function continueTriangleDrawing(coords) {
+            const topX = (startCoords.x + coords.x) / 2;
+            const topY = startCoords.y;
+            const leftX = startCoords.x;
+            const leftY = coords.y;
+            const rightX = coords.x;
+            const rightY = coords.y;
+            activeElement.setAttribute('points', `${topX},${topY} ${leftX},${leftY} ${rightX},${rightY}`);
+            updateCodeOutput();
+        }
+
+        function endTriangleDrawing() {
+            isDrawing = false;
+            activeElement = null;
+            saveHistory();
+        }
+
+        // --- 五角星模式 (Star) ---
+        function startStarDrawing(coords) {
+            isDrawing = true;
+            startCoords = coords;
+            activeElement = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            applyStyleToElement(activeElement);
+            const pStr = Array(10).fill(`${coords.x},${coords.y}`).join(' ');
+            activeElement.setAttribute('points', pStr);
+            canvas.appendChild(activeElement);
+            updateCodeOutput();
+        }
+
+        function continueStarDrawing(coords) {
+            const cx = startCoords.x;
+            const cy = startCoords.y;
+            const R = Math.hypot(coords.x - cx, coords.y - cy);
+            const r = R * 0.382;
+            const initAngle = Math.atan2(coords.y - cy, coords.x - cx);
+            const pts = [];
+            for (let i = 0; i < 10; i++) {
+                const angle = initAngle + i * Math.PI / 5;
+                const rad = (i % 2 === 0) ? R : r;
+                const px = cx + rad * Math.cos(angle);
+                const py = cy + rad * Math.sin(angle);
+                pts.push(`${Math.round(px)},${Math.round(py)}`);
+            }
+            activeElement.setAttribute('points', pts.join(' '));
+            updateCodeOutput();
+        }
+
+        function endStarDrawing() {
+            isDrawing = false;
+            activeElement = null;
+            saveHistory();
+        }
+
+        // --- A. 自由画笔 (Pencil) ---
+        function startPencilDrawing(coords) {
+            isDrawing = true;
+            pathPoints = [coords];
+            activeElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            
+            // 样式装载
+            applyStyleToElement(activeElement);
+            activeElement.setAttribute('d', `M ${coords.x} ${coords.y}`);
+            
+            canvas.appendChild(activeElement);
+            updateCodeOutput();
+        }
+
+        function continuePencilDrawing(coords) {
+            const lastPoint = pathPoints[pathPoints.length - 1];
+            if (lastPoint.x === coords.x && lastPoint.y === coords.y) return;
+            
+            pathPoints.push(coords);
+            
+            let dAttr = activeElement.getAttribute('d');
+            dAttr += ` L ${coords.x} ${coords.y}`;
+            activeElement.setAttribute('d', dAttr);
+            
+            updateCodeOutput();
+        }
+
+        function endPencilDrawing() {
+            isDrawing = false;
+            if (fillEnabled && pathPoints.length > 2) {
+                let dAttr = activeElement.getAttribute('d');
+                dAttr += ' Z';
+                activeElement.setAttribute('d', dAttr);
+            }
+            activeElement = null;
+            saveHistory();
+        }
+
+        // --- B. 直线模式 (Line) ---
+        function startLineDrawing(coords) {
+            isDrawing = true;
+            activeElement = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            
+            applyStyleToElement(activeElement);
+            activeElement.setAttribute('x1', coords.x);
+            activeElement.setAttribute('y1', coords.y);
+            activeElement.setAttribute('x2', coords.x);
+            activeElement.setAttribute('y2', coords.y);
+
+            canvas.appendChild(activeElement);
+            updateCodeOutput();
+        }
+
+        function continueLineDrawing(coords) {
+            activeElement.setAttribute('x2', coords.x);
+            activeElement.setAttribute('y2', coords.y);
+            updateCodeOutput();
+        }
+
+        function endLineDrawing() {
+            isDrawing = false;
+            activeElement = null;
+            saveHistory();
+        }
+
+        // --- C. 二次贝塞尔曲线模式 (Bezier) ---
+        function handleBezierMousedown(coords) {
+            if (bezierStep === 0) {
+                isDrawing = true;
+                bezierStep = 1;
+                bezierStart = coords;
+                bezierEnd = coords;      // 必须同时初始化终点，防止未触发mousemove导致其维持(0,0)初始值
+                bezierControl = coords;  // 初始化控制点
+                
+                activeElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                applyStyleToElement(activeElement);
+                activeElement.setAttribute('d', `M ${coords.x} ${coords.y} Q ${coords.x} ${coords.y} ${coords.x} ${coords.y}`);
+                
+                canvas.appendChild(activeElement);
+                updateCodeOutput();
+            } else if (bezierStep === 1) {
+                // 点击法：在 bezierStep === 1 下点击，表示确定并锁定终点，切换到控制点调整阶段
+                bezierEnd = coords;
+                bezierStep = 2;
+                statusPulse.classList.add('working'); // 发光呼吸灯
+                createBezierHelpers();
+            } else if (bezierStep === 2) {
+                // 通用：在 bezierStep === 2 下点击，锁定控制点，完成并保存本条曲线
+                bezierStep = 0;
+                isDrawing = false;
+                statusPulse.classList.remove('working');
+                removeBezierHelpers();
+                activeElement = null;
+                saveHistory();
+            }
+        }
+
+        function handleBezierMousemove(coords) {
+            if (bezierStep === 1) {
+                // 无论是否按住鼠标，只要是拉线阶段，终点坐标都同步跟随鼠标
+                bezierEnd = coords;
+                const midX = (bezierStart.x + bezierEnd.x) / 2;
+                const midY = (bezierStart.y + bezierEnd.y) / 2;
+                activeElement.setAttribute('d', `M ${bezierStart.x} ${bezierStart.y} Q ${midX} ${midY} ${bezierEnd.x} ${bezierEnd.y}`);
+                updateCodeOutput();
+            } else if (bezierStep === 2) {
+                bezierControl = coords;
+                activeElement.setAttribute('d', `M ${bezierStart.x} ${bezierStart.y} Q ${bezierControl.x} ${bezierControl.y} ${bezierEnd.x} ${bezierEnd.y}`);
+                updateBezierHelpers();
+                updateCodeOutput();
+            }
+        }
+
+        // 辅助控制点 UI 构造 (支持根据画布尺度动态缩放辅助要素)
+        function createBezierHelpers() {
+            removeBezierHelpers();
+
+            // 根据画布大小，自适应计算辅助物线条宽度和控制圆圈半径
+            const helperLineWidth = Math.max(0.1, canvasWidth / 500);
+            const helperCircleRadius = Math.max(0.5, canvasWidth / 100);
+            const dashArray = `${helperLineWidth * 4} ${helperLineWidth * 4}`;
+
+            // 辅助虚线 1
+            helperLine1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            helperLine1.setAttribute('class', 'bezier-helper');
+            helperLine1.setAttribute('stroke', '#a78bfa');
+            helperLine1.setAttribute('stroke-width', helperLineWidth);
+            helperLine1.setAttribute('stroke-dasharray', dashArray);
+            helperLine1.setAttribute('x1', bezierStart.x);
+            helperLine1.setAttribute('y1', bezierStart.y);
+            helperLine1.setAttribute('x2', bezierEnd.x);
+            helperLine1.setAttribute('y2', bezierEnd.y);
+            canvas.appendChild(helperLine1);
+
+            // 辅助虚线 2
+            helperLine2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            helperLine2.setAttribute('class', 'bezier-helper');
+            helperLine2.setAttribute('stroke', '#a78bfa');
+            helperLine2.setAttribute('stroke-width', helperLineWidth);
+            helperLine2.setAttribute('stroke-dasharray', dashArray);
+            helperLine2.setAttribute('x1', bezierEnd.x);
+            helperLine2.setAttribute('y1', bezierEnd.y);
+            helperLine2.setAttribute('x2', bezierEnd.x);
+            helperLine2.setAttribute('y2', bezierEnd.y);
+            canvas.appendChild(helperLine2);
+
+            // 控制点圆形指示器
+            helperControlCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            helperControlCircle.setAttribute('class', 'bezier-helper');
+            helperControlCircle.setAttribute('fill', 'var(--purple-primary)');
+            helperControlCircle.setAttribute('stroke', '#ffffff');
+            helperControlCircle.setAttribute('stroke-width', helperLineWidth * 1.5);
+            helperControlCircle.setAttribute('r', helperCircleRadius);
+            helperControlCircle.setAttribute('cx', bezierEnd.x);
+            helperControlCircle.setAttribute('cy', bezierEnd.y);
+            canvas.appendChild(helperControlCircle);
+        }
+
+        function updateBezierHelpers() {
+            if (helperLine1) {
+                helperLine1.setAttribute('x2', bezierControl.x);
+                helperLine1.setAttribute('y2', bezierControl.y);
+            }
+            if (helperLine2) {
+                helperLine2.setAttribute('x2', bezierControl.x);
+                helperLine2.setAttribute('y2', bezierControl.y);
+            }
+            if (helperControlCircle) {
+                helperControlCircle.setAttribute('cx', bezierControl.x);
+                helperControlCircle.setAttribute('cy', bezierControl.y);
+            }
+        }
+
+        function removeBezierHelpers() {
+            if (helperLine1 && helperLine1.parentNode) helperLine1.parentNode.removeChild(helperLine1);
+            if (helperLine2 && helperLine2.parentNode) helperLine2.parentNode.removeChild(helperLine2);
+            if (helperControlCircle && helperControlCircle.parentNode) helperControlCircle.parentNode.removeChild(helperControlCircle);
+            
+            helperLine1 = null;
+            helperLine2 = null;
+            helperControlCircle = null;
+        }
+
+        function abortBezierDrawing() {
+            if (activeElement && activeElement.parentNode) {
+                activeElement.parentNode.removeChild(activeElement);
+            }
+            removeBezierHelpers();
+            bezierStep = 0;
+            isDrawing = false;
+            statusPulse.classList.remove('working');
+            activeElement = null;
+            updateCodeOutput();
+        }
+
+        // --- E. 扇形模式 (Sector) ---
+        function handleSectorMousedown(coords) {
+            if (sectorStep === 0) {
+                isDrawing = true;
+                sectorStep = 1;
+                sectorCenter = coords;
+                sectorEndAngle = coords; // 临时保存用于算距离
+                
+                activeElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                applyStyleToElement(activeElement);
+                // 初始显示为直线
+                activeElement.setAttribute('d', `M ${coords.x} ${coords.y} L ${coords.x} ${coords.y}`);
+                
+                canvas.appendChild(activeElement);
+                updateCodeOutput();
+            } else if (sectorStep === 1) {
+                // 点击起笔法：第二次点击，确定半径和起始偏角
+                const dist = Math.hypot(coords.x - sectorCenter.x, coords.y - sectorCenter.y);
+                const minDist = canvasWidth <= 64 ? 0.5 : 5;
+                if (dist >= minDist) {
+                    sectorRadius = dist;
+                    sectorStartAngle = Math.atan2(coords.y - sectorCenter.y, coords.x - sectorCenter.x);
+                    sectorStep = 2;
+                    statusPulse.classList.add('working');
+                    createSectorHelpers();
+                } else {
+                    abortSectorDrawing();
+                }
+            } else if (sectorStep === 2) {
+                // 第三次点击：锁定角度，完成扇形
+                sectorStep = 0;
+                isDrawing = false;
+                statusPulse.classList.remove('working');
+                removeSectorHelpers();
+                activeElement = null;
+                saveHistory();
+            }
+        }
+
+        function handleSectorMousemove(coords) {
+            const cx = sectorCenter.x;
+            const cy = sectorCenter.y;
+            
+            if (sectorStep === 1) {
+                sectorEndAngle = coords;
+                // 仅仅是一条半径指示线
+                activeElement.setAttribute('d', `M ${cx} ${cy} L ${coords.x} ${coords.y}`);
+                updateCodeOutput();
+            } else if (sectorStep === 2) {
+                const curAngle = Math.atan2(coords.y - cy, coords.x - cx);
+                const R = sectorRadius;
+                
+                // 计算夹角差并正规化到 0 到 2*PI
+                let angleDiff = curAngle - sectorStartAngle;
+                if (angleDiff < 0) angleDiff += 2 * Math.PI;
+                
+                const largeArcFlag = angleDiff > Math.PI ? 1 : 0;
+                
+                const x1 = cx + R * Math.cos(sectorStartAngle);
+                const y1 = cy + R * Math.sin(sectorStartAngle);
+                const x2 = cx + R * Math.cos(curAngle);
+                const y2 = cy + R * Math.sin(curAngle);
+                
+                // 拼接扇形 SVG 路径：移动到圆心 -> 画直线到起点 -> 画圆弧到终点 -> 闭合回圆心
+                const pathStr = `M ${cx} ${cy} L ${x1} ${y1} A ${R} ${R} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+                activeElement.setAttribute('d', pathStr);
+                
+                updateSectorHelpers(curAngle);
+                updateCodeOutput();
+            }
+        }
+
+        // 扇形辅助物创建
+        function createSectorHelpers() {
+            removeSectorHelpers();
+            
+            const helperLineWidth = Math.max(0.1, canvasWidth / 500);
+            const dashArray = `${helperLineWidth * 4} ${helperLineWidth * 4}`;
+            
+            // 辅助圆圈 (展示当前确定的半径范围)
+            helperSectorCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            helperSectorCircle.setAttribute('class', 'bezier-helper'); // 复用过滤样式
+            helperSectorCircle.setAttribute('fill', 'none');
+            helperSectorCircle.setAttribute('stroke', '#a78bfa');
+            helperSectorCircle.setAttribute('stroke-width', helperLineWidth);
+            helperSectorCircle.setAttribute('stroke-dasharray', dashArray);
+            helperSectorCircle.setAttribute('cx', sectorCenter.x);
+            helperSectorCircle.setAttribute('cy', sectorCenter.y);
+            helperSectorCircle.setAttribute('r', sectorRadius);
+            canvas.appendChild(helperSectorCircle);
+
+            // 辅助半径线1 (起始半径线)
+            helperSectorLine1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            helperSectorLine1.setAttribute('class', 'bezier-helper');
+            helperSectorLine1.setAttribute('stroke', '#a78bfa');
+            helperSectorLine1.setAttribute('stroke-width', helperLineWidth);
+            helperSectorLine1.setAttribute('x1', sectorCenter.x);
+            helperSectorLine1.setAttribute('y1', sectorCenter.y);
+            helperSectorLine1.setAttribute('x2', sectorCenter.x + sectorRadius * Math.cos(sectorStartAngle));
+            helperSectorLine1.setAttribute('y2', sectorCenter.y + sectorRadius * Math.sin(sectorStartAngle));
+            canvas.appendChild(helperSectorLine1);
+
+            // 辅助半径线2 (终点极向偏角线)
+            helperSectorLine2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            helperSectorLine2.setAttribute('class', 'bezier-helper');
+            helperSectorLine2.setAttribute('stroke', '#c084fc');
+            helperSectorLine2.setAttribute('stroke-width', helperLineWidth);
+            helperSectorLine2.setAttribute('stroke-dasharray', dashArray);
+            helperSectorLine2.setAttribute('x1', sectorCenter.x);
+            helperSectorLine2.setAttribute('y1', sectorCenter.y);
+            helperSectorLine2.setAttribute('x2', sectorCenter.x);
+            helperSectorLine2.setAttribute('y2', sectorCenter.y);
+            canvas.appendChild(helperSectorLine2);
+        }
+
+        function updateSectorHelpers(curAngle) {
+            if (helperSectorLine2) {
+                helperSectorLine2.setAttribute('x2', sectorCenter.x + sectorRadius * Math.cos(curAngle));
+                helperSectorLine2.setAttribute('y2', sectorCenter.y + sectorRadius * Math.sin(curAngle));
+            }
+        }
+
+        function removeSectorHelpers() {
+            if (helperSectorCircle && helperSectorCircle.parentNode) helperSectorCircle.parentNode.removeChild(helperSectorCircle);
+            if (helperSectorLine1 && helperSectorLine1.parentNode) helperSectorLine1.parentNode.removeChild(helperSectorLine1);
+            if (helperSectorLine2 && helperSectorLine2.parentNode) helperSectorLine2.parentNode.removeChild(helperSectorLine2);
+            
+            helperSectorCircle = null;
+            helperSectorLine1 = null;
+            helperSectorLine2 = null;
+        }
+
+        function abortSectorDrawing() {
+            if (activeElement && activeElement.parentNode) {
+                activeElement.parentNode.removeChild(activeElement);
+            }
+            removeSectorHelpers();
+            sectorStep = 0;
+            isDrawing = false;
+            statusPulse.classList.remove('working');
+            activeElement = null;
+            updateCodeOutput();
+        }
+
+        // 8. 样式属性应用器
+        function applyStyleToElement(elem) {
+            elem.setAttribute('stroke', strokeColorInput.value);
+            elem.setAttribute('stroke-width', strokeWidthInput.value);
+            elem.setAttribute('stroke-linecap', 'round');
+            elem.setAttribute('stroke-linejoin', 'round');
+            
+            if (fillEnabled) {
+                elem.setAttribute('fill', fillColorInput.value);
+            } else {
+                elem.setAttribute('fill', 'none');
+            }
+
+            const opVal = opacityInput.value / 100;
+            if (opVal < 1.0) {
+                elem.setAttribute('opacity', opVal);
+            }
+        }
+
+        // 9. 实时生成格式化代码 (基于 .bezier-helper class 过滤辅助层)
+        // skipTextareaUpdate: 在用户编辑右侧代码框时，不需要反向写回文本框，保护光标焦点不丢失
+        function updateCodeOutput(skipTextareaUpdate = false) {
+            const svgContent = canvas.innerHTML.trim();
+            
+            const parser = new DOMParser();
+            const tempDoc = parser.parseFromString(`<svg xmlns="http://www.w3.org/2000/svg">${svgContent}</svg>`, 'image/svg+xml');
+            
+            let cleanInner = '';
+            const parserError = tempDoc.querySelector('parsererror');
+            
+            if (parserError) {
+                // 如果严格 XML 解析因半成品图形报错，则降级使用正则表达式进行字符串级别的辅助物与高亮清洗，保障输出连续性
+                cleanInner = svgContent
+                    .replace(/<[^>]*class="[^"]*bezier-helper[^"]*"[^>]*>(?:[\s\S]*?<\/[^>]+>)?/gi, '')
+                    .replace(/\s*class="[^"]*(erase-highlight|fill-highlight)[^"]*"/gi, '');
+            } else {
+                // 正常解析：剥离贝塞尔与扇形辅助线，悬浮高亮状态类，防止污染代码
+                const helpers = tempDoc.querySelectorAll('.bezier-helper');
+                helpers.forEach(h => h.remove());
+                const highlighted = tempDoc.querySelectorAll('.erase-highlight, .fill-highlight');
+                highlighted.forEach(el => {
+                    el.classList.remove('erase-highlight', 'fill-highlight');
+                    if (el.classList.length === 0) el.removeAttribute('class');
+                });
+                
+                const svgNode = tempDoc.querySelector('svg');
+                cleanInner = svgNode ? svgNode.innerHTML.trim() : '';
+            }
+            
+            if (cleanInner) {
+                const formattedContent = cleanInner.replace(/></g, '>\n  <').replace(/^/, '  ').replace(/$/,'');
+                const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${canvasWidth} ${canvasHeight}" width="${canvasWidth}" height="${canvasHeight}">\n${formattedContent}\n</svg>`;
+                if (!skipTextareaUpdate) {
+                    codeOutput.value = fullSvg;
+                }
+            } else {
+                if (!skipTextareaUpdate) {
+                    codeOutput.value = '';
+                }
+            }
+
+            // 更新状态栏已绘制图形数，减去可能存在的所有辅助指示DOM元素
+            let childCount = canvas.childElementCount;
+            if (helperLine1) childCount--;
+            if (helperLine2) childCount--;
+            if (helperControlCircle) childCount--;
+            if (helperSectorCircle) childCount--;
+            if (helperSectorLine1) childCount--;
+            if (helperSectorLine2) childCount--;
+            
+            // 扣除中心水平垂直辅助轴线数目
+            const guides = canvas.querySelectorAll('.center-guide');
+            childCount -= guides.length;
+            
+            statusCount.innerText = Math.max(0, childCount);
+        }
+
+        // 10. 历史记录 (Undo & Redo)
+        function saveHistory() {
+            if (historyIndex < historyStack.length - 1) {
+                historyStack.splice(historyIndex + 1);
+            }
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = canvas.innerHTML;
+            
+            // 剥离贝塞尔辅助线和悬浮高亮状态类
+            const helpers = tempDiv.querySelectorAll('.bezier-helper');
+            helpers.forEach(h => h.remove());
+            const highlighted = tempDiv.querySelectorAll('.erase-highlight, .fill-highlight');
+            highlighted.forEach(el => {
+                el.classList.remove('erase-highlight', 'fill-highlight');
+                if (el.classList.length === 0) el.removeAttribute('class');
+            });
+            
+            historyStack.push(tempDiv.innerHTML.trim());
+            historyIndex = historyStack.length - 1;
+
+            updateUndoRedoControls();
+        }
+
+        function handleUndo() {
+            if (activeTool === 'bezier' && bezierStep !== 0) {
+                abortBezierDrawing();
+                return;
+            }
+
+            if (historyIndex > 0) {
+                historyIndex--;
+                canvas.innerHTML = historyStack[historyIndex];
+                updateCenterGuides(); // 撤销后重新装载中心线
+                updateCodeOutput();
+                updateUndoRedoControls();
+            } else if (historyIndex === 0) {
+                historyIndex = -1;
+                canvas.innerHTML = '';
+                updateCenterGuides(); // 清空历史后重新装载中心线
+                updateCodeOutput();
+                updateUndoRedoControls();
+            }
+        }
+
+        function handleRedo() {
+            if (activeTool === 'bezier' && bezierStep !== 0) return;
+
+            if (historyIndex < historyStack.length - 1) {
+                historyIndex++;
+                canvas.innerHTML = historyStack[historyIndex];
+                updateCenterGuides(); // 重做后重新装载中心线
+                updateCodeOutput();
+                updateUndoRedoControls();
+            }
+        }
+
+        function updateUndoRedoControls() {
+            btnUndo.disabled = (historyIndex < 0);
+            btnRedo.disabled = (historyIndex >= historyStack.length - 1);
+        }
+
+        btnUndo.addEventListener('click', handleUndo);
+        btnRedo.addEventListener('click', handleRedo);
+
+        // 键盘快捷键监听
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                e.preventDefault();
+                handleUndo();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+                e.preventDefault();
+                handleRedo();
+            }
+        });
+
+        // 11. 辅助操作（复制代码、导出SVG、清除）
+        
+        // 复制
+        btnCopy.addEventListener('click', () => {
+            if (!codeOutput.value) {
+                alert('画布目前为空，无代码可复制！');
+                return;
+            }
+            navigator.clipboard.writeText(codeOutput.value).then(() => {
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败: ', err);
+            });
+        });
+
+        // 导出
+        btnDownload.addEventListener('click', () => {
+            if (!codeOutput.value) {
+                alert('画布目前为空，无法导出文件！');
+                return;
+            }
+            const blob = new Blob([codeOutput.value], {type: 'image/svg+xml;charset=utf-8'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `lavender-design-${Date.now()}.svg`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // 清空
+        btnClear.addEventListener('click', () => {
+            const guides = canvas.querySelectorAll('.center-guide');
+            const realCount = canvas.childElementCount - guides.length;
+            if (realCount <= 0) return; // 无真实用户几何时无需清空
+            
+            if (confirm('确认要清空整张画布吗？所有未保存的作品将丢失！')) {
+                abortBezierDrawing();
+                canvas.innerHTML = '';
+                updateCenterGuides(); // 清空后重新补回中心轴线
+                saveHistory();
+                updateCodeOutput();
+            }
+        });
+
+        // 窗口 resize 防抖自适应
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                fitCanvas();
+            }, 100);
+        });
+
+        // 12. 初始设置
+        // 默认聚焦高亮 Icons 图标分类 Tab
+        catTabs.forEach(t => t.classList.remove('active'));
+        const initTab = document.querySelector('.cat-tab[data-category="icons"]');
+        if (initTab) initTab.classList.add('active');
+        renderSizePresets('icons');
+
+        // 如果是移动端屏幕，在初始化时将代码栏默认折叠，防止遮挡画布
+        if (window.innerWidth <= 1024) {
+            codeDrawer.classList.add('collapsed');
+        }
+
+        // 默认尺寸为图标常用 24x24 px，联动触发 1px 默认描边
+        setCanvasDimensions(24, 24);
+        updateUndoRedoControls();
+
+        // --- F. 代码框直接编辑双向绑定逻辑 ---
+        let historyDebounceTimer;
+        function debounceSaveHistory() {
+            clearTimeout(historyDebounceTimer);
+            historyDebounceTimer = setTimeout(() => {
+                saveHistory();
+            }, 1000);
+        }
+
+        function handleCodeInput(e) {
+            const val = e.target.value.trim();
+            
+            if (!val) {
+                canvas.innerHTML = '';
+                updateCodeOutput(true);
+                debounceSaveHistory();
+                return;
+            }
+
+            // 容错：自动识别裸标签并包裹最基本的 SVG 环境以进行正常 DOM 结构解析
+            let cleanVal = val;
+            if (!cleanVal.startsWith('<svg') && !cleanVal.includes('<svg')) {
+                cleanVal = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${canvasWidth} ${canvasHeight}">${cleanVal}</svg>`;
+            }
+
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(cleanVal, 'image/svg+xml');
+                
+                // 若存在语法解析错误，通常是用户在过渡打字阶段，静默不执行反向渲染
+                const parserError = doc.querySelector('parsererror');
+                if (parserError) {
+                    return;
+                }
+
+                const svgElement = doc.querySelector('svg');
+                if (svgElement) {
+                    // 1. 反向提取 viewBox 或 width/height 并静默同步画布尺寸
+                    const viewBox = svgElement.getAttribute('viewBox');
+                    let w = svgElement.getAttribute('width');
+                    let h = svgElement.getAttribute('height');
+
+                    if (viewBox) {
+                        const parts = viewBox.split(/\s+/);
+                        if (parts.length === 4) {
+                            w = parts[2];
+                            h = parts[3];
+                        }
+                    }
+
+                    if (w && h) {
+                        const nw = parseInt(w);
+                        const nh = parseInt(h);
+                        if (nw !== canvasWidth || nh !== canvasHeight) {
+                            canvasWidth = nw;
+                            canvasHeight = nh;
+                            canvas.setAttribute('viewBox', `0 0 ${canvasWidth} ${canvasHeight}`);
+                            wrapper.style.width = `${canvasWidth * zoomScale}px`;
+                            wrapper.style.height = `${canvasHeight * zoomScale}px`;
+                            customWidthInput.value = canvasWidth;
+                            customHeightInput.value = canvasHeight;
+                            statusSize.innerText = `${canvasWidth} × ${canvasHeight} px`;
+                        }
+                    }
+
+                    // 2. 剥离并覆盖渲染图形子节点
+                    const children = Array.from(svgElement.childNodes)
+                        .map(node => {
+                            if (node.nodeType === Node.ELEMENT_NODE) {
+                                return node.outerHTML;
+                            }
+                            return node.textContent.trim();
+                        })
+                        .join('');
+
+                    canvas.innerHTML = children;
+
+                // 重新为反向粘帖的代码装载中心辅助轴线
+                updateCenterGuides();
+
+                    // 3. 静默更新（不重写 textarea，保护光标焦点）
+                    updateCodeOutput(true);
+                    
+                    // 4. 防抖推送历史
+                    debounceSaveHistory();
+                }
+            } catch (err) {
+                console.warn('SVG代码解析渲染错误: ', err);
+            }
+        }
+
+        codeOutput.addEventListener('input', handleCodeInput);
+
+        // ================= G. 移动端抽屉与触控手势控制 =================
+        const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        // 展开侧栏
+        function openSidebar() {
+            sidebar.classList.add('sidebar-open');
+            sidebarOverlay.classList.add('active');
+            // 移动端展开侧边栏时，关闭可能开启的代码栏以防重叠
+            if (window.innerWidth <= 1024) {
+                codeDrawer.classList.add('collapsed');
+                updateToggleDrawerBtnIcon();
+            }
+        }
+
+        // 收起侧栏
+        function closeSidebar() {
+            sidebar.classList.remove('sidebar-open');
+            sidebarOverlay.classList.remove('active');
+        }
+
+        if (btnToggleSidebar) {
+            btnToggleSidebar.addEventListener('click', openSidebar);
+        }
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => {
+                closeSidebar();
+                // 移动端下点击遮罩，同时也关闭代码栏
+                if (window.innerWidth <= 1024) {
+                    codeDrawer.classList.add('collapsed');
+                    updateToggleDrawerBtnIcon();
+                }
+            });
+        }
+
+        // 智能收卷：当点击侧栏预设尺寸，或应用自定义尺寸后，手机端自动合上菜单
+        function autoCloseSidebarOnMobile() {
+            if (window.innerWidth <= 1024) {
+                closeSidebar();
+            }
+        }
+
+        // 绑定到应用自定义尺寸按钮
+        applySizeBtn.addEventListener('click', autoCloseSidebarOnMobile);
+
+        // 移动触屏手势缩放与绘制网桥
+        let pinchStartDist = 0;
+        let pinchStartScale = 1.0;
+
+        function bridgeTouchEvent(touchEvent, mouseEventName) {
+            // 双指捏合时，不触发绘图网桥，防止在缩放时误画线条
+            if (touchEvent.touches.length > 1) return;
+            const touch = touchEvent.changedTouches[0];
+            const mouseEvent = new MouseEvent(mouseEventName, {
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                bubbles: true,
+                cancelable: true
+            });
+            touch.target.dispatchEvent(mouseEvent);
+            touchEvent.preventDefault();
+        }
+
+        // 绑定画布上的 touch 事件
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                bridgeTouchEvent(e, 'mousedown');
+            } else if (e.touches.length === 2) {
+                pinchStartDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                pinchStartScale = zoomScale;
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1) {
+                bridgeTouchEvent(e, 'mousemove');
+            } else if (e.touches.length === 2) {
+                e.preventDefault(); // 阻止手机滚动默认行为
+                const dist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                if (pinchStartDist > 0) {
+                    const factor = dist / pinchStartDist;
+                    updateZoom(pinchStartScale * factor);
+                }
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            bridgeTouchEvent(e, 'mouseup');
+        }, { passive: false });
+
+        // ================= H. 内置示例模板加载逻辑 =================
+        const svgTemplates = {
+            heart: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">\n  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ef4444" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>\n</svg>`,
+            palette: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n  <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.7255 3.09032 17.1962 4.85857 19C5.34771 19.4996 5.34211 20.2523 4.9392 20.817C4.43632 21.5218 3.56586 21.8485 2.76632 21.5303C2.51866 21.4318 2.2223 21.4939 2.0461 21.7142L2 22" />\n  <circle cx="7.5" cy="10.5" r="1.5" fill="#ef4444" stroke="none" />\n  <circle cx="11.5" cy="7.5" r="1.5" fill="#3b82f6" stroke="none" />\n  <circle cx="16.5" cy="9.5" r="1.5" fill="#10b981" stroke="none" />\n  <circle cx="15.5" cy="14.5" r="1.5" fill="#f59e0b" stroke="none" />\n</svg>`,
+            sunflower: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">\n  <circle cx="50" cy="50" r="15" fill="#78350f" stroke="#f59e0b" stroke-width="2"/>\n  <path d="M 50 12 C 45 25, 55 25, 50 12 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" transform="rotate(0 50 50)"/>\n  <path d="M 50 12 C 45 25, 55 25, 50 12 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" transform="rotate(30 50 50)"/>\n  <path d="M 50 12 C 45 25, 55 25, 50 12 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" transform="rotate(60 50 50)"/>\n  <path d="M 50 12 C 45 25, 55 25, 50 12 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" transform="rotate(90 50 50)"/>\n  <path d="M 50 12 C 45 25, 55 25, 50 12 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" transform="rotate(120 50 50)"/>\n  <path d="M 50 12 C 45 25, 55 25, 50 12 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" transform="rotate(150 50 50)"/>\n  <path d="M 50 12 C 45 25, 55 25, 50 12 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" transform="rotate(180 50 50)"/>\n  <path d="M 50 12 C 45 25, 55 25, 50 12 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" transform="rotate(210 50 50)"/>\n  <path d="M 50 12 C 45 25, 55 25, 50 12 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" transform="rotate(240 50 50)"/>\n  <path d="M 50 12 C 45 25, 55 25, 50 12 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" transform="rotate(270 50 50)"/>\n  <path d="M 50 12 C 45 25, 55 25, 50 12 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" transform="rotate(300 50 50)"/>\n  <path d="M 50 12 C 45 25, 55 25, 50 12 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" transform="rotate(330 50 50)"/>\n</svg>`,
+            flag: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">\n  <rect width="600" height="400" fill="#de2910"/>\n  <polygon points="100,60 115,110 165,110 125,140 140,190 100,160 60,190 75,140 35,110 85,110" fill="#ffde00"/>\n  <polygon points="200,30 205,45 220,45 208,55 212,70 200,60 188,70 192,55 180,45 195,45" fill="#ffde00" transform="rotate(23 200 50)"/>\n  <polygon points="240,60 245,75 260,75 248,85 252,100 240,90 228,100 232,85 220,75 235,75" fill="#ffde00" transform="rotate(45 240 80)"/>\n  <polygon points="240,110 245,125 260,125 248,135 252,150 240,140 228,150 232,135 220,125 235,125" fill="#ffde00" transform="rotate(0 240 130)"/>\n  <polygon points="200,150 205,165 220,165 208,175 212,190 200,180 188,190 192,175 180,165 195,165" fill="#ffde00" transform="rotate(15 200 170)"/>\n</svg>`,
+            mountain: `<svg class="mode-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">\n  <path d="M12 12L2 20h20Z"/>\n</svg>`
+        };
+
+        const templateGrid = document.querySelector('.template-grid');
+        const templates = [
+            { id: 'heart', name: '爱心', icon: svgTemplates.heart },
+            { id: 'palette', name: '画板', icon: svgTemplates.palette },
+            { id: 'sunflower', name: '太阳花', icon: svgTemplates.sunflower },
+            { id: 'flag', name: '国旗', icon: svgTemplates.flag },
+            { id: 'mountain', name: '折线山峰', icon: svgTemplates.mountain }
+        ];
+
+        templates.forEach(t => {
+            const card = document.createElement('div');
+            card.className = 'template-card';
+            card.innerHTML = `
+                <div style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                    ${t.icon}
+                </div>
+                <span class="template-card-title">${t.name}</span>
+            `;
+            
+            card.addEventListener('click', () => {
+                // 加载该模板代码到 textarea
+                codeOutput.value = svgTemplates[t.id];
+                // 模拟 input 事件触发双向绑定渲染到画布上
+                const event = new Event('input', { bubbles: true });
+                codeOutput.dispatchEvent(event);
+                
+                // 显示提示 Toast
+                const originalText = toast.innerText;
+                toast.innerText = `已成功加载示例：${t.name}！`;
+                toast.style.backgroundColor = 'var(--purple-primary)';
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        toast.innerText = originalText;
+                        toast.style.backgroundColor = '';
+                    }, 300);
+                }, 2000);
+            });
+            templateGrid.appendChild(card);
+        });
+    </script>
+</body>
+</html>
