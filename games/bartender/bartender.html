@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>可口的特调，治愈的特调 - 魔法调饮屋</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部极简三列导航栏 (左:菜单设置 | 中:关卡标题 | 右:金币) -->
+        <header class="top-nav-bar compact-3-col">
+            <!-- 左侧：暂停与设置菜单 -->
+            <button class="top-menu-btn" id="btnOpenSettings" title="打开游戏设置与配方手账">
+                <span class="menu-icon">⏸️</span>
+                <span class="menu-text">菜单</span>
+            </button>
+
+            <!-- 中间：当前关卡名称与模式 -->
+            <div class="top-nav-center" id="navCenterTitle">
+                <span class="nav-level-badge" id="navLevelBadge">🚩 第 1-1 关 · 冬之息</span>
+            </div>
+
+            <!-- 右侧：钻石与金币余额显示 -->
+            <div class="currency-group">
+                <div class="diamond-badge-box" id="diamondDisplayBox" title="当前钻石余额">
+                    <span class="diamond-icon">💎</span>
+                    <span class="diamond-amount" id="diamondAmountText">0</span>
+                </div>
+                <div class="coin-badge-box" id="coinDisplayBox" title="当前金币余额 (重复通关可赚取金币)">
+                    <span class="coin-icon">💰</span>
+                    <span class="coin-amount" id="coinAmountText">100</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 顾客点单 / 模式提示栏 (第一、二章模式) -->
+        <section class="target-bubble-section" id="targetSection">
+            <div class="target-bubble-container" id="targetInfo"></div>
+        </section>
+
+        <!-- 🏪 第三章模拟经营专用吧台面板 (仅在第三章关卡激活展示) -->
+        <section class="c3-dashboard-section" id="c3DashboardSection" style="display: none;">
+            <div class="c3-shop-header-row">
+                <div class="c3-shop-brand-tag" id="c3ShopBrandTag">
+                    <span class="c3-shop-icon">🏪</span>
+                    <span class="c3-shop-name" id="c3ShopNameDisplay">治愈特调吧</span>
+                    <span class="c3-brand-divider">·</span>
+                    <span class="c3-brand-sub" id="c3BrandSubDisplay">蜜雪冰冰分店</span>
+                </div>
+                <div class="c3-header-right-actions">
+                    <div class="c3-timer-box" id="c3TimerBox" title="关卡营业打烊倒计时">
+                        <span class="c3-timer-icon">⏱️</span>
+                        <span class="c3-timer-val" id="c3TimerValText">150s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 客人点单与耐心条 -->
+            <div class="c3-customer-card" id="c3CustomerCard">
+                <div class="c3-customer-info-row">
+                    <div class="c3-cust-avatar" id="c3CustAvatar">⛄</div>
+                    <div class="c3-cust-main">
+                        <div class="c3-cust-title-row">
+                            <span class="c3-cust-name" id="c3CustName">客人 #1</span>
+                            <span class="c3-order-counter" id="c3OrderCounter">👨‍🍳 订单 1 (目标≥5单⭐)</span>
+                        </div>
+                        <div class="c3-drink-demand-row">
+                            <span class="c3-wants-label">点单需求：</span>
+                            <span class="c3-cup-badge" id="c3CupDemandBadge">🪣 吨吨桶</span>
+                            <strong class="c3-drink-name-pill" id="c3DrinkDemandName">蜜桃四季春</strong>
+                            <span class="c3-drink-price-pill" id="c3DrinkPricePill">+85 💰</span>
+                        </div>
+                    </div>
+                    <!-- 🛎️ 打烊按钮 (从顶部移到顾客卡片右边) -->
+                    <button class="c3-close-shop-btn disabled" id="btnC3CloseShop" title="达成最少订单后可提前打烊盘点">
+                        <span class="c3-close-shop-icon">🛎️</span>
+                        <span class="c3-close-shop-text" id="c3CloseShopText">打烊(需≥5单)</span>
+                    </button>
+                </div>
+
+                <!-- 动态彩色耐心度进度条 -->
+                <div class="c3-patience-wrapper">
+                    <div class="c3-patience-bar-bg">
+                        <div class="c3-patience-bar-fill" id="c3PatienceBarFill" style="width: 100%;"></div>
+                    </div>
+                    <div class="c3-patience-label-row">
+                        <span class="c3-patience-text" id="c3PatienceText">客人耐心：100% 😊</span>
+                        <span class="c3-patience-tip">超时将弃单离店并罚款 -50💰！</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 经营净利润与物料实时财务栏 -->
+            <div class="c3-financials-bar">
+                <div class="c3-fin-item">
+                    <span>营业额：</span>
+                    <strong class="text-green" id="c3TotalRevenue">0 💰</strong>
+                </div>
+                <div class="c3-fin-item">
+                    <span>小料成本(-10/次)：</span>
+                    <strong class="text-orange" id="c3MaterialCosts">0 💰</strong>
+                </div>
+                <div class="c3-fin-item c3-fin-profit">
+                    <span>净利润：</span>
+                    <strong class="text-gold" id="c3NetProfit">0 💰</strong>
+                    <span class="c3-target-profit-sub" id="c3TargetProfitSub">/ 目标 350💰</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 核心工作舞台 -->
+        <main class="workbench-main">
+            <!-- 客人栏正下方靠左：成就悬浮按钮 -->
+            <button class="stage-fab-btn achievement-fab" id="btnOpenAchievements" title="查看成就勋章馆">
+                <span class="fab-icon">🏆</span>
+                <span class="fab-text">成就</span>
+                <span class="ach-badge-dot" id="achRedDot" style="display: none;"></span>
+            </button>
+
+            <!-- 客人栏正下方靠右：配方悬浮按钮 (与成就对称等高) -->
+            <button class="stage-fab-btn recipe-book-fab" id="btnOpenRecipeBook" title="翻阅特调配方">
+                <span class="fab-icon">📖</span>
+                <span class="fab-text">配方</span>
+            </button>
+
+            <!-- 特效动画层 -->
+            <div class="effect-layer" id="effectLayer"></div>
+
+            <!-- 上半区：特调玻璃杯视口 -->
+            <div class="cup-stage-area">
+                <div class="drink-stage" id="drinkStage"></div>
+            </div>
+
+            <!-- 下半区：调配控制台（步骤标签 + 原料选择盒） -->
+            <div class="controls-drawer">
+                <!-- 步骤分类 Tab -->
+                <nav class="category-tabs-bar">
+                    <button class="category-tab active" data-step="glass">1.杯型</button>
+                    <button class="category-tab" data-step="liquid">2.液体</button>
+                    <button class="category-tab" data-step="items">3.小料</button>
+                    <button class="category-tab" data-step="foam">4.奶盖</button>
+                    <button class="category-tab" data-step="topper">5.顶饰</button>
+                </nav>
+
+                <!-- 🧪 量杯选择器 (仅在液体步骤显示，可选择 1/1、1/2、1/3、1/4 量杯调制分层) -->
+                <div class="measuring-cup-bar" id="measuringCupBar" style="display: none;">
+                    <div class="measuring-bar-header">
+                        <span class="measuring-label">🧪 量杯规格：</span>
+                        <span class="liquid-cup-progress" id="liquidCupProgressText">已注入：0/1</span>
+                    </div>
+                    <div class="measuring-cups-group" id="measuringCupsGroup"></div>
+                </div>
+
+                <!-- 原料选择卡片容器 -->
+                <div class="ingredients-grid-container" id="ingredientsGrid"></div>
+            </div>
+        </main>
+
+        <!-- 底部常驻紧凑操作栏 -->
+        <footer class="bottom-action-bar">
+            <button class="btn btn-secondary btn-compact" id="btnDump" title="清空重调">
+                <span>🧹</span> 清空
+            </button>
+            <button class="btn btn-autobrew btn-compact" id="btnAutoBrew" title="满分通关后解锁自动调配">
+                <span id="autoBrewIcon">🔒</span> <span id="autoBrewText">自动</span>
+            </button>
+            <button class="btn btn-primary btn-serve" id="btnFinish" title="调制完成出杯">
+                <span>🍹</span> 调制完成！
+            </button>
+        </footer>
+    </div>
+
+    <!-- 弹窗 1：拍立得特调分享卡片弹窗 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content-box polaroid-modal-box">
+            <button class="modal-close-btn" id="btnCloseModal">✕</button>
+            <div id="resultCard"></div>
+        </div>
+    </div>
+
+    <!-- 弹窗 2：手绘风游戏设置与菜单弹窗 (统一长条条状按钮布局) -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-content-box settings-modal-box">
+            <button class="modal-close-btn" id="btnCloseSettingsModal">✕</button>
+            <div class="modal-title-bar">
+                <span class="modal-title-text" id="settingsModalTitleText">⚙️ 调饮吧台设置</span>
+            </div>
+            
+            <div class="settings-menu-list">
+                <!-- 条状按钮 1：模式切换 -->
+                <button class="settings-bar-btn" id="btnSettingToggleMode">
+                    <div class="settings-bar-left">
+                        <span class="settings-bar-icon">🎮</span>
+                        <span class="settings-bar-label">游戏模式</span>
+                    </div>
+                    <div class="settings-bar-right">
+                        <span class="settings-badge" id="settingsModeBadge">🚩 关卡挑战</span>
+                        <span class="settings-arrow">⇄</span>
+                    </div>
+                </button>
+
+                <!-- 条状按钮 2：关卡选择列表 -->
+                <button class="settings-bar-btn" id="btnSettingOpenLevels">
+                    <div class="settings-bar-left">
+                        <span class="settings-bar-icon">🚩</span>
+                        <span class="settings-bar-label">选择关卡</span>
+                    </div>
+                    <div class="settings-bar-right">
+                        <span class="settings-bar-value" id="settingsLevelValueText">第 1 关</span>
+                        <span class="settings-arrow">❯</span>
+                    </div>
+                </button>
+
+                <!-- 条状按钮 3：查阅配方表 (暂停时可安心翻看) -->
+                <button class="settings-bar-btn" id="btnSettingOpenRecipes">
+                    <div class="settings-bar-left">
+                        <span class="settings-bar-icon">📖</span>
+                        <span class="settings-bar-label">查阅配方表</span>
+                    </div>
+                    <div class="settings-bar-right">
+                        <span class="settings-bar-sub">暂停安心查阅</span>
+                        <span class="settings-arrow">❯</span>
+                    </div>
+                </button>
+
+                <!-- 条状按钮 3：背景音乐切换 -->
+                <button class="settings-bar-btn" id="btnSettingToggleBgm">
+                    <div class="settings-bar-left">
+                        <span class="settings-bar-icon" id="settingsBgmIcon">🎵</span>
+                        <span class="settings-bar-label">悠闲清吧 BGM</span>
+                    </div>
+                    <div class="settings-bar-right">
+                        <span class="settings-badge" id="settingsBgmBadge">开启中</span>
+                        <span class="settings-arrow">⇄</span>
+                    </div>
+                </button>
+
+                <!-- 条状按钮 4：清空当前杯中原料 -->
+                <button class="settings-bar-btn" id="btnSettingResetCup">
+                    <div class="settings-bar-left">
+                        <span class="settings-bar-icon">🧹</span>
+                        <span class="settings-bar-label">清空当前特调</span>
+                    </div>
+                    <div class="settings-bar-right">
+                        <span class="settings-bar-sub">重新开始</span>
+                        <span class="settings-arrow">↺</span>
+                    </div>
+                </button>
+
+                <!-- 条状按钮 5：继续游戏 (主强调色) -->
+                <button class="settings-bar-btn settings-bar-primary" id="btnResumeGame">
+                    <div class="settings-bar-left">
+                        <span class="settings-bar-icon">▶️</span>
+                        <span class="settings-bar-label">继续调饮</span>
+                    </div>
+                    <div class="settings-bar-right">
+                        <span class="settings-arrow">✔</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗 3：独立可翻页配方手账书 (Recipe Book Modal) -->
+    <div class="modal-overlay" id="recipeBookModal">
+        <div class="modal-content-box recipe-book-modal-box">
+            <button class="modal-close-btn" id="btnCloseRecipeBookModal">✕</button>
+            <div class="recipe-book-header">
+                <span class="recipe-book-title">📖 治愈特调手账</span>
+            </div>
+
+            <!-- 翻页导航栏 -->
+            <div class="recipe-book-navbar">
+                <button class="book-nav-btn" id="btnBookPrevPage">◀ 上一页</button>
+                <div class="book-page-indicator" id="bookPageIndicator">第 1 / 9 页</div>
+                <button class="book-nav-btn" id="btnBookNextPage">下一页 ▶</button>
+            </div>
+
+            <!-- 手绘复古书页核心内容 -->
+            <div class="recipe-book-page" id="recipeBookPageContent">
+                <!-- 动态填充当前书页内容 (已解锁 / 未解锁锁定) -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗 4：关卡选择器弹窗 -->
+    <div class="modal-overlay" id="levelSelectModal">
+        <div class="modal-content-box level-modal-box">
+            <button class="modal-close-btn" id="btnCloseLevelModal">✕</button>
+            <div class="modal-title-bar level-modal-title-bar">
+                <span class="modal-title-text">🚩 选择挑战关卡</span>
+                <button class="level-stars-trophy-badge" id="btnLevelStarsTrophy" title="查看星级成就勋章">
+                    <span id="levelStarsRatioText">0/81</span> 🏆
+                </button>
+            </div>
+
+            <!-- 章节切换导航选项卡 (支持第一章、第二章、第三章) -->
+            <div class="chapter-tabs-bar">
+                <button class="chapter-tab-pill active" id="btnTabChapter1" data-chapter="1">
+                    <span>🚩 第一章</span>
+                    <span class="chap-sub">晨曦与晚风</span>
+                </button>
+                <button class="chapter-tab-pill" id="btnTabChapter2" data-chapter="2">
+                    <span>🔮 第二章</span>
+                    <span class="chap-sub" id="chap2SubText">微醺与星芒</span>
+                </button>
+                <button class="chapter-tab-pill" id="btnTabChapter3" data-chapter="3">
+                    <span>🏪 第三章</span>
+                    <span class="chap-sub" id="chap3SubText">烟火与茶香</span>
+                </button>
+            </div>
+
+            <!-- 第二章锁定与 300 钻石解锁卡片 -->
+            <div class="chapter-lock-panel" id="chapterLockPanel" style="display: none;">
+                <div class="chapter-lock-icon">🔒</div>
+                <div class="chapter-lock-title">第二章 · 微醺与星芒 封存中</div>
+                <div class="chapter-lock-desc">
+                    开启全新<strong>量杯渐变分层系统</strong>，探索大师级的绝美多层渐变特饮！<br>
+                    消耗 <strong>300 💎 钻石</strong> 即可永久解锁第二章全部 9 个梦幻关卡！
+                </div>
+                <button class="btn btn-primary chapter-unlock-btn" id="btnUnlockChapter2">
+                    🔓 消耗 300 💎 解锁第二章
+                </button>
+                <div class="chapter-diamond-balance-tip" id="chapUnlockDiamondTip">当前拥有：0 💎</div>
+            </div>
+
+            <!-- 第三章锁定与 1000 钻石解锁卡片 -->
+            <div class="chapter-lock-panel" id="chapter3LockPanel" style="display: none;">
+                <div class="chapter-lock-icon">🏪</div>
+                <div class="chapter-lock-title">经营·开业！</div>
+                <div class="chapter-lock-desc">
+                    挂上属于你的专属招牌，打造整条街最火爆的治愈茶饮店！<br>
+                    客流如潮，挑战手速极限，体验飞速出杯与收银的经营乐趣！<br>
+                    消耗 <strong>1000 💎 钻石</strong>，立刻签约开张大吉！
+                </div>
+                <button class="btn btn-primary chapter-unlock-btn" id="btnUnlockChapter3">
+                    🔓 消耗 1000 💎 盘下店铺开业！
+                </button>
+                <div class="chapter-diamond-balance-tip" id="chap3UnlockDiamondTip">当前拥有：0 💎</div>
+            </div>
+
+            <div class="level-grid-container" id="levelGrid"></div>
+        </div>
+    </div>
+
+    <!-- 弹窗 4：手绘风商品购买/解锁弹窗 -->
+    <div class="modal-overlay" id="shopModal">
+        <div class="modal-content-box shop-modal-box">
+            <button class="modal-close-btn" id="btnCloseShopModal">✕</button>
+            <div class="shop-modal-header">
+                <div class="shop-item-icon-bubble" id="shopModalIcon">🏆</div>
+                <div class="shop-item-title" id="shopModalTitle">奇迹圣杯</div>
+                <div class="shop-item-category-tag" id="shopModalCat">杯型工坊</div>
+            </div>
+            
+            <div class="shop-item-desc" id="shopModalDesc">
+                ✨ 可能会触发神奇的效果哦。
+            </div>
+
+            <!-- 价格与余额计算面板 -->
+            <div class="shop-price-panel">
+                <div class="shop-price-row">
+                    <span>所需价格：</span>
+                    <strong class="shop-cost-text" id="shopModalCost">💰 10000</strong>
+                </div>
+                <div class="shop-price-row">
+                    <span>当前余额：</span>
+                    <span id="shopModalCurrentCoins">💰 100</span>
+                </div>
+                <div class="shop-price-divider"></div>
+                <div class="shop-price-row" id="shopModalAfterRow">
+                    <span>购买后剩余：</span>
+                    <strong id="shopModalAfterCoins">💰 0</strong>
+                </div>
+                <div class="shop-insufficient-tip" id="shopModalShortageTip" style="display: none;">
+                    ⚠️ 金币不足，还差 <span id="shopShortageAmount">0</span> 金币！<br>
+                    <span class="sub-tip">💡 提示：可以重复挑战之前已通关的关卡来赚取金币哦~ 🍹</span>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="shop-actions-row">
+                <button class="btn btn-secondary shop-cancel-btn" id="btnCancelShop">稍后再买</button>
+                <button class="btn btn-primary shop-buy-btn" id="btnConfirmBuy">立即购买 💰</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗 5：手绘风统一通知提示弹窗 (彻底替代系统原生 alert) -->
+    <div class="modal-overlay" id="noticeModal">
+        <div class="modal-content-box notice-modal-box">
+            <button class="modal-close-btn" id="btnCloseNoticeModal">✕</button>
+            <div class="notice-icon-bubble" id="noticeModalIcon">💡</div>
+            <div class="notice-modal-title" id="noticeModalTitle">温馨提示</div>
+            <div class="notice-modal-message" id="noticeModalMessage">提示内容</div>
+            <button class="btn btn-primary notice-confirm-btn" id="btnConfirmNotice">我知道啦 🍹</button>
+        </div>
+    </div>
+
+    <!-- 弹窗 6：成就勋章馆弹窗 (Achievement Modal) -->
+    <div class="modal-overlay" id="achievementModal">
+        <div class="modal-content-box achievement-modal-box">
+            <button class="modal-close-btn" id="btnCloseAchievementModal">✕</button>
+            <div class="modal-title-bar">
+                <span class="modal-title-text">🏆 调饮师成就勋章馆</span>
+            </div>
+
+            <!-- 顶部成就统计卡片 -->
+            <div class="achievement-summary-card">
+                <div class="ach-summary-stars-row">
+                    <span>⭐ 关卡星星总收集：</span>
+                    <strong id="achTotalStarsDisplay">0 / 81</strong>
+                </div>
+                <div class="ach-progress-bar-bg">
+                    <div class="ach-progress-bar-fill" id="achTotalStarsBarFill" style="width: 0%;"></div>
+                </div>
+                <div class="ach-tip-text">✨ 每集齐 9 颗星星，即可晋升一级并领取 <strong>100 💎 + 1000 💰</strong> 丰厚大奖！关卡首次满分再得 <strong>10 💎 + 200 💰</strong>！(81★ 满级神祇)</div>
+            </div>
+
+            <!-- 成就列表容器 (滚动) -->
+            <div class="achievement-list-container" id="achievementListContainer"></div>
+        </div>
+    </div>
+
+    <!-- 弹窗 7：专属店铺开业与命名契约证书弹窗 (Shop Name Modal) -->
+    <div class="modal-overlay" id="shopNameModal">
+        <div class="modal-content-box shop-name-modal-box">
+            <button class="modal-close-btn" id="btnCloseShopNameModal">✕</button>
+            <div class="shop-name-header">
+                <div class="shop-name-icon">🏮</div>
+                <div class="shop-name-title">茶饮小店 · 开业契约</div>
+                <div class="shop-name-sub">为你的独立茶饮店起一个治愈温馨的名字吧！</div>
+            </div>
+
+            <div class="shop-name-input-card">
+                <label class="shop-name-label" for="shopNameInput">🏠 店铺招牌名称：</label>
+                <input type="text" id="shopNameInput" class="shop-name-input" maxlength="10" placeholder="默认：治愈特调吧" value="治愈特调吧">
+                <div class="shop-name-hint">字数在 2~10 字之间，招牌将挂在吧台正上方！</div>
+            </div>
+
+            <div class="shop-name-features-card">
+                <div class="sn-feature-item">🥤 直通 9 大品牌真实饮品，客人点单报饮品名</div>
+                <div class="sn-feature-item">⏱️ 客人自带耐心倒计时，5~30位客人客流密集</div>
+                <div class="sn-feature-item">💰 小料无需解锁直接可用，每次加入仅扣 10 金币</div>
+            </div>
+
+            <button class="btn btn-primary shop-open-btn" id="btnConfirmOpenShop">
+                🎉 盛大开业，正式迎客！
+            </button>
+        </div>
+    </div>
+
+    <!-- 弹窗 8：第三章公开配方快捷抽屉弹窗 (Quick Recipe Drawer Modal) -->
+    <div class="modal-overlay" id="quickRecipeModal">
+        <div class="modal-content-box quick-recipe-modal-box">
+            <button class="modal-close-btn" id="btnCloseQuickRecipeModal">✕</button>
+            <div class="modal-title-bar">
+                <span class="modal-title-text" id="quickRecipeBrandTitle">📖 本店特调秘籍 (全公开)</span>
+            </div>
+            <div class="quick-recipe-tip">💡 第三章配方完全公开，制作时可随时打开抽屉对照哦！</div>
+            <div class="quick-recipe-list" id="quickRecipeList"></div>
+        </div>
+    </div>
+
+    <!-- 弹窗 9：第三章模拟经营关卡打烊结算弹窗 (Chapter 3 Result Modal) -->
+    <div class="modal-overlay" id="c3ResultModal">
+        <div class="modal-content-box c3-result-modal-box">
+            <div class="c3-res-header">
+                <div class="c3-res-icon" id="c3ResIcon">🎉</div>
+                <div class="c3-res-title" id="c3ResTitle">今日营业打烊！</div>
+                <div class="c3-res-brand" id="c3ResBrand">蜜雪冰冰分店 · 结算清单</div>
+            </div>
+
+            <!-- 三颗星考核卡片 -->
+            <div class="c3-stars-checklist-card">
+                <div class="c3-star-check-row" id="c3StarRow1">
+                    <span class="c3-star-check-icon">⭐</span>
+                    <span class="c3-star-check-text">达成最少订单量(得到1★)：</span>
+                    <strong class="c3-star-check-val" id="c3StarValOrders">5/5</strong>
+                </div>
+                <div class="c3-star-check-row" id="c3StarRow2">
+                    <span class="c3-star-check-icon">⭐</span>
+                    <span class="c3-star-check-text">在规定时限内打烊：</span>
+                    <strong class="c3-star-check-val" id="c3StarValTime">耗时 88s / 150s</strong>
+                </div>
+                <div class="c3-star-check-row" id="c3StarRow3">
+                    <span class="c3-star-check-icon">⭐</span>
+                    <span class="c3-star-check-text">净利润达到目标值：</span>
+                    <strong class="c3-star-check-val" id="c3StarValProfit">380 💰 / 目标 350 💰</strong>
+                </div>
+            </div>
+
+            <!-- 财务总览明细 -->
+            <div class="c3-fin-summary-card">
+                <div class="c3-fin-sum-row">
+                    <span>总营业收入：</span>
+                    <strong class="text-green" id="c3SumRevenue">+420 💰</strong>
+                </div>
+                <div class="c3-fin-sum-row">
+                    <span>小料物料成本：</span>
+                    <strong class="text-orange" id="c3SumCosts">-40 💰</strong>
+                </div>
+                <div class="c3-fin-sum-row" id="c3SumPenaltyRow" style="display: none;">
+                    <span>弃单罚款支出：</span>
+                    <strong class="text-red" id="c3SumPenalty">-50 💰</strong>
+                </div>
+                <div class="c3-fin-divider"></div>
+                <div class="c3-fin-sum-row c3-fin-sum-total">
+                    <span>最终净利润：</span>
+                    <strong class="text-gold" id="c3SumFinalProfit">380 💰</strong>
+                </div>
+            </div>
+
+            <!-- 奖励与晋级提示 -->
+            <div class="c3-res-reward-banner" id="c3ResRewardBanner">
+                ⭐ 获得星星：<span id="c3EarnedStarsCount">3</span> 颗！解锁下一关！
+            </div>
+
+            <!-- 结算操作按钮 -->
+            <div class="c3-res-actions-row">
+                <button class="btn btn-secondary" id="btnC3Replay">↺ 再次营业</button>
+                <button class="btn btn-primary" id="btnC3NextLevel">下一关卡 ▶</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 全局轻量金币飘字动画容器 (用于小料 -10💰、出杯收入、弃单罚款) -->
+    <div class="floating-text-container" id="floatingTextContainer" pointer-events="none"></div>
+
+    <!-- 脚本加载 -->
+    <script src="js/audio.js"></script>
+    <script src="js/recipes.js"></script>
+    <script src="js/svg-assets.js"></script>
+    <script src="js/qrcode.js"></script>
+    <script src="js/share-card.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

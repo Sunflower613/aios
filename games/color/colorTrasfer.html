@@ -531,7 +531,7 @@
   </div>
 
   <!-- 从同层级 colors.js 引入色彩库，不污染主 HTML -->
-  <script src="colors.js"></script>
+  <script src="colors.js?v=2"></script>
   <script>
     const hexInput = document.getElementById('hexInput');
     const rgbInput = document.getElementById('rgbInput');
@@ -641,8 +641,8 @@
     }
 
     function setupEyeDropper() {
-      if ('EyeDropper' in window) {
-        eyeDropperBtn.addEventListener('click', async () => {
+      eyeDropperBtn.addEventListener('click', async () => {
+        if ('EyeDropper' in window) {
           try {
             const eyeDropper = new EyeDropper();
             const result = await eyeDropper.open();
@@ -651,10 +651,10 @@
               showToast(isEn ? 'Picked' : '吸色成功');
             }
           } catch (e) { }
-        });
-      } else {
-        eyeDropperBtn.style.display = 'none';
-      }
+        } else {
+          showToast(isEn ? 'Requires HTTPS or localhost' : '屏幕吸色需 HTTPS 或本地环境');
+        }
+      });
     }
 
     function setupImagePicker() {

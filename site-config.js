@@ -122,6 +122,14 @@ export const siteConfig = {
       icon: "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%2022a1%201%200%200%201%200-20%2010%209%200%200%201%2010%209%205%205%200%200%201-5%205h-2.25a1.75%201.75%200%200%200-1.4%202.8l.3.4a1.75%201.75%200%200%201-1.4%202.8z%22%3E%3C/path%3E%3Ccircle%20cx%3D%2213.5%22%20cy%3D%226.5%22%20r%3D%22.5%22%20fill%3D%22white%22%3E%3C/circle%3E%3Ccircle%20cx%3D%2217.5%22%20cy%3D%2210.5%22%20r%3D%22.5%22%20fill%3D%22white%22%3E%3C/circle%3E%3Ccircle%20cx%3D%226.5%22%20cy%3D%2212.5%22%20r%3D%22.5%22%20fill%3D%22white%22%3E%3C/circle%3E%3Ccircle%20cx%3D%228.5%22%20cy%3D%227.5%22%20r%3D%22.5%22%20fill%3D%22white%22%3E%3C/circle%3E%3C/svg%3E", 
       color: "#7c3aed",
       emoji: "🎨"
+    },
+    { 
+      id: "bartender",
+      name: "治愈特调",
+      path: "./games/bartender/bartender.html",
+      icon: "./games/bartender/bartender.png",
+      color: "#ff5722",
+      emoji: "🍹"
     }
   ],
 
