@@ -1341,8 +1341,16 @@ const INGREDIENTS_CATALOG = {
     ]
 };
 
-// 成就系统全量配置 (保留 9 个阶梯，每 9 颗星为一级，累计 81 颗星达成满级神祇！)
+// 成就系统全量配置 (基础简单成就前置，星级阶梯循序渐进，圣杯成就压轴)
 const ACHIEVEMENTS_CONFIG = [
+    // 🍹 趣味道具与调饮生涯初阶成就 (初次开张、神作降临等简单成就前置)
+    { id: "first_serve", title: "初次开张", desc: "成功调制完成出杯 1 次特调", icon: "🍹", target: 1, type: "totalServes", rewardDiamonds: 20, rewardCoins: 200 },
+    { id: "perfect_100", title: "神作降临", desc: "在任意关卡中获得 100 满分评价", icon: "💯", target: 1, type: "perfectScores", rewardDiamonds: 50, rewardCoins: 500 },
+    { id: "auto_master", title: "极速魔法", desc: "首次使用【⚡ 自动】完成出杯", icon: "⚡", target: 1, type: "autoServes", rewardDiamonds: 30, rewardCoins: 300 },
+    { id: "ice_lover", title: "冰爽透心", desc: "特调中累计放入方形或心形冰块 5 次", icon: "🧊", target: 5, type: "iceUsed", rewardDiamonds: 30, rewardCoins: 300 },
+    { id: "free_creator", title: "灵感工坊", desc: "在自由模式中累计完成 3 次特调制作", icon: "🎨", target: 3, type: "freeServes", rewardDiamonds: 40, rewardCoins: 400 },
+    { id: "book_collector", title: "秘方藏书家", desc: "配方手账中累计解锁收录至少 5 篇秘方", icon: "📖", target: 5, type: "recipesUnlocked", rewardDiamonds: 60, rewardCoins: 600 },
+
     // 🌟 星级阶梯系列 (共 9 阶，每集齐 9 颗星奖励 100 钻石 + 1000 金币，81★ 满级)
     { id: "star_9", title: "初入吧台", desc: "关卡中累计集齐 9 颗星星", icon: "✨", target: 9, type: "stars", rewardDiamonds: 100, rewardCoins: 1000 },
     { id: "star_18", title: "调饮熟手", desc: "关卡中累计集齐 18 颗星星", icon: "⭐", target: 18, type: "stars", rewardDiamonds: 100, rewardCoins: 1000 },
@@ -1354,13 +1362,7 @@ const ACHIEVEMENTS_CONFIG = [
     { id: "star_72", title: "传奇调饮神", desc: "关卡中累计集齐 72 颗星星", icon: "👑", target: 72, type: "stars", rewardDiamonds: 100, rewardCoins: 1000 },
     { id: "star_81", title: "璀璨终极满级", desc: "集齐全部 81 颗星！成就三界特调唯一神祇", icon: "🏆", target: 81, type: "stars", rewardDiamonds: 100, rewardCoins: 1000 },
 
-    // 🍹 趣味道具与调饮生涯成就
-    { id: "first_serve", title: "初次开张", desc: "成功调制完成出杯 1 次特调", icon: "🍹", target: 1, type: "totalServes", rewardDiamonds: 20, rewardCoins: 200 },
-    { id: "perfect_100", title: "神作降临", desc: "在任意关卡中获得 100 满分评价", icon: "💯", target: 1, type: "perfectScores", rewardDiamonds: 50, rewardCoins: 500 },
-    { id: "auto_master", title: "极速魔法", desc: "首次使用【⚡ 自动】完成出杯", icon: "⚡", target: 1, type: "autoServes", rewardDiamonds: 30, rewardCoins: 300 },
-    { id: "free_creator", title: "灵感工坊", desc: "在自由模式中累计完成 3 次特调制作", icon: "🎨", target: 3, type: "freeServes", rewardDiamonds: 40, rewardCoins: 400 },
-    { id: "book_collector", title: "秘方藏书家", desc: "配方手账中累计解锁收录至少 5 篇秘方", icon: "📖", target: 5, type: "recipesUnlocked", rewardDiamonds: 60, rewardCoins: 600 },
-    { id: "ice_lover", title: "冰爽透心", desc: "特调中累计放入方形或心形冰块 5 次", icon: "🧊", target: 5, type: "iceUsed", rewardDiamonds: 30, rewardCoins: 300 },
+    // 🏆 压轴道具神作成就
     { id: "holy_miracle", title: "点石成金", desc: "使用 100W💰【奇迹圣杯】调制任意特调", icon: "🏆", target: 1, type: "holyUsed", rewardDiamonds: 200, rewardCoins: 2000 }
 ];
 

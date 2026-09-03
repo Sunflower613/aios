@@ -387,7 +387,37 @@ class ShareCardManager {
     }
 
     /**
-     * 📤 唤起手机浏览器系统原生分享 (同步直接触发，确保 User Activation 用户手势凭证 100% 鲜活有效)
+     * 辅助方法：安全将文本复制到剪贴板
+     */
+    copyTextToClipboard(text) {
+        if (!text) return false;
+        let success = false;
+        try {
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            textarea.style.position = "fixed";
+            textarea.style.top = "-9999px";
+            textarea.style.left = "-9999px";
+            textarea.style.opacity = "0";
+            textarea.setAttribute("readonly", "");
+            document.body.appendChild(textarea);
+            textarea.select();
+            textarea.setSelectionRange(0, textarea.value.length);
+            success = document.execCommand("copy");
+            document.body.removeChild(textarea);
+        } catch (e) {
+            success = false;
+        }
+
+        if (!success && typeof navigator !== "undefined" && navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+            navigator.clipboard.writeText(text).catch(() => {});
+            success = true;
+        }
+        return success;
+    }
+
+    /**
+     * 📤 唤起分享 (点击即自动复制链接到剪贴板，并调起原生分享)
      */
     shareCardImage(data) {
         window.soundEngine.playSparkle();
@@ -395,7 +425,13 @@ class ShareCardManager {
         const shareTitle = `${data.drinkName} · 治愈特调`;
         const shareText = `我在治愈特调吧亲手调配了一杯【${data.drinkName}】，快来扫码品尝吧！🍹`;
 
-        // 📱 核心：如果手机浏览器支持 Web Share API
+        // 🔗 核心：在用户点击手势的第一时间，立即同步自动将特调链接写入剪贴板！
+        const copyOk = this.copyTextToClipboard(currentUrl);
+        if (copyOk) {
+            this.showToast("已自动复制特调链接！快分享给好友吧~ 🍹");
+        }
+
+        // 📱 核心：如果手机浏览器支持 Web Share API，进一步唤起系统分享面板
         if (typeof navigator !== "undefined" && navigator.share) {
             // 1. 如果已预先缓存好带二维码的图片文件且支持文件分享，优先分享图片文件
             if (this.cachedShareFile && navigator.canShare) {

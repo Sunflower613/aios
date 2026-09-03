@@ -935,10 +935,27 @@ class BartenderApp {
         this.dom.achTotalStarsDisplay.textContent = `${totalStars} / ${maxStars}`;
         this.dom.achTotalStarsBarFill.style.width = `${percent}%`;
 
-        const list = window.ACHIEVEMENTS_CONFIG;
-        this.dom.achievementListContainer.innerHTML = list.map(ach => {
-            const prog = window.StorageManager.getAchievementProgress(ach);
+        const rawList = window.ACHIEVEMENTS_CONFIG || [];
+        const listWithProg = rawList.map((ach, index) => ({
+            ach,
+            prog: window.StorageManager.getAchievementProgress(ach),
+            originalIndex: index
+        }));
 
+        // 待领奖的成就动态放最前面，未达成的排中间，已达成的沉底；相同状态下保持原定顺序
+        listWithProg.sort((a, b) => {
+            const getPriority = (item) => {
+                if (item.prog.isCompleted && !item.prog.isClaimed) return 0; // 待领奖最高优先级
+                if (!item.prog.isClaimed) return 1; // 未完成进行中
+                return 2; // 已达成并领取
+            };
+            const pA = getPriority(a);
+            const pB = getPriority(b);
+            if (pA !== pB) return pA - pB;
+            return a.originalIndex - b.originalIndex;
+        });
+
+        this.dom.achievementListContainer.innerHTML = listWithProg.map(({ ach, prog }) => {
             let actionHtml = "";
             let cardClass = "";
 
@@ -1497,7 +1514,11 @@ class BartenderApp {
             if (isChapter3Active) {
                 // 第三章连锁经营吧台：聚焦展示茶饮店所用的原液、小料、奶盖与顶饰（屏蔽无关的奇幻物料）
                 if (category === "glass") {
-                    return items.filter(g => ["cup_medium", "cup_large", "cup_bucket"].includes(g.id));
+                    const c3Glasses = ["cup_medium", "cup_large", "cup_bucket"];
+                    if (window.StorageManager.isUnlocked("glass", "holy_grail")) {
+                        c3Glasses.push("holy_grail");
+                    }
+                    return items.filter(g => c3Glasses.includes(g.id));
                 }
                 if (category === "liquid") {
                     const c3Liquids = ["lime_green", "golden_sand", "peach_pink", "amber_oolong", "mint_green", "coconut_white", "sunset_orange", "rich_cocoa", "matcha_deep", "jasmine_tea", "ceylon_black", "pure_milk", "mango_puree", "grape_tea"];
@@ -2566,78 +2587,100 @@ class BartenderApp {
         let score = 0;
         const reasons = [];
 
-        // 1. 杯型匹配 (25分) - 必须与饮品指定的中杯/大杯/吨吨桶一致
-        const targetGlass = target.glassType || "cup_medium";
-        const curGlass = this.currentDrink.glassType;
-        if (curGlass === targetGlass) {
-            score += 25;
-        } else {
-            const targetGlassName = window.formatGlassName ? window.formatGlassName(targetGlass) : targetGlass;
-            const curGlassName = window.formatGlassName ? window.formatGlassName(curGlass) : curGlass;
-            reasons.push(`杯型规格拿错了（客要【${targetGlassName}】，实际使用了【${curGlassName}】）`);
-        }
-
-        // 2. 液体匹配 (35分)
+        const isHolyGrail = this.currentDrink.glassType === "holy_grail";
         const hasAnyLiquid = (this.currentDrink.liquids && this.currentDrink.liquids.length > 0) || !!this.currentDrink.liquid;
-        if (target.liquids && target.liquids.length > 1) {
-            const curLayers = this.currentDrink.liquids || [];
-            if (curLayers.length === target.liquids.length) {
-                let match = true;
-                for (let i = 0; i < target.liquids.length; i++) {
-                    if (curLayers[i].id !== target.liquids[i].id) {
-                        match = false;
-                        break;
+        const isCupEmpty = (!hasAnyLiquid && this.currentDrink.inCupItems.length === 0 && (this.currentDrink.foamLayer === "none" || !this.currentDrink.foamLayer) && (this.currentDrink.topper === "none" || !this.currentDrink.topper));
+
+        // 🌟 奇迹圣杯在第3章的点石成金机制
+        if (isHolyGrail) {
+            if (isCupEmpty) {
+                window.soundEngine.playSoftDrop();
+                this.triggerCupShake();
+                this.showNotice({
+                    title: "😣 圣杯空空如也！",
+                    message: "【奇迹圣杯】中空空如也，点石成金的魔法未能显现！\n\n请在圣杯中随心加入任意原液或小料后再出杯吧~ ✨",
+                    icon: "⚠️",
+                    btnText: "去加配料 🍹"
+                });
+                return;
+            } else {
+                score = 100;
+                window.StorageManager.recordStat("holyUsed");
+                this.triggerEffect("star_shower");
+            }
+        } else {
+            // 1. 杯型匹配 (25分) - 必须与饮品指定的中杯/大杯/吨吨桶一致
+            const targetGlass = target.glassType || "cup_medium";
+            const curGlass = this.currentDrink.glassType;
+            if (curGlass === targetGlass) {
+                score += 25;
+            } else {
+                const targetGlassName = window.formatGlassName ? window.formatGlassName(targetGlass) : targetGlass;
+                const curGlassName = window.formatGlassName ? window.formatGlassName(curGlass) : curGlass;
+                reasons.push(`杯型规格拿错了（客要【${targetGlassName}】，实际使用了【${curGlassName}】）`);
+            }
+
+            // 2. 液体匹配 (35分)
+            if (target.liquids && target.liquids.length > 1) {
+                const curLayers = this.currentDrink.liquids || [];
+                if (curLayers.length === target.liquids.length) {
+                    let match = true;
+                    for (let i = 0; i < target.liquids.length; i++) {
+                        if (curLayers[i].id !== target.liquids[i].id) {
+                            match = false;
+                            break;
+                        }
                     }
+                    if (match) score += 35;
+                    else {
+                        score += 15;
+                        reasons.push("分层液体种类或顺序不符");
+                    }
+                } else if (curLayers.length > 0) {
+                    score += 10;
+                    reasons.push(`分层层数不对（需${target.liquids.length}层，实际${curLayers.length}层）`);
+                } else {
+                    reasons.push("未注入分层原液");
                 }
-                if (match) score += 35;
-                else {
-                    score += 15;
-                    reasons.push("分层液体种类或顺序不符");
+            } else {
+                if (this.currentDrink.liquid?.id === target.liquid?.id) score += 35;
+                else if (hasAnyLiquid) {
+                    score += 10;
+                    reasons.push("选错茶底原液了");
+                } else {
+                    reasons.push("杯中未注入任何原液");
                 }
-            } else if (curLayers.length > 0) {
-                score += 10;
-                reasons.push(`分层层数不对（需${target.liquids.length}层，实际${curLayers.length}层）`);
+            }
+
+            // 3. 小料匹配 (20分)
+            const targetItems = target.inCupItems || [];
+            if (targetItems.length === 0) {
+                if (this.currentDrink.inCupItems.length === 0) score += 20;
+                else reasons.push("客人不需要添加小料哦");
             } else {
-                reasons.push("未注入分层原液");
+                let matched = 0;
+                targetItems.forEach(it => {
+                    if (this.currentDrink.inCupItems.includes(it)) matched++;
+                });
+                score += Math.round((matched / targetItems.length) * 20);
+                if (matched < targetItems.length) {
+                    reasons.push("小料不齐全或放错了");
+                }
             }
-        } else {
-            if (this.currentDrink.liquid?.id === target.liquid?.id) score += 35;
-            else if (hasAnyLiquid) {
+
+            // 4. 封层奶盖匹配 (10分)
+            if ((this.currentDrink.foamLayer || "none") === (target.foamLayer || "none")) {
                 score += 10;
-                reasons.push("选错茶底原液了");
             } else {
-                reasons.push("杯中未注入任何原液");
+                reasons.push("顶层奶盖封层不符");
             }
-        }
 
-        // 3. 小料匹配 (20分)
-        const targetItems = target.inCupItems || [];
-        if (targetItems.length === 0) {
-            if (this.currentDrink.inCupItems.length === 0) score += 20;
-            else reasons.push("客人不需要添加小料哦");
-        } else {
-            let matched = 0;
-            targetItems.forEach(it => {
-                if (this.currentDrink.inCupItems.includes(it)) matched++;
-            });
-            score += Math.round((matched / targetItems.length) * 20);
-            if (matched < targetItems.length) {
-                reasons.push("小料不齐全或放错了");
+            // 5. 顶饰匹配 (10分)
+            if ((this.currentDrink.topper || "none") === (target.topper || "none")) {
+                score += 10;
+            } else {
+                reasons.push("核心顶饰不符");
             }
-        }
-
-        // 4. 封层奶盖匹配 (10分)
-        if ((this.currentDrink.foamLayer || "none") === (target.foamLayer || "none")) {
-            score += 10;
-        } else {
-            reasons.push("顶层奶盖封层不符");
-        }
-
-        // 5. 顶饰匹配 (10分)
-        if ((this.currentDrink.topper || "none") === (target.topper || "none")) {
-            score += 10;
-        } else {
-            reasons.push("核心顶饰不符");
         }
 
         // 判定结果 (≥70分合格出杯)
