@@ -182,80 +182,155 @@
     <!-- 弹窗 2：手绘风游戏设置与菜单弹窗 (统一长条条状按钮布局) -->
     <div class="modal-overlay" id="settingsModal">
         <div class="modal-content-box settings-modal-box">
-            <button class="modal-close-btn" id="btnCloseSettingsModal">✕</button>
-            <div class="modal-title-bar">
-                <span class="modal-title-text" id="settingsModalTitleText">⚙️ 调饮吧台设置</span>
+            <button class="modal-close-btn" id="btnCloseSettingsModal" aria-label="关闭设置">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="modal-title-bar settings-title-bar">
+                <span class="settings-title-icon-wrapper" id="settingsModalTitleIcon">
+                    <svg class="lucide-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                </span>
+                <span class="modal-title-text" id="settingsModalTitleText">调饮吧台设置</span>
             </div>
             
             <div class="settings-menu-list">
                 <!-- 条状按钮 1：模式切换 -->
                 <button class="settings-bar-btn" id="btnSettingToggleMode">
                     <div class="settings-bar-left">
-                        <span class="settings-bar-icon">🎮</span>
+                        <span class="settings-bar-icon">
+                            <svg class="settings-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="6" y1="12" x2="10" y2="12"></line>
+                                <line x1="8" y1="10" x2="8" y2="14"></line>
+                                <line x1="15" y1="13" x2="15.01" y2="13"></line>
+                                <line x1="18" y1="11" x2="18.01" y2="11"></line>
+                                <rect x="2" y="6" width="20" height="12" rx="6"></rect>
+                            </svg>
+                        </span>
                         <span class="settings-bar-label">游戏模式</span>
                     </div>
                     <div class="settings-bar-right">
-                        <span class="settings-badge" id="settingsModeBadge">🚩 关卡挑战</span>
-                        <span class="settings-arrow">⇄</span>
+                        <span class="settings-badge" id="settingsModeBadge">关卡挑战</span>
+                        <span class="settings-arrow">
+                            <svg class="settings-arrow-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m16 3 4 4-4 4"></path>
+                                <path d="M20 7H4"></path>
+                                <path d="m8 21-4-4 4-4"></path>
+                                <path d="M4 17h16"></path>
+                            </svg>
+                        </span>
                     </div>
                 </button>
 
                 <!-- 条状按钮 2：关卡选择列表 -->
                 <button class="settings-bar-btn" id="btnSettingOpenLevels">
                     <div class="settings-bar-left">
-                        <span class="settings-bar-icon">🚩</span>
+                        <span class="settings-bar-icon">
+                            <svg class="settings-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                                <line x1="4" y1="22" x2="4" y2="15"></line>
+                            </svg>
+                        </span>
                         <span class="settings-bar-label">选择关卡</span>
                     </div>
                     <div class="settings-bar-right">
                         <span class="settings-bar-value" id="settingsLevelValueText">第 1 关</span>
-                        <span class="settings-arrow">❯</span>
+                        <span class="settings-arrow">
+                            <svg class="settings-arrow-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m9 18 6-6-6-6"></path>
+                            </svg>
+                        </span>
                     </div>
                 </button>
 
                 <!-- 条状按钮 3：查阅配方表 (暂停时可安心翻看) -->
                 <button class="settings-bar-btn" id="btnSettingOpenRecipes">
                     <div class="settings-bar-left">
-                        <span class="settings-bar-icon">📖</span>
+                        <span class="settings-bar-icon">
+                            <svg class="settings-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                            </svg>
+                        </span>
                         <span class="settings-bar-label">查阅配方表</span>
                     </div>
                     <div class="settings-bar-right">
                         <span class="settings-bar-sub">暂停安心查阅</span>
-                        <span class="settings-arrow">❯</span>
+                        <span class="settings-arrow">
+                            <svg class="settings-arrow-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m9 18 6-6-6-6"></path>
+                            </svg>
+                        </span>
                     </div>
                 </button>
 
-                <!-- 条状按钮 3：背景音乐切换 -->
+                <!-- 条状按钮 4：背景音乐切换 -->
                 <button class="settings-bar-btn" id="btnSettingToggleBgm">
                     <div class="settings-bar-left">
-                        <span class="settings-bar-icon" id="settingsBgmIcon">🎵</span>
+                        <span class="settings-bar-icon" id="settingsBgmIcon">
+                            <svg class="settings-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 18V5l12-2v13"></path>
+                                <circle cx="6" cy="18" r="3"></circle>
+                                <circle cx="18" cy="16" r="3"></circle>
+                            </svg>
+                        </span>
                         <span class="settings-bar-label">悠闲清吧 BGM</span>
                     </div>
                     <div class="settings-bar-right">
                         <span class="settings-badge" id="settingsBgmBadge">开启中</span>
-                        <span class="settings-arrow">⇄</span>
+                        <span class="settings-arrow">
+                            <svg class="settings-arrow-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m16 3 4 4-4 4"></path>
+                                <path d="M20 7H4"></path>
+                                <path d="m8 21-4-4 4-4"></path>
+                                <path d="M4 17h16"></path>
+                            </svg>
+                        </span>
                     </div>
                 </button>
 
-                <!-- 条状按钮 4：清空当前杯中原料 -->
+                <!-- 条状按钮 5：清空当前杯中原料 -->
                 <button class="settings-bar-btn" id="btnSettingResetCup">
                     <div class="settings-bar-left">
-                        <span class="settings-bar-icon">🧹</span>
+                        <span class="settings-bar-icon">
+                            <svg class="settings-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="1 4 1 10 7 10"></polyline>
+                                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                            </svg>
+                        </span>
                         <span class="settings-bar-label">清空当前特调</span>
                     </div>
                     <div class="settings-bar-right">
                         <span class="settings-bar-sub">重新开始</span>
-                        <span class="settings-arrow">↺</span>
+                        <span class="settings-arrow">
+                            <svg class="settings-arrow-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="1 4 1 10 7 10"></polyline>
+                                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                            </svg>
+                        </span>
                     </div>
                 </button>
 
-                <!-- 条状按钮 5：继续游戏 (主强调色) -->
+                <!-- 条状按钮 6：继续游戏 (主强调色) -->
                 <button class="settings-bar-btn settings-bar-primary" id="btnResumeGame">
                     <div class="settings-bar-left">
-                        <span class="settings-bar-icon">▶️</span>
+                        <span class="settings-bar-icon">
+                            <svg class="settings-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="6 3 20 12 6 21 6 3"></polygon>
+                            </svg>
+                        </span>
                         <span class="settings-bar-label">继续调饮</span>
                     </div>
                     <div class="settings-bar-right">
-                        <span class="settings-arrow">✔</span>
+                        <span class="settings-arrow">
+                            <svg class="settings-arrow-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </button>
             </div>

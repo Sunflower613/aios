@@ -1248,9 +1248,34 @@ body {
     gap: 8px;
 }
 
+.settings-title-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.settings-title-icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #8c5310;
+}
+
 .settings-bar-icon {
-    font-size: 1.25rem;
-    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    color: #8c5310;
+    flex-shrink: 0;
+}
+
+.settings-bar-icon svg {
+    display: block;
+    stroke: currentColor;
 }
 
 .settings-bar-label {
@@ -1291,9 +1316,16 @@ body {
 }
 
 .settings-arrow {
-    font-size: 0.85rem;
-    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     color: #a49386;
+    flex-shrink: 0;
+}
+
+.settings-arrow svg {
+    display: block;
+    stroke: currentColor;
 }
 
 .settings-bar-primary {
@@ -1305,12 +1337,16 @@ body {
     margin-top: 4px;
 }
 
+.settings-bar-primary .settings-bar-icon {
+    color: #ffffff !important;
+}
+
 .settings-bar-primary .settings-bar-label {
     color: #ffffff !important;
 }
 
-.settings-bar-primary .settings-arrow {
-    color: #ffffff !important;
+.settings-bar-primary .settings-arrow svg {
+    stroke: #ffffff !important;
 }
 
 /* 📖 独立配方书弹窗 (Recipe Book Modal) 样式 */

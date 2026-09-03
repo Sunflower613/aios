@@ -147,6 +147,7 @@ class BartenderApp {
         // ⚙️ 设置与菜单弹窗 DOM (长条按钮排版)
         this.dom.settingsModal = document.getElementById("settingsModal");
         this.dom.settingsModalTitleText = document.getElementById("settingsModalTitleText");
+        this.dom.settingsModalTitleIcon = document.getElementById("settingsModalTitleIcon");
         this.dom.btnCloseSettingsModal = document.getElementById("btnCloseSettingsModal");
         this.dom.btnSettingToggleMode = document.getElementById("btnSettingToggleMode");
         this.dom.settingsModeBadge = document.getElementById("settingsModeBadge");
@@ -348,11 +349,23 @@ class BartenderApp {
             this.dom.btnSettingToggleBgm.addEventListener("click", () => {
                 const isPlaying = window.soundEngine.toggleBGM();
                 if (isPlaying) {
-                    this.dom.settingsBgmIcon.textContent = "🎵";
+                    this.dom.settingsBgmIcon.innerHTML = `
+                        <svg class="settings-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18V5l12-2v13"></path>
+                            <circle cx="6" cy="18" r="3"></circle>
+                            <circle cx="18" cy="16" r="3"></circle>
+                        </svg>
+                    `;
                     this.dom.settingsBgmBadge.textContent = "开启中";
                     this.dom.settingsBgmBadge.style.background = "#fee6cb";
                 } else {
-                    this.dom.settingsBgmIcon.textContent = "🔇";
+                    this.dom.settingsBgmIcon.innerHTML = `
+                        <svg class="settings-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <line x1="22" y1="9" x2="16" y2="15"></line>
+                            <line x1="16" y1="9" x2="22" y2="15"></line>
+                        </svg>
+                    `;
                     this.dom.settingsBgmBadge.textContent = "已静音";
                     this.dom.settingsBgmBadge.style.background = "#e2e8f0";
                 }
@@ -855,13 +868,26 @@ class BartenderApp {
     updateSettingsView() {
         if (!this.dom.settingsModeBadge) return;
         const isLevel = this.gameMode === "level";
-        this.dom.settingsModeBadge.textContent = isLevel ? "🚩 关卡挑战" : "🎨 自由工坊";
+        this.dom.settingsModeBadge.textContent = isLevel ? "关卡挑战" : "自由工坊";
         const levelCode = window.formatLevelCode ? window.formatLevelCode(this.currentLevel) : this.currentLevel;
         this.dom.settingsLevelValueText.textContent = isLevel ? `第 ${levelCode} 关` : "自由模式";
 
         if (this.dom.settingsModalTitleText) {
             const isC3Active = this.c3State && this.c3State.active;
-            this.dom.settingsModalTitleText.textContent = isC3Active ? "⏸️ 营业已暂停 · 吧台菜单" : "⚙️ 调饮吧台设置";
+            this.dom.settingsModalTitleText.textContent = isC3Active ? "营业已暂停 · 吧台菜单" : "调饮吧台设置";
+            if (this.dom.settingsModalTitleIcon) {
+                this.dom.settingsModalTitleIcon.innerHTML = isC3Active ? `
+                    <svg class="lucide-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="6" y="4" width="4" height="16" rx="1.5"></rect>
+                        <rect x="14" y="4" width="4" height="16" rx="1.5"></rect>
+                    </svg>
+                ` : `
+                    <svg class="lucide-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                `;
+            }
         }
     }
 

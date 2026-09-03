@@ -28,7 +28,7 @@ const DRINK_RECIPES = [
             colorBottom: "#288fce",
             hasBubbles: true
         },
-        inCupItems: ["heart_ice", "blue_bubbles"],
+        inCupItems: ["heart_ice"],
         foamLayer: "snow_wood",
         topper: "snowman",
         effect: "snow_sparkle",
