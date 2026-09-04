@@ -48,9 +48,38 @@ class ShareCardManager {
         let drinkName = isLevel ? targetRecipe.name : (drinkData.customName || "我的专属奇迹特调");
         const subtitle = isLevel ? targetRecipe.subtitle : "Signature Cozy Drink";
         const poem = isLevel ? targetRecipe.desc : "在微风与灯火之间，调制专属于此刻的治愈风味。";
-        const score = modeData.score || 100;
-        const stars = modeData.stars || 3;
-        const earnedCoins = modeData.earnedCoins || 0;
+        const score = (typeof modeData.score === "number") ? modeData.score : 100;
+        const stars = (typeof modeData.stars === "number") ? modeData.stars : (isLevel ? 0 : 3);
+        const earnedCoins = (typeof modeData.earnedCoins === "number") ? modeData.earnedCoins : 0;
+
+        // 动态计算主行动按钮文案与标题 (支持多章节与未及格拦截，历史最佳通关战绩始终有效)
+        let nextBtnText = "调下一杯 🍹";
+        let nextBtnTitle = "清空杯子调下一杯";
+        const historyRecord = (isLevel && window.StorageManager) ? (window.StorageManager.getData().levelRecords[modeData.level] || null) : null;
+        const isHistoryPassed = Boolean(historyRecord && (historyRecord.score >= 60 || historyRecord.stars >= 1));
+        const isPass = !isLevel || score >= 60 || isHistoryPassed;
+        if (isLevel) {
+            const lvl = modeData.level;
+            if (!isPass) {
+                // 未达 60 分及格线且历史从未通关：主行动按钮为重新挑战
+                nextBtnText = "重新挑战 ↺";
+                nextBtnTitle = "得分未达及格线 (需≥60分通关)，清空杯子重新挑战本关";
+            } else if (lvl === 9) {
+                const isC2Unlocked = window.StorageManager ? window.StorageManager.isChapterUnlocked(2) : false;
+                nextBtnText = isC2Unlocked ? "进入第二章 ➔" : "解锁第2章 💎";
+                nextBtnTitle = isC2Unlocked ? "前往第二章第一关" : "消耗 300 钻石解锁开启第二章";
+            } else if (lvl === 18) {
+                const isC3Unlocked = window.StorageManager ? window.StorageManager.isChapterUnlocked(3) : false;
+                nextBtnText = isC3Unlocked ? "进入第三章 ➔" : "盘店开业第3章 🏮";
+                nextBtnTitle = isC3Unlocked ? "前往第三章连锁经营第一关" : "盘下小店开启第三章连锁经营";
+            } else if (lvl === 27 || (window.DRINK_RECIPES && lvl >= window.DRINK_RECIPES.length)) {
+                nextBtnText = "圆满通关 🏆";
+                nextBtnTitle = "已通关全部关卡！";
+            } else {
+                nextBtnText = "下一关 ➔";
+                nextBtnTitle = "进入下一关";
+            }
+        }
 
         this.onCloseCallback = callbacks.onClose || null;
 
@@ -118,7 +147,7 @@ class ShareCardManager {
                     <div class="polaroid-footer-meta">
                         <div class="polaroid-score-tag">
                             <span class="score-bold">${isLevel ? score + ' 分' : '治愈满分'}</span>
-                            <span class="score-level-text">${isLevel ? `· 第 ${window.formatLevelCode ? window.formatLevelCode(modeData.level) : modeData.level} 关 ${score === 100 ? '完美还原' : score >= 80 ? '极佳品味' : '通关合格'}` : '· 自由创造'}</span>
+                            <span class="score-level-text">${isLevel ? `· 第 ${window.formatLevelCode ? window.formatLevelCode(modeData.level) : modeData.level} 关 ${score === 100 ? '完美还原' : score >= 80 ? '极佳品味' : score >= 60 ? '通关合格' : '差强人意(未过关)'}` : '· 自由创造'}</span>
                         </div>
                         <div class="polaroid-footer-badges">
                             <div class="polaroid-seal">
@@ -164,9 +193,9 @@ class ShareCardManager {
                     </svg>
                 </button>
 
-                <!-- 4. 下一关 / 再调一杯 (主行动按钮，保留文本) -->
-                <button class="btn btn-primary btn-next-action" id="btnCardNextAction" title="进入下一关或调下一杯">
-                    <span>${isLevel ? (modeData.level < 9 ? '下一关 ➔' : '再调一杯 🍹') : '调下一杯 🍹'}</span>
+                <!-- 4. 下一关 / 跨章解锁 / 调下一杯 (主行动按钮) -->
+                <button class="btn btn-primary btn-next-action" id="btnCardNextAction" title="${nextBtnTitle}">
+                    <span>${nextBtnText}</span>
                 </button>
             </div>
         `;
@@ -289,10 +318,19 @@ class ShareCardManager {
             }
         });
 
-        // 4. 下一关 / 再调一杯
+        // 4. 下一关 / 再调一杯 / 未及格重新挑战
         document.getElementById("btnCardNextAction").addEventListener("click", () => {
             if (this.dom.modalOverlay) {
                 this.dom.modalOverlay.classList.remove("active");
+            }
+            if (isLevel && score < 60) {
+                // 得分低于 60 分未及格，强制执行重新挑战
+                if (callbacks.onRetry) {
+                    callbacks.onRetry();
+                } else if (callbacks.onNext) {
+                    callbacks.onNext();
+                }
+                return;
             }
             if (callbacks.onNext) {
                 callbacks.onNext();

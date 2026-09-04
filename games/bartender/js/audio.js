@@ -45,11 +45,29 @@ class SoundEngine {
         }
     }
 
-    ensureContext() {
+    // 针对 Safari / iOS WebKit 的专属音频通道解锁机制
+    unlockAudioContext() {
         this.init();
-        if (this.ctx && this.ctx.state === "suspended") {
-            this.ctx.resume();
+        if (this.ctx) {
+            if (this.ctx.state === "suspended") {
+                this.ctx.resume().catch(() => {});
+            }
+            // 播放一个样本的微弱静音缓冲区，彻底激活 Safari 硬件音频总线
+            if (!this._unlockedBuffer) {
+                try {
+                    const buffer = this.ctx.createBuffer(1, 1, 22050);
+                    const source = this.ctx.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(this.ctx.destination);
+                    source.start(0);
+                    this._unlockedBuffer = true;
+                } catch (e) {}
+            }
         }
+    }
+
+    ensureContext() {
+        this.unlockAudioContext();
     }
 
     // 预加载音效池
@@ -58,6 +76,8 @@ class SoundEngine {
             const audio = new Audio(url);
             audio.preload = "auto";
             audio.volume = 0.7;
+            audio.setAttribute("playsinline", "true");
+            audio.setAttribute("webkit-playsinline", "true");
             this.audioCache[key] = audio;
         });
     }
@@ -69,26 +89,35 @@ class SoundEngine {
             this.bgmAudio.loop = true;
             this.bgmAudio.volume = this.bgmVolume;
             this.bgmAudio.preload = "auto";
+            this.bgmAudio.setAttribute("playsinline", "true");
+            this.bgmAudio.setAttribute("webkit-playsinline", "true");
         } catch (e) {
             console.warn("BGM Audio 初始化失败", e);
         }
     }
 
-    // 监听用户首次点击交互以触发音频上下文和 BGM 播放
+    // 监听用户交互以唤醒 Safari 音频上下文并播放 BGM (支持持续尝试，直至真正播放成功)
     setupUserInteractionListener() {
-        const startAudio = () => {
-            if (!this.userInteracted) {
-                this.userInteracted = true;
-                this.ensureContext();
-                if (this.bgmEnabled) {
-                    this.playBGM();
-                }
+        const events = ["pointerdown", "touchstart", "touchend", "click", "keydown"];
+        const tryUnlockAndPlay = () => {
+            this.unlockAudioContext();
+            if (this.bgmEnabled) {
+                this.playBGM();
+            }
+            // 只要 BGM 已经成功处于非暂停状态，即可安全解绑事件监听器
+            if (this.bgmAudio && !this.bgmAudio.paused) {
+                events.forEach(ev => {
+                    document.removeEventListener(ev, tryUnlockAndPlay, true);
+                    window.removeEventListener(ev, tryUnlockAndPlay, true);
+                });
             }
         };
 
-        window.addEventListener("click", startAudio, { once: true });
-        window.addEventListener("touchstart", startAudio, { once: true });
-        window.addEventListener("keydown", startAudio, { once: true });
+        // 使用捕获阶段 (capture: true)，确保在任何元素阻止冒泡前优先截获手势
+        events.forEach(ev => {
+            document.addEventListener(ev, tryUnlockAndPlay, { capture: true, passive: true });
+            window.addEventListener(ev, tryUnlockAndPlay, { capture: true, passive: true });
+        });
     }
 
     // 播放指定音效 (优先真实音频，失败自动回退 Web Audio 合成)
@@ -216,12 +245,23 @@ class SoundEngine {
         osc.stop(now + 0.08);
     }
 
-    // 🎵 BGM 控制
+    // 🎵 BGM 控制 (针对 Safari / WebKit 增强)
     playBGM() {
-        if (!this.bgmEnabled || !this.bgmAudio) return;
-        this.bgmAudio.play().catch(e => {
-            console.log("等待用户交互以播放背景音乐", e);
-        });
+        if (!this.bgmEnabled) return;
+        this.unlockAudioContext();
+        if (!this.bgmAudio) {
+            this.initBGM();
+        }
+        if (this.bgmAudio) {
+            const playPromise = this.bgmAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    this.userInteracted = true;
+                }).catch(e => {
+                    console.log("Safari 等待手势交互或解除系统静音模式后播放背景音乐:", e.message);
+                });
+            }
+        }
     }
 
     pauseBGM() {

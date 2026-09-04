@@ -4,7 +4,27 @@
  * 统一采用 0 -70 240 290 的扩展 viewBox，彻底避免顶部顶饰被截断，并保证严格的渲染图层顺序
  */
 
+// 杯型物理容器几何参数 (定义各杯型盛液容器内腔实际底部、顶部及安全宽度，确保流体物理严格自适应)
+const GLASS_PHYSICS = {
+    classic: { bottom: 205, top: 30, width: 190, rimWidth: 196, bottomWidth: 190 },
+    hourglass: { bottom: 205, top: 25, width: 170, rimWidth: 192, bottomWidth: 182 },
+    martini: { bottom: 140, top: 25, width: 190, rimWidth: 196, bottomWidth: 20 },
+    sphere: { bottom: 182, top: 56, width: 140, rimWidth: 84, bottomWidth: 120 },
+    milk_carton: { bottom: 202, top: 28, width: 150, rimWidth: 150, bottomWidth: 150 },
+    tulip: { bottom: 205, top: 28, width: 160, rimWidth: 170, bottomWidth: 140 },
+    cup_medium: { bottom: 205, top: 26, width: 150, rimWidth: 150, bottomWidth: 130 },
+    cup_large: { bottom: 208, top: 20, width: 150, rimWidth: 156, bottomWidth: 136 },
+    cup_bucket: { bottom: 208, top: 32, width: 190, rimWidth: 190, bottomWidth: 160 },
+    holy_grail: { bottom: 155, top: 25, width: 170, rimWidth: 172, bottomWidth: 110 },
+    burgundy: { bottom: 140, top: 25, width: 180, rimWidth: 180, bottomWidth: 120 },
+    champagne: { bottom: 146, top: 22, width: 120, rimWidth: 64, bottomWidth: 58 },
+    flower_tea: { bottom: 158, top: 36, width: 176, rimWidth: 176, bottomWidth: 76 }
+};
+
 const SVG_ASSETS = {
+    // 导出物理参数供其他模块使用
+    GLASS_PHYSICS,
+
     // 渲染完整的单体特调 SVG (核心通用方法，保证吧台、卡片、Canvas 三端层级 100% 正确且不截断)
     renderCompleteDrink: (drinkData, options = {}) => {
         const width = options.width || 240;
@@ -12,6 +32,11 @@ const SVG_ASSETS = {
         const prefix = options.prefix || "stage_" + Math.random().toString(36).substring(2, 7);
         const glassType = drinkData.glassType || "classic";
         const clipId = `cupClip_${prefix}_${glassType}`;
+
+        const physics = GLASS_PHYSICS[glassType] || GLASS_PHYSICS.classic;
+        const containerBottom = physics.bottom;
+        const containerTop = physics.top;
+        const containerHeight = containerBottom - containerTop;
 
         // 解析液体层 (支持单色液体与量杯多层渐变分层液体，自动匹配目录库颜色)
         const rawLayers = (drinkData.liquids && drinkData.liquids.length > 0)
@@ -30,50 +55,63 @@ const SVG_ASSETS = {
         const totalRatio = Math.min(1.0, layers.reduce((acc, l) => acc + (l.ratio !== undefined ? l.ratio : 1.0), 0));
         const gradId = hasLiquid ? `liqGrad_${prefix}` : "";
 
+        // 精确计算液面 Y 坐标 (无液体时在杯底，有液体时从杯底向上填充)
+        let liquidY = containerBottom;
+        let heightFill = 0;
+        if (hasLiquid) {
+            heightFill = containerHeight * totalRatio;
+            liquidY = containerBottom - heightFill;
+        }
+
+        // 液体是否已满：当液体已满时取消奶盖的溢出裁剪，允许向上蓬松自然溢出；未满时使用杯内裁剪防穿壁
+        const isFull = hasLiquid && (totalRatio >= 0.95 || liquidY <= containerTop + 8);
         const isPouring = !!options.isPouring;
 
-        // 1. 液体 SVG (支持多层渐变分层、注水升起动画与动态液位高度)
+        // 1. 液体 SVG (支持多层渐变分层、注水升起动画与动态液位高度，按各杯型容器底精准生长)
         let liquidSvg = "";
         if (hasLiquid) {
-            const heightFill = 210 * 0.85 * totalRatio;
-            const yPos = 210 - heightFill;
             const pourClass = isPouring ? "liquid-pouring-anim" : "";
             const topLayer = layers[layers.length - 1];
             const topWaveColor = topLayer.colorTop || topLayer.colorBottom || "#84d8ff";
             liquidSvg = `
                 <g class="liquid-layer-group ${pourClass}">
-                    <rect class="liquid-rect" x="0" y="${yPos}" width="240" height="${heightFill + 15}" fill="url(#${gradId})" />
-                    <path class="liquid-wave" d="M 0 ${yPos + 2} Q 60 ${yPos - 3}, 120 ${yPos + 2} T 240 ${yPos + 2} L 240 ${yPos + 12} L 0 ${yPos + 12} Z" fill="${topWaveColor}" opacity="0.6"/>
-                    <path d="M 0 ${yPos + 2} Q 60 ${yPos - 3}, 120 ${yPos + 2} T 240 ${yPos + 2}" stroke="#222" stroke-width="2.5" fill="none" opacity="0.3"/>
+                    <rect class="liquid-rect" x="0" y="${liquidY}" width="240" height="${heightFill + 15}" fill="url(#${gradId})" />
+                    <path class="liquid-wave" d="M 0 ${liquidY + 2} Q 60 ${liquidY - 3}, 120 ${liquidY + 2} T 240 ${liquidY + 2} L 240 ${liquidY + 12} L 0 ${liquidY + 12} Z" fill="${topWaveColor}" opacity="0.6"/>
+                    <path d="M 0 ${liquidY + 2} Q 60 ${liquidY - 3}, 120 ${liquidY + 2} T 240 ${liquidY + 2}" stroke="#222" stroke-width="2.5" fill="none" opacity="0.3"/>
                 </g>
             `;
         }
 
-        // 2. 杯内小料 SVG (支持无液体沉底、有液体浮水与注水浮力升腾动画)
+        // 2. 杯内小料 SVG (冰块顶部齐平水面，沉底小料支持物理碰撞体积与自动层级向上堆叠)
         let itemsSvg = "";
         if (drinkData.inCupItems && drinkData.inCupItems.length > 0) {
             let innerItems = "";
+            let bottomStackIndex = 0;
+
             drinkData.inCupItems.forEach(itemId => {
                 const renderer = SVG_ASSETS.inCupItems[itemId];
-                if (renderer) {
-                    if (itemId === "heart_ice" || itemId === "classic_ice") {
-                        innerItems += renderer(hasLiquid, isPouring);
-                    } else {
-                        innerItems += renderer();
-                    }
+                if (!renderer) return;
+
+                if (itemId === "heart_ice" || itemId === "classic_ice") {
+                    innerItems += renderer(hasLiquid, isPouring, liquidY, containerBottom, containerTop);
+                } else if (itemId === "jellyfish" || itemId === "lemon_slice" || itemId === "orange_slice") {
+                    // 悬浮在杯身中部的小料，根据杯子高度自适应居中
+                    const midYDelta = (containerBottom + containerTop) / 2 - 160;
+                    innerItems += `<g transform="translate(0, ${midYDelta.toFixed(1)})">${renderer()}</g>`;
+                } else {
+                    // 沉底小料 (黑糖珍珠、芋圆、果冻、晶珠等)：基准底对齐杯底，添加多种时具有碰撞体积，自动逐层向上堆叠
+                    const baseDelta = containerBottom - 205;
+                    // 每层堆叠高度 18px，并产生自然微错落左右偏移
+                    const stackHeight = 18;
+                    const stackOffsetY = -bottomStackIndex * stackHeight;
+                    const staggerX = (bottomStackIndex % 2 === 1) ? 5 : ((bottomStackIndex > 0) ? -5 : 0);
+                    const totalDeltaY = baseDelta + stackOffsetY;
+
+                    innerItems += `<g class="in-cup-stacked-item stack-level-${bottomStackIndex}" transform="translate(${staggerX}, ${totalDeltaY.toFixed(1)})">${renderer()}</g>`;
+                    bottomStackIndex++;
                 }
             });
-
-            if (glassType === "martini") {
-                // 马天尼倒三角杯肚向上平移 78px 并微调比例，完美落在倒三角杯肚黄金视觉区！
-                itemsSvg = `<g class="martini-items-adapted" transform="translate(0, -78) scale(0.88) translate(14, 15)">${innerItems}</g>`;
-            } else if (glassType === "holy_grail") {
-                itemsSvg = `<g class="grail-items-adapted" transform="translate(0, -25) scale(0.92) translate(10, 10)">${innerItems}</g>`;
-            } else if (glassType === "cup_bucket") {
-                itemsSvg = `<g class="bucket-items-adapted" transform="translate(0, 4)">${innerItems}</g>`;
-            } else {
-                itemsSvg = innerItems;
-            }
+            itemsSvg = innerItems;
         }
 
         // 3. 杯身外框、高光与手绘笑脸 (支持 7 款杯型，包含 10000💰 奇迹圣杯)
@@ -146,18 +184,33 @@ const SVG_ASSETS = {
                 break;
 
             case "sphere":
-                clipPathD = `M 70 18 L 60 65 A 72 72 0 1 0 180 65 L 170 18 Z`;
+                // 🔮 魔法水晶球杯 (几何数学级正圆水晶球体 R=70 + 84px宽阔大杯口 + 奢华复古雕花底座)
+                clipPathD = `M 78 56 A 70 70 0 1 0 162 56 A 42 8 0 0 0 78 56 Z`;
                 cupBodySvg = `
-                    <circle cx="120" cy="120" r="70" fill="url(#glassReflection_${prefix})" opacity="0.3" pointer-events="none"/>
+                    <!-- 水晶球体通透正圆反光与高光弧面 -->
+                    <circle cx="120" cy="112" r="68" fill="url(#glassReflection_${prefix})" opacity="0.32" pointer-events="none"/>
+                    <path d="M 74 80 A 56 56 0 0 1 114 66" stroke="#ffffff" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.6" pointer-events="none"/>
+                    <circle cx="68" cy="92" r="3.5" fill="#ffffff" opacity="0.7" pointer-events="none"/>
+                    
+                    <!-- 水晶球治愈微笑脸 (*^▽^*) -->
                     <g class="cup-smile-face" pointer-events="none">
-                        <circle cx="106" cy="115" r="3.2" fill="#1e1e1e" />
-                        <circle cx="134" cy="115" r="3.2" fill="#1e1e1e" />
-                        <path d="M 107 124 Q 120 133 133 124" stroke="#1e1e1e" stroke-width="3.5" stroke-linecap="round" fill="none" />
+                        <circle cx="106" cy="116" r="3.2" fill="#1e1e1e" />
+                        <circle cx="134" cy="116" r="3.2" fill="#1e1e1e" />
+                        <path d="M 108 125 Q 120 134 132 125" stroke="#1e1e1e" stroke-width="3.5" stroke-linecap="round" fill="none" />
+                        <circle cx="98" cy="120" r="3.8" fill="#f43f5e" opacity="0.5"/>
+                        <circle cx="142" cy="120" r="3.8" fill="#f43f5e" opacity="0.5"/>
                     </g>
-                    <!-- 水晶球轮廓 -->
-                    <path d="M 70 16 L 58 65 A 74 74 0 1 0 182 65 L 170 16" stroke="#222" stroke-width="5.5" stroke-linecap="round" fill="none"/>
-                    <!-- 底部小底座 -->
-                    <path d="M 90 204 Q 120 207 150 204" stroke="#222" stroke-width="4.5" fill="none"/>
+                    
+                    <!-- 水晶球绝对正圆外轮廓 (R=70 正圆弧，从 78,56 顺畅包裹到底座再回到 162,56) -->
+                    <path d="M 78 56 A 70 70 0 1 0 162 56" stroke="#222" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+                    <!-- 顶部宽阔圆润大杯唇开口 (84px通透大口，完美承托奶盖与吸管) -->
+                    <ellipse cx="120" cy="56" rx="42" ry="8" fill="none" stroke="#222" stroke-width="4"/>
+
+                    <!-- 精致雕花复古水晶球托座 (稳稳托起正圆水晶球) -->
+                    <path d="M 80 174 Q 120 188 160 174 L 168 203 Q 120 213 72 203 Z" fill="#583b74" stroke="#222" stroke-width="4.5"/>
+                    <ellipse cx="120" cy="204" rx="54" ry="7" fill="#754f9a" stroke="#222" stroke-width="3.8"/>
+                    <path d="M 84 185 Q 120 197 156 185" stroke="#d8b4fe" stroke-width="2.5" fill="none"/>
+                    <circle cx="120" cy="193" r="3.5" fill="#fde047" stroke="#222" stroke-width="1.8"/>
                 `;
                 break;
 
@@ -271,6 +324,79 @@ const SVG_ASSETS = {
                 `;
                 break;
 
+            case "burgundy":
+                // 🍷 勃艮第杯 (大肚子广口收腰红酒高脚杯，聚拢浓郁酒香)
+                clipPathD = `M 65 24 C 65 24, 25 65, 25 100 C 25 128, 80 140, 120 140 C 160 140, 215 128, 215 100 C 215 65, 175 24, 175 24 Z`;
+                cupBodySvg = `
+                    <rect x="30" y="26" width="180" height="110" fill="url(#glassReflection_${prefix})" opacity="0.32" pointer-events="none"/>
+                    <g class="cup-smile-face" pointer-events="none">
+                        <circle cx="107" cy="85" r="3.2" fill="#1e1e1e" />
+                        <circle cx="133" cy="85" r="3.2" fill="#1e1e1e" />
+                        <path d="M 109 93 Q 120 101 131 93" stroke="#1e1e1e" stroke-width="3.2" stroke-linecap="round" fill="none" />
+                    </g>
+                    <!-- 大肚杯身轮廓 -->
+                    <path d="M 64 22 C 64 22, 23 65, 23 100 C 23 130, 78 142, 120 142 C 162 142, 217 130, 217 100 C 217 65, 176 22, 176 22" stroke="#222" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+                    <!-- 优雅长细高脚与圆形底座 -->
+                    <line x1="120" y1="142" x2="120" y2="204" stroke="#222" stroke-width="5.5" stroke-linecap="round"/>
+                    <path d="M 65 210 Q 120 205 175 210" stroke="#222" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+                `;
+                break;
+
+            case "champagne":
+                // 🥂 香槟杯 (高挑优雅细长笛型高脚杯，气泡升腾如星)
+                clipPathD = `M 90 22 L 92 135 C 92 146, 148 146, 148 135 L 150 22 Z`;
+                cupBodySvg = `
+                    <rect x="92" y="24" width="56" height="118" fill="url(#glassReflection_${prefix})" opacity="0.3" pointer-events="none"/>
+                    <g class="cup-smile-face" pointer-events="none">
+                        <circle cx="112" cy="82" r="2.8" fill="#1e1e1e" />
+                        <circle cx="128" cy="82" r="2.8" fill="#1e1e1e" />
+                        <path d="M 114 89 Q 120 95 126 89" stroke="#1e1e1e" stroke-width="2.8" stroke-linecap="round" fill="none" />
+                    </g>
+                    <!-- 修长笛型杯身 -->
+                    <path d="M 88 20 L 90 135 C 90 148, 150 148, 150 135 L 152 20" stroke="#222" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+                    <!-- 高脚与底座 -->
+                    <line x1="120" y1="148" x2="120" y2="204" stroke="#222" stroke-width="5.5" stroke-linecap="round"/>
+                    <path d="M 75 210 Q 120 205 165 210" stroke="#222" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+                `;
+                break;
+
+            case "flower_tea":
+                // 🍵 欧式典雅花茶杯 (通透纯净半球圆润茶杯 + 杯身杯脚一体成型 + 欧式托碟与高挑耳柄)
+                clipPathD = `M 32 36 C 26 72, 42 136, 84 156 Q 120 162 156 156 C 198 136, 214 72, 208 36 Z`;
+                cupBodySvg = `
+                    <!-- 通透玻璃质感反光面 (圆润饱满半球碗形，无多余花纹，纯净通透) -->
+                    <path d="${clipPathD}" fill="url(#glassReflection_${prefix})" opacity="0.32" pointer-events="none"/>
+                    <path d="M 46 52 C 40 85, 54 135, 82 150" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" fill="none" opacity="0.55" pointer-events="none"/>
+                    
+                    <!-- 欧式高挑通透耳状玻璃把手 -->
+                    <path d="M 206 48 C 242 45, 246 95, 216 118 C 196 130, 172 136, 158 136" stroke="#222" stroke-width="6" stroke-linecap="round" fill="none"/>
+                    <path d="M 206 48 C 242 45, 246 95, 216 118 C 196 130, 172 136, 158 136" stroke="url(#glassReflection_${prefix})" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.75"/>
+
+                    <!-- 治愈微笑脸 -->
+                    <g class="cup-smile-face" pointer-events="none">
+                        <circle cx="106" cy="102" r="3.2" fill="#1e1e1e" />
+                        <circle cx="134" cy="102" r="3.2" fill="#1e1e1e" />
+                        <path d="M 108 111 Q 120 120 132 111" stroke="#1e1e1e" stroke-width="3.5" stroke-linecap="round" fill="none" />
+                        <circle cx="98" cy="106" r="3.5" fill="#f43f5e" opacity="0.5"/>
+                        <circle cx="142" cy="106" r="3.5" fill="#f43f5e" opacity="0.5"/>
+                    </g>
+
+                    <!-- 杯身与杯底的脚 (一体成型，杯底圆足自然承托，绝不分离悬浮) -->
+                    <path d="M 32 36 C 26 72, 42 136, 84 156 C 84 162, 85 166, 82 172 Q 120 176 158 172 C 155 166, 156 162, 156 156 C 198 136, 214 72, 208 36" stroke="#222" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    
+                    <!-- 杯口圆润杯沿 (平滑轻盈，与顶饰无缝贴合) -->
+                    <ellipse cx="120" cy="36" rx="88" ry="6" fill="none" stroke="#222" stroke-width="4.5"/>
+
+                    <!-- 欧式通透茶托碟 (Saucer，托盘中央凹槽稳稳贴合杯脚底部) -->
+                    <g class="cup-saucer-group">
+                        <path d="M 18 172 Q 120 165 222 172 L 214 186 Q 120 196 26 186 Z" fill="url(#glassReflection_${prefix})" opacity="0.3" stroke="#222" stroke-width="4.5"/>
+                        <path d="M 44 176 Q 120 170 196 176" stroke="#222" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.4"/>
+                        <!-- 托盘底圈稳稳坐落在吧台桌面 -->
+                        <path d="M 68 186 L 70 192 Q 120 196 170 192 L 172 186" stroke="#222" stroke-width="3.5" fill="none"/>
+                    </g>
+                `;
+                break;
+
             case "classic":
             default:
                 clipPathD = `M 22 18 L 22 195 A 15 15 0 0 0 37 210 L 203 210 A 15 15 0 0 0 218 195 L 218 18 Z`;
@@ -287,18 +413,83 @@ const SVG_ASSETS = {
                 break;
         }
 
-        // 4. 顶层奶盖/积雪/白云/沙顶 (Foam)
+        // 4. 顶层奶盖/积雪/白云/沙顶 (Foam) - 自适应缩放：未满时宽度最小为杯壁(严密贴壁防穿)，满杯溢出时最大为杯口*2
         let foamSvg = "";
         if (drinkData.foamLayer && drinkData.foamLayer !== "none") {
             const renderer = SVG_ASSETS.foams[drinkData.foamLayer];
-            if (renderer) foamSvg = renderer();
+            if (renderer) {
+                const targetFoamBottom = hasLiquid ? liquidY : containerBottom;
+                // 统一奶盖基准底为 y = 38 (落雨白云从云朵底开始算，雨丝自然垂入杯内液体)
+                const foamDeltaY = targetFoamBottom - 38;
+
+                // 各杯型开口与内腔安全宽度
+                const rimWidth = physics.rimWidth || physics.width || 190;
+                let foamScaleX = 1.0;
+
+                if (isFull) {
+                    // 满杯溢出时：最大为杯口*2 (小口杯翻倍溢出小巧可爱，宽口杯安全贴合最大224)
+                    const overflowWidth = Math.min(224, Math.max(rimWidth * 1.15, rimWidth * 2));
+                    foamScaleX = overflowWidth / 192;
+                } else {
+                    // 未满时：宽度最小为杯壁 (覆盖当前杯壁宽度，配合clipPath严密贴壁不悬空)
+                    const progress = containerHeight > 0 ? Math.max(0, Math.min(1, (containerBottom - liquidY) / containerHeight)) : 0;
+                    const bWidth = physics.bottomWidth || (physics.width * 0.7);
+                    const estimatedInnerWidth = bWidth + progress * (rimWidth - bWidth);
+                    // 保证未满时奶盖至少覆盖杯壁 (scale 至少贴合杯身宽度)
+                    const minWallWidth = Math.max(estimatedInnerWidth, rimWidth * 0.85);
+                    foamScaleX = Math.max(minWallWidth / 192, rimWidth < 100 ? 0.75 : 1.0);
+                }
+
+                // 围绕中心轴 x=120 进行水平自适应缩放，垂直平移贴合液面
+                const transX = 120 * (1 - foamScaleX);
+                foamSvg = `<g class="cup-foam-box" transform="translate(${transX.toFixed(2)}, ${foamDeltaY.toFixed(2)}) scale(${foamScaleX.toFixed(3)}, 1)">${renderer()}</g>`;
+            }
         }
 
-        // 5. 核心立体顶饰 (Topper) - 居于最上层
-        let topperSvg = "";
-        if (drinkData.topper && drinkData.topper !== "none") {
-            const renderer = SVG_ASSETS.toppers[drinkData.topper];
-            if (renderer) topperSvg = renderer();
+        // 5. 核心立体顶饰 (Toppers) - 支持多选与复合优雅错落排布
+        // 5. 核心立体顶饰 (Toppers) - 将吸管类与前排装饰严格分层
+        const topperList = Array.isArray(drinkData.toppers) && drinkData.toppers.length > 0
+            ? drinkData.toppers
+            : (drinkData.topper && drinkData.topper !== "none" ? [drinkData.topper] : []);
+
+        const strawIds = ["glass_straw", "heart_straw"];
+        const strawList = topperList.filter(t => strawIds.includes(t));
+        const frontTopperList = topperList.filter(t => !strawIds.includes(t));
+
+        // 5.1 吸管类图层 (深入杯内，层级位于杯子和其他装饰后面，按杯底容器安全自适应)
+        let strawSvg = "";
+        if (strawList.length > 0) {
+            const renderedStraws = strawList.map(tId => {
+                const renderer = SVG_ASSETS.toppers[tId];
+                return renderer ? renderer(containerBottom, containerTop) : "";
+            }).join("");
+            strawSvg = `<g class="cup-straw-box">${renderedStraws}</g>`;
+        }
+
+        // 5.2 前排装饰类图层 (严格定位在杯口以上，位于最顶层，自适应各杯型杯口)
+        let frontTopperSvg = "";
+        if (frontTopperList.length > 0) {
+            // 装饰基准杯口为 26。根据当前杯型真实杯口 containerTop 动态调整，并上提 6px 确保完全在杯口以上
+            const topperDeltaY = (containerTop - 26) - 6;
+
+            const offsets = [
+                { x: 0, r: 0 },
+                { x: -24, r: -8 },
+                { x: 24, r: 8 },
+                { x: -40, r: -14 },
+                { x: 40, r: 14 }
+            ];
+            const renderedToppers = frontTopperList.map((tId, idx) => {
+                const renderer = SVG_ASSETS.toppers[tId];
+                if (!renderer) return "";
+                const content = renderer(containerBottom, containerTop);
+                const off = offsets[idx % offsets.length];
+                if (frontTopperList.length === 1) {
+                    return `<g transform="translate(0, ${topperDeltaY.toFixed(1)})">${content}</g>`;
+                }
+                return `<g transform="translate(${off.x}, ${topperDeltaY.toFixed(1)}) rotate(${off.r} 120 ${containerTop})">${content}</g>`;
+            }).join("");
+            frontTopperSvg = `<g class="cup-front-toppers-box">${renderedToppers}</g>`;
         }
 
         return `
@@ -363,73 +554,103 @@ const SVG_ASSETS = {
                     </clipPath>
                 </defs>
 
-                <!-- 1. 剪裁区：液体与杯内小料 (最底层) -->
+                <!-- 0. 最底层：吸管 (层级在其他装饰和杯子后面) -->
+                ${strawSvg}
+
+                <!-- 1. 剪裁区：液体、杯内小料与未满时的奶盖 (液体未满时严格使用杯身剪裁，绝不穿透杯壁) -->
                 <g clip-path="url(#${clipId})" class="cup-clipped-content">
                     <g class="cup-liquid-box">${liquidSvg}</g>
                     <g class="cup-items-box">${itemsSvg}</g>
+                    ${!isFull ? foamSvg : ''}
                 </g>
 
-                <!-- 2. 杯身外框、厚度与笑脸 (中层) -->
+                <!-- 2. 杯身外框、厚度与笑脸 (中层，压在液体与吸管上方) -->
                 <g class="cup-body-box">${cupBodySvg}</g>
 
-                <!-- 3. 杯口奶盖/积雪/封层 (上层) -->
-                <g class="cup-foam-box">${foamSvg}</g>
+                <!-- 3. 满杯奶盖 (液体已满，取消溢出剪裁，允许向上蓬松自然溢出) -->
+                ${isFull ? foamSvg : ''}
 
-                <!-- 4. 核心立体顶饰 (最顶层) -->
-                <g class="cup-topper-box">${topperSvg}</g>
+                <!-- 4. 前排核心立体装饰 (最顶层，位于吸管、奶盖和杯子前方) -->
+                ${frontTopperSvg}
             </svg>
         `;
     },
 
     // 3. 杯内小料与沉浸物 (In-Cup Ingredients)
     inCupItems: {
-        // 🧊 普通方形冰块 (默认基础小料，支持无水沉底、有水浮起与注水浮力升腾动画)
-        classic_ice: (hasLiquid = true, isPouring = false) => {
-            const yOffset = hasLiquid ? 0 : 55;
+        // 🧊 普通方形冰块 (支持物理悬浮：无液体底部在杯底，有液体顶部与液面齐平)
+        classic_ice: (hasLiquid = true, isPouring = false, liquidY = 205, containerBottom = 205, containerTop = 25) => {
+            let yOffset = 0;
+            if (!hasLiquid) {
+                // 无液体时底部坐落在杯底 (三个冰块未平移最低处在 134)
+                yOffset = (containerBottom - 2) - 134;
+            } else {
+                // 有液体时顶部与液面齐平 (三个冰块未平移最高处在 89)
+                let targetTop = liquidY;
+                // 限制不能穿透杯底
+                targetTop = Math.min(targetTop, containerBottom - 45);
+                // 限制最高处在杯口安全范围内
+                targetTop = Math.max(targetTop, containerTop + 2);
+                yOffset = targetTop - 89;
+            }
             const animClass = isPouring ? "ice-floating-rise-anim" : (hasLiquid ? "ice-floating-gentle" : "ice-at-bottom");
             return `
-                <g class="in-cup-item classic-ice-item ${animClass}" transform="translate(0, ${yOffset})">
-                    <!-- 冰块 1: 左侧微倾方块 -->
-                    <g transform="translate(70, 118) rotate(-15)">
-                        <rect x="-14" y="-14" width="28" height="28" rx="5" fill="#cbeeff" opacity="0.88" stroke="#222" stroke-width="2.8"/>
-                        <path d="M -10 -10 L 10 -10 L 6 -4 L -10 -4 Z" fill="#ffffff" opacity="0.8"/>
-                        <circle cx="2" cy="2" r="2.2" fill="#ffffff" opacity="0.85"/>
-                    </g>
-                    <!-- 冰块 2: 中间主方块 -->
-                    <g transform="translate(125, 105) rotate(12)">
-                        <rect x="-16" y="-16" width="32" height="32" rx="6" fill="#bde7ff" opacity="0.88" stroke="#222" stroke-width="3"/>
-                        <path d="M -12 -12 L 12 -12 L 8 -5 L -12 -5 Z" fill="#ffffff" opacity="0.85"/>
-                        <line x1="-8" y1="6" x2="6" y2="6" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.75"/>
-                    </g>
-                    <!-- 冰块 3: 右后侧小方块 -->
-                    <g transform="translate(168, 122) rotate(-8)">
-                        <rect x="-12" y="-12" width="24" height="24" rx="4" fill="#d9f3ff" opacity="0.88" stroke="#222" stroke-width="2.5"/>
-                        <path d="M -8 -8 L 8 -8 L 5 -3 L -8 -3 Z" fill="#ffffff" opacity="0.8"/>
+                <g class="in-cup-item classic-ice-item" transform="translate(0, ${yOffset})">
+                    <g class="${animClass}">
+                        <!-- 冰块 1: 左侧微倾方块 -->
+                        <g transform="translate(70, 118) rotate(-15)">
+                            <rect x="-14" y="-14" width="28" height="28" rx="5" fill="#cbeeff" opacity="0.88" stroke="#222" stroke-width="2.8"/>
+                            <path d="M -10 -10 L 10 -10 L 6 -4 L -10 -4 Z" fill="#ffffff" opacity="0.8"/>
+                            <circle cx="2" cy="2" r="2.2" fill="#ffffff" opacity="0.85"/>
+                        </g>
+                        <!-- 冰块 2: 中间主方块 -->
+                        <g transform="translate(125, 105) rotate(12)">
+                            <rect x="-16" y="-16" width="32" height="32" rx="6" fill="#bde7ff" opacity="0.88" stroke="#222" stroke-width="3"/>
+                            <path d="M -12 -12 L 12 -12 L 8 -5 L -12 -5 Z" fill="#ffffff" opacity="0.85"/>
+                            <line x1="-8" y1="6" x2="6" y2="6" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.75"/>
+                        </g>
+                        <!-- 冰块 3: 右后侧小方块 -->
+                        <g transform="translate(168, 122) rotate(-8)">
+                            <rect x="-12" y="-12" width="24" height="24" rx="4" fill="#d9f3ff" opacity="0.88" stroke="#222" stroke-width="2.5"/>
+                            <path d="M -8 -8 L 8 -8 L 5 -3 L -8 -3 Z" fill="#ffffff" opacity="0.8"/>
+                        </g>
                     </g>
                 </g>
             `;
         },
-        // 💙 心形冰块 (冬之息，支持无水沉底、有水浮起与注水浮力升腾动画)
-        heart_ice: (hasLiquid = true, isPouring = false) => {
-            const yOffset = hasLiquid ? 0 : 55;
+        // 💙 心形冰块 (支持物理悬浮：无液体底部在杯底，有液体顶部与液面齐平)
+        heart_ice: (hasLiquid = true, isPouring = false, liquidY = 205, containerBottom = 205, containerTop = 25) => {
+            let yOffset = 0;
+            if (!hasLiquid) {
+                // 无液体时底部坐落在杯底 (心形冰块未平移最低处在 152)
+                yOffset = (containerBottom - 2) - 152;
+            } else {
+                // 有液体时顶部与液面齐平 (心形冰块未平移最高处在 92)
+                let targetTop = liquidY;
+                targetTop = Math.min(targetTop, containerBottom - 60);
+                targetTop = Math.max(targetTop, containerTop + 2);
+                yOffset = targetTop - 92;
+            }
             const animClass = isPouring ? "ice-floating-rise-anim" : (hasLiquid ? "ice-floating-gentle" : "ice-at-bottom");
             return `
-                <g class="in-cup-item heart-ice-item ${animClass}" transform="translate(0, ${yOffset})">
-                    <!-- 主心形冰块 (居中偏右，晶莹透亮带高光与边框) -->
-                    <g transform="translate(130, 118) rotate(-10)">
-                        <path d="M 0 -10 C -18 -26, -38 2, 0 34 C 38 2, 18 -26, 0 -10 Z" 
-                              fill="#b4ebff" opacity="0.92" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
-                        <path d="M -4 -6 C -14 -18, -26 2, 0 24 C 26 2, 14 -18, 4 -6 Z" 
-                              fill="#ffffff" opacity="0.75"/>
-                        <line x1="-12" y1="-3" x2="-6" y2="10" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round"/>
-                        <circle cx="8" cy="4" r="2.5" fill="#ffffff" opacity="0.85"/>
-                    </g>
-                    <!-- 伴生小透明心形冰块 (左侧呼应，增加层次) -->
-                    <g transform="translate(80, 128) rotate(18) scale(0.68)">
-                        <path d="M 0 -10 C -18 -26, -38 2, 0 34 C 38 2, 18 -26, 0 -10 Z" 
-                              fill="#d2f3ff" opacity="0.88" stroke="#222" stroke-width="3.5" stroke-linejoin="round"/>
-                        <path d="M -4 -6 C -14 -18, -26 2, 0 24 C 26 2, 14 -18, 4 -6 Z" 
-                              fill="#ffffff" opacity="0.8"/>
+                <g class="in-cup-item heart-ice-item" transform="translate(0, ${yOffset})">
+                    <g class="${animClass}">
+                        <!-- 主心形冰块 (居中偏右，晶莹透亮带高光与边框) -->
+                        <g transform="translate(130, 118) rotate(-10)">
+                            <path d="M 0 -10 C -18 -26, -38 2, 0 34 C 38 2, 18 -26, 0 -10 Z" 
+                                  fill="#b4ebff" opacity="0.92" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+                            <path d="M -4 -6 C -14 -18, -26 2, 0 24 C 26 2, 14 -18, 4 -6 Z" 
+                                  fill="#ffffff" opacity="0.75"/>
+                            <line x1="-12" y1="-3" x2="-6" y2="10" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round"/>
+                            <circle cx="8" cy="4" r="2.5" fill="#ffffff" opacity="0.85"/>
+                        </g>
+                        <!-- 伴生小透明心形冰块 (左侧呼应，增加层次) -->
+                        <g transform="translate(80, 128) rotate(18) scale(0.68)">
+                            <path d="M 0 -10 C -18 -26, -38 2, 0 34 C 38 2, 18 -26, 0 -10 Z" 
+                                  fill="#d2f3ff" opacity="0.88" stroke="#222" stroke-width="3.5" stroke-linejoin="round"/>
+                            <path d="M -4 -6 C -14 -18, -26 2, 0 24 C 26 2, 14 -18, 4 -6 Z" 
+                                  fill="#ffffff" opacity="0.8"/>
+                        </g>
                     </g>
                 </g>
             `;
@@ -657,10 +878,47 @@ const SVG_ASSETS = {
                 <circle cx="165" cy="185" r="8.5" fill="#f472b6" opacity="0.85" stroke="#222" stroke-width="2"/>
                 <circle cx="122" cy="173" r="7.5" fill="#fda4af" opacity="0.9" stroke="#222" stroke-width="1.8"/>
             </g>
+        `,
+        // 💖 爱心果冻 (晶莹剔透粉嫩Q弹的手作心形果冻块，错落沉底，带果冻切角高光)
+        heart_jelly: () => `
+            <g class="in-cup-item heart-jelly-group">
+                <!-- 果冻块 1: 左侧大爱心果冻 -->
+                <g transform="translate(68, 186) rotate(-12) scale(0.68)">
+                    <path d="M 0 -8 C -14 -22, -28 0, 0 24 C 28 0, 14 -22, 0 -8 Z" 
+                          fill="#f472b6" opacity="0.88" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+                    <path d="M -6 -12 C -12 -16, -18 -4, -6 10" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.9"/>
+                    <circle cx="4" cy="-4" r="2" fill="#ffffff" opacity="0.85"/>
+                </g>
+                <!-- 果冻块 2: 中左爱心果冻 -->
+                <g transform="translate(98, 188) rotate(15) scale(0.62)">
+                    <path d="M 0 -8 C -14 -22, -28 0, 0 24 C 28 0, 14 -22, 0 -8 Z" 
+                          fill="#fb7185" opacity="0.9" stroke="#222" stroke-width="3.2" stroke-linejoin="round"/>
+                    <path d="M -5 -10 C -10 -14, -15 -2, -5 8" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.85"/>
+                </g>
+                <!-- 果冻块 3: 中右主爱心果冻 (最大最亮) -->
+                <g transform="translate(132, 185) rotate(-6) scale(0.74)">
+                    <path d="M 0 -8 C -14 -22, -28 0, 0 24 C 28 0, 14 -22, 0 -8 Z" 
+                          fill="#f472b6" opacity="0.92" stroke="#222" stroke-width="2.8" stroke-linejoin="round"/>
+                    <path d="M -8 -12 C -16 -16, -20 -4, -8 12" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" fill="none" opacity="0.92"/>
+                    <circle cx="6" cy="-6" r="2.2" fill="#ffffff" opacity="0.9"/>
+                </g>
+                <!-- 果冻块 4: 右侧爱心果冻 -->
+                <g transform="translate(162, 188) rotate(18) scale(0.65)">
+                    <path d="M 0 -8 C -14 -22, -28 0, 0 24 C 28 0, 14 -22, 0 -8 Z" 
+                          fill="#fda4af" opacity="0.9" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+                    <path d="M -6 -10 C -12 -14, -16 -2, -6 8" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" fill="none" opacity="0.85"/>
+                </g>
+                <!-- 果冻块 5: 后上方半露小爱心果冻 -->
+                <g transform="translate(114, 175) rotate(-18) scale(0.58)">
+                    <path d="M 0 -8 C -14 -22, -28 0, 0 24 C 28 0, 14 -22, 0 -8 Z" 
+                          fill="#fbcfe8" opacity="0.92" stroke="#222" stroke-width="3.2" stroke-linejoin="round"/>
+                    <path d="M -5 -9 C -9 -12, -12 -2, -5 6" stroke="#ffffff" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.9"/>
+                </g>
+            </g>
         `
     },
 
-    // 4. 顶层封层与奶盖 (Foams & Top Layers)
+    // 4. 顶层封层与奶盖 (Foams & Top Layers) - 左右边缘全圆润曲线，无生硬直线
     foams: {
         none: () => ``,
         // 浮木积雪 (冬之息)
@@ -672,83 +930,95 @@ const SVG_ASSETS = {
                     <ellipse cx="204" cy="35" rx="8" ry="11" fill="#425567" stroke="#222" stroke-width="3"/>
                     <path d="M 60 30 Q 110 32 170 30" stroke="#3b4d5e" stroke-width="2.5" fill="none"/>
                 </g>
-                <!-- 覆盖在木桩上的波浪纯白积雪 -->
-                <path d="M 22 28 
-                         C 35 15, 60 12, 80 18 
-                         C 105 10, 140 10, 165 16 
-                         C 185 12, 210 18, 220 28 
-                         L 218 36 
-                         C 195 38, 170 34, 140 38 
-                         C 100 34, 70 38, 24 36 Z" 
+                <!-- 覆盖在木桩上的波浪纯白积雪 (左右圆润垂坠雪球圆弧收尾，无直线) -->
+                <path d="M 24 26 
+                         C 40 14, 65 12, 85 18 
+                         C 105 10, 135 10, 155 16 
+                         C 180 12, 205 18, 216 26 
+                         C 226 31, 224 40, 214 42 
+                         C 190 44, 165 38, 135 42 
+                         C 95 38, 65 44, 26 42 
+                         C 16 40, 14 31, 24 26 Z" 
                       fill="#ffffff" stroke="#222" stroke-width="4.2" stroke-linejoin="round"/>
             </g>
         `,
         // 金色沙顶底盘 (指间沙)
         sand_plate: () => `
             <g class="foam-layer-group sand-plate-group">
-                <path d="M 24 24 
-                         C 60 18, 180 18, 216 24 
-                         L 212 38 
-                         C 170 44, 70 44, 28 38 Z" 
-                      fill="#f3cd93" stroke="#222" stroke-width="4.5"/>
+                <!-- 左右圆润饱满沙丘弧线收边，无直线 -->
+                <path d="M 26 26 
+                         C 60 18, 180 18, 214 26 
+                         C 224 30, 224 40, 214 44 
+                         C 170 50, 70 50, 26 44 
+                         C 16 40, 16 30, 26 26 Z" 
+                      fill="#f3cd93" stroke="#222" stroke-width="4.5" stroke-linejoin="round"/>
+                <path d="M 45 35 Q 120 42 195 35" stroke="#e0b370" stroke-width="2.5" fill="none"/>
             </g>
         `,
         // 南瓜奶油底 (灰姑娘)
         pumpkin_cream: () => `
             <g class="foam-layer-group pumpkin-cream-group">
-                <path d="M 22 26 
-                         Q 50 18 80 25 
-                         Q 120 16 160 25 
-                         Q 195 18 218 26 
-                         L 218 38 
-                         Q 120 44 22 38 Z" 
-                      fill="#fed458" stroke="#222" stroke-width="4"/>
+                <!-- 左右圆润南瓜奶油泡泡收边，无直线 -->
+                <path d="M 26 26 
+                         Q 60 18 100 24 
+                         Q 140 18 180 24 
+                         Q 202 20 214 26 
+                         C 225 31, 225 39, 214 44 
+                         Q 120 50 26 44 
+                         C 15 39, 15 31, 26 26 Z" 
+                      fill="#fed458" stroke="#222" stroke-width="4.2" stroke-linejoin="round"/>
             </g>
         `,
-        // 落雨白云 (耳边雨)
+        // 落雨白云 (耳边雨) - 雨丝不算作底部，从云朵底部(y=38)坐落算起，雨丝垂落进饮料
         rain_cloud: () => `
             <g class="foam-layer-group rain-cloud-group">
-                <g class="fluffy-cloud" transform="translate(0, -25)">
-                    <path d="M 40 35 
-                             C 25 35, 20 18, 38 10 
-                             C 35 -10, 65 -15, 80 -2 
-                             C 95 -25, 145 -25, 160 -2 
-                             C 180 -12, 210 -5, 205 15 
-                             C 225 22, 215 42, 195 42 
-                             L 45 42 Z" 
+                <!-- 云朵本身：底边在 y=38 与液面严丝合缝对齐，左右圆润气泡无直线 -->
+                <g class="fluffy-cloud">
+                    <path d="M 42 38 
+                             C 22 38, 20 18, 42 12 
+                             C 38 -8, 68 -15, 84 -2 
+                             C 100 -25, 140 -25, 156 -2 
+                             C 172 -14, 202 -6, 198 14 
+                             C 220 20, 218 38, 196 38 
+                             Q 120 40 42 38 Z" 
                           fill="#ffffff" stroke="#222" stroke-width="4.8" stroke-linejoin="round"/>
-                    <path d="M 75 8 Q 85 -2 100 5" stroke="#222" stroke-width="2.5" fill="none" opacity="0.3"/>
-                    <path d="M 140 5 Q 155 -5 170 5" stroke="#222" stroke-width="2.5" fill="none" opacity="0.3"/>
+                    <path d="M 75 12 Q 85 2 100 9" stroke="#222" stroke-width="2.5" fill="none" opacity="0.3"/>
+                    <path d="M 140 9 Q 155 -1 170 9" stroke="#222" stroke-width="2.5" fill="none" opacity="0.3"/>
                 </g>
+                <!-- 彩色雨滴装饰条：从云朵底部(y=38)自然垂落深入饮料内部，不抬高云朵 -->
                 <g class="cloud-rain-drops">
-                    <line x1="60" y1="20" x2="60" y2="40" stroke="#ff7e94" stroke-width="2.5" stroke-linecap="round"/>
-                    <line x1="100" y1="22" x2="100" y2="48" stroke="#b0dc56" stroke-width="2.5" stroke-linecap="round"/>
-                    <line x1="140" y1="18" x2="140" y2="42" stroke="#f69fe3" stroke-width="2.5" stroke-linecap="round"/>
-                    <line x1="180" y1="22" x2="180" y2="45" stroke="#fed43f" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="68" y1="36" x2="68" y2="58" stroke="#ff7e94" stroke-width="2.6" stroke-linecap="round"/>
+                    <line x1="102" y1="38" x2="102" y2="68" stroke="#b0dc56" stroke-width="2.6" stroke-linecap="round"/>
+                    <line x1="138" y1="36" x2="138" y2="62" stroke="#f69fe3" stroke-width="2.6" stroke-linecap="round"/>
+                    <line x1="172" y1="38" x2="172" y2="66" stroke="#fed43f" stroke-width="2.6" stroke-linecap="round"/>
                 </g>
             </g>
         `,
         // 夜幕星云 (云里星)
         night_cloud: () => `
             <g class="foam-layer-group night-cloud-group">
-                <path d="M 22 28 
-                         C 35 12, 70 8, 90 20 
+                <!-- 左右圆润星云气泡，无直线 -->
+                <path d="M 24 28 
+                         C 40 12, 70 8, 92 20 
                          C 115 5, 155 5, 175 18 
-                         C 195 10, 215 18, 220 28 
-                         L 218 42 
-                         C 170 48, 70 48, 22 42 Z" 
+                         C 195 10, 210 18, 216 26 
+                         C 226 31, 226 41, 216 46 
+                         C 170 52, 70 52, 24 46 
+                         C 14 41, 14 31, 24 28 Z" 
                       fill="#20407a" stroke="#222" stroke-width="4.5" stroke-linejoin="round"/>
             </g>
         `,
         // 黑色玄武岩玫瑰膏 (双生)
         black_rose_cream: () => `
             <g class="foam-layer-group black-rose-cream-group">
-                <path d="M 20 28 
-                         C 35 15, 60 10, 80 20 
-                         C 95 8, 130 8, 145 18 
-                         C 165 8, 200 12, 220 28 
-                         L 218 42 
-                         C 160 48, 80 48, 20 42 Z" 
+                <!-- 左右圆润花膏弧线，无直线 -->
+                <path d="M 24 28 
+                         C 40 15, 65 10, 85 20 
+                         C 100 8, 130 8, 148 18 
+                         C 168 8, 200 12, 216 26 
+                         C 226 31, 226 41, 216 46 
+                         C 160 52, 80 52, 24 46 
+                         C 14 41, 14 31, 24 28 Z" 
                       fill="#262628" stroke="#222" stroke-width="4.5" stroke-linejoin="round"/>
                 <path d="M 50 22 C 70 12, 90 28, 80 34" stroke="#48484e" stroke-width="3" fill="none"/>
                 <path d="M 110 18 C 130 8, 150 24, 140 32" stroke="#48484e" stroke-width="3" fill="none"/>
@@ -758,28 +1028,32 @@ const SVG_ASSETS = {
         // 浮冰奶盖 (海之梦)
         ocean_ice_cap: () => `
             <g class="foam-layer-group ocean-ice-cap-group">
-                <path d="M 20 26 
-                         C 40 12, 80 10, 110 20 
-                         C 140 10, 185 10, 220 26 
-                         L 218 42 
-                         C 170 46, 70 46, 20 42 Z" 
+                <!-- 左右圆润浮冰圆弧，无直线 -->
+                <path d="M 24 26 
+                         C 45 12, 85 10, 115 20 
+                         C 145 10, 185 10, 216 24 
+                         C 226 29, 226 39, 216 44 
+                         C 170 50, 70 50, 24 44 
+                         C 14 39, 14 29, 24 26 Z" 
                       fill="#ffffff" stroke="#222" stroke-width="4.5" stroke-linejoin="round"/>
             </g>
         `,
-        // 深褐花泥 (幸运盆栽)
+        // 巧克力花泥 (幸运盆栽)
         soil_top: () => `
             <g class="foam-layer-group soil-top-group">
-                <path d="M 22 26 
-                         Q 60 20 120 20 
-                         Q 180 20 218 26 
-                         L 218 42 
-                         Q 120 48 22 42 Z" 
-                      fill="#693c2a" stroke="#222" stroke-width="4.5"/>
+                <!-- 左右圆润泥土小丘弧线，无直线 -->
+                <path d="M 24 26 
+                         Q 65 18 120 18 
+                         Q 175 18 216 24 
+                         C 226 29, 226 39, 216 44 
+                         Q 120 52 24 44 
+                         C 14 39, 14 29, 24 26 Z" 
+                      fill="#693c2a" stroke="#222" stroke-width="4.5" stroke-linejoin="round"/>
             </g>
         `,
-        // 🍬 梦幻棉花糖顶 (新增高级封层)
+        // 🍬 梦幻棉花糖顶 (高级封层)
         cotton_candy: () => `
-            <g class="foam-layer-group cotton-candy-group" transform="translate(0, -10)">
+            <g class="foam-layer-group cotton-candy-group" transform="translate(0, -6)">
                 <ellipse cx="65" cy="25" rx="35" ry="22" fill="#fbcfe8" stroke="#222" stroke-width="4"/>
                 <ellipse cx="120" cy="18" rx="42" ry="24" fill="#ddd6fe" stroke="#222" stroke-width="4.2"/>
                 <ellipse cx="175" cy="25" rx="35" ry="22" fill="#bae6fd" stroke="#222" stroke-width="4"/>
@@ -790,21 +1064,30 @@ const SVG_ASSETS = {
         // 🧀 芝士厚奶盖 (喜茶/茶百道/古茗)
         cheese_foam: () => `
             <g class="foam-layer-group cheese-foam-group">
-                <path d="M 22 28 
-                         C 40 18, 70 14, 100 20 
-                         C 130 14, 170 14, 218 28 
-                         L 218 42 
-                         C 180 50, 140 44, 100 48 
-                         C 60 44, 40 50, 22 42 Z" 
+                <!-- 左右两端完全采用饱满柔滑的奶油圆弧收边，无任何生硬直线 -->
+                <path d="M 24 28 
+                         C 45 18, 75 14, 105 20 
+                         C 135 14, 175 14, 216 26 
+                         C 226 31, 226 41, 216 46 
+                         C 180 54, 140 48, 100 52 
+                         C 60 48, 40 54, 24 46 
+                         C 14 41, 14 31, 24 28 Z" 
                       fill="#fef9c3" stroke="#222" stroke-width="4.2" stroke-linejoin="round"/>
-                <path d="M 35 24 C 65 20, 100 22, 130 20" stroke="#fef08a" stroke-width="3" stroke-linecap="round" fill="none"/>
+                <path d="M 38 25 C 68 21, 100 23, 130 21" stroke="#fef08a" stroke-width="3" stroke-linecap="round" fill="none"/>
             </g>
         `,
         // 🍦 鲜奶油雪顶 (茶颜悦色幽兰拿铁 / 星巴克星冰乐)
         whipped_cream: () => `
-            <g class="foam-layer-group whipped-cream-group" transform="translate(0, -28)">
-                <!-- 底层绵密大奶油波浪 -->
-                <path d="M 25 45 C 30 25, 75 22, 90 38 C 110 20, 150 20, 170 38 C 185 24, 215 30, 215 45 Z" 
+            <g class="foam-layer-group whipped-cream-group">
+                <!-- 底层绵密大奶油波浪 (两端圆润翻卷，绝无直线平切，基准底稳坐液面) -->
+                <path d="M 26 42 
+                         C 18 36, 22 26, 36 28 
+                         C 50 20, 80 20, 94 34 
+                         C 112 18, 148 18, 168 34 
+                         C 182 22, 210 26, 216 36 
+                         C 222 42, 214 48, 204 46 
+                         C 170 48, 70 48, 36 46 
+                         C 26 46, 24 44, 26 42 Z" 
                       fill="#ffffff" stroke="#222" stroke-width="4.2" stroke-linejoin="round"/>
                 <!-- 中层向内螺旋堆叠 -->
                 <path d="M 48 35 C 55 12, 105 8, 120 25 C 135 10, 175 12, 185 35 Z" 
@@ -878,23 +1161,52 @@ const SVG_ASSETS = {
                 <polygon points="64,38 70,22 76,38" fill="#d9a85c" stroke="#222" stroke-width="2.8"/>
             </g>
         `,
-        // 盛放粉玫瑰 (王妃鬼藤)
+        // 🌹 盛放粉玫瑰 (精致法式手绘层叠重瓣粉玫瑰，层次丰富生动)
         pink_rose: () => `
-            <g class="topper-group pink-rose-topper" transform="translate(130, -35) rotate(14)">
-                <path d="M 0 35 Q -10 50 -15 65" stroke="#4c911b" stroke-width="5.5" stroke-linecap="round" fill="none"/>
-                <path d="M -8 32 C -18 30 -16 20 -5 26 Z" fill="#69b828" stroke="#222" stroke-width="2.5"/>
-                <path d="M -26 15 
-                         C -35 -10, -10 -28, 10 -25 
-                         C 35 -22, 40 5, 25 24 
-                         C 10 35, -15 32, -26 15 Z" 
-                      fill="#ff8da1" stroke="#222" stroke-width="4.5" stroke-linejoin="round"/>
-                <path d="M -15 5 
-                         C -18 -8, -2 -16, 8 -12 
-                         C 20 -8, 18 10, 6 15 
-                         C -6 20, -12 14, -6 6 
-                         C 0 0, 8 2, 4 8" 
-                      stroke="#e64c6d" stroke-width="3.8" stroke-linecap="round" fill="none"/>
-                <path d="M -16 -4 C -8 -16, 6 -14, 14 -6" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+            <g class="topper-group pink-rose-topper" transform="translate(130, -35) rotate(12)">
+                <!-- 1. 绿枝与双生嫩叶 -->
+                <path d="M 0 32 Q -8 48 -14 62" stroke="#2d6a12" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+                <!-- 左嫩叶 (带清晰叶脉与嫩绿高光) -->
+                <path d="M -4 34 C -22 36 -28 22 -14 18 C -6 20 -2 28 -4 34 Z" fill="#4ade80" stroke="#222" stroke-width="2.6" stroke-linejoin="round"/>
+                <path d="M -4 34 Q -12 28 -18 20" stroke="#166534" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+                <!-- 右嫩叶 -->
+                <path d="M 2 38 C 18 42 26 28 14 22 C 6 24 2 32 2 38 Z" fill="#34d399" stroke="#222" stroke-width="2.6" stroke-linejoin="round"/>
+                <path d="M 2 38 Q 10 32 18 24" stroke="#065f46" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+                <!-- 花托花萼 -->
+                <polygon points="-8,28 0,36 8,28 4,24 -4,24" fill="#22c55e" stroke="#222" stroke-width="2.4"/>
+
+                <!-- 2. 外层舒展大花瓣 (柔和外翻，层次分明，暗粉衬托) -->
+                <!-- 底层花瓣阴影底衬 -->
+                <path d="M -26 20 C -38 0 -22 -24 0 -24 C 22 -24 38 0 26 20 C 12 30 -12 30 -26 20 Z" 
+                      fill="#e11d48" stroke="#222" stroke-width="4.5" stroke-linejoin="round"/>
+                <!-- 左下外瓣 -->
+                <path d="M -24 16 C -34 2 -26 -16 -10 -16 C -4 -4 -6 16 -24 16 Z" 
+                      fill="#f472b6" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+                <!-- 右下外瓣 -->
+                <path d="M 24 16 C 34 2 26 -16 10 -16 C 4 -4 6 16 24 16 Z" 
+                      fill="#f472b6" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+                <!-- 顶后外瓣 -->
+                <path d="M -16 -14 C -12 -26 12 -26 16 -14 C 8 -8 -8 -8 -16 -14 Z" 
+                      fill="#fb7185" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+                <!-- 正面下托大花瓣 (优雅内凹卷曲弧度) -->
+                <path d="M -20 18 C -10 28 10 28 20 18 C 15 8 -15 8 -20 18 Z" 
+                      fill="#f472b6" stroke="#222" stroke-width="3.2" stroke-linejoin="round"/>
+                <path d="M -14 20 Q 0 24 14 20" stroke="#fdf2f8" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+
+                <!-- 3. 中层抱合旋转花瓣 -->
+                <path d="M -16 8 C -22 -6 -8 -16 0 -12 C 10 -16 22 -4 16 8 C 8 16 -8 16 -16 8 Z" 
+                      fill="#ec4899" stroke="#222" stroke-width="3.2" stroke-linejoin="round"/>
+                <path d="M -14 2 C -12 -10 2 -12 8 -6" stroke="#fbcfe8" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                <path d="M 12 4 C 10 -8 -2 -10 -6 -4" stroke="#fbcfe8" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+                <!-- 4. 核心初绽螺旋花芯 (优雅水滴卷心) -->
+                <path d="M -8 -2 C -10 -10 0 -14 6 -8 C 10 -2 4 6 -2 6 C -6 6 -8 2 -8 -2 Z" 
+                      fill="#be185d" stroke="#222" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M -4 -4 C -2 -8 4 -6 3 -2 C 2 2 -2 2 -4 -1" stroke="#fdf2f8" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+                <!-- 5. 花瓣边缘晨露小水滴 -->
+                <circle cx="16" cy="12" r="2.2" fill="#ffffff" opacity="0.85"/>
+                <circle cx="-16" cy="6" r="1.8" fill="#ffffff" opacity="0.85"/>
             </g>
         `,
         // 南瓜与繁花 (灰姑娘)
@@ -1052,6 +1364,182 @@ const SVG_ASSETS = {
                 <path d="M 16 -6 C 12 4, 24 6, 20 -2 Z" fill="#9f1239" stroke="#4c0519" stroke-width="1.8"/>
                 <circle cx="-10" cy="6" r="2.2" fill="#881337"/>
                 <circle cx="10" cy="4" r="2" fill="#881337"/>
+            </g>
+        `,
+        // 🍋 鲜切柠檬片 (挂在杯沿的一弯金黄鲜柠檬片，完美挺立在杯口以上)
+        lemon_wedge: () => `
+            <g class="topper-group lemon-wedge-topper" transform="translate(68, 16) rotate(-18)">
+                <!-- 金黄半月柠檬果皮与白筋 (向上拱起挺立在杯口以上) -->
+                <path d="M -28 0 A 28 28 0 0 0 28 0 Z" fill="#facc15" stroke="#222" stroke-width="3.2"/>
+                <path d="M -24 0 A 24 24 0 0 0 24 0 Z" fill="#ffffff" opacity="0.85"/>
+                <!-- 鲜亮金黄果肉扇形区 -->
+                <path d="M -21 0 A 21 21 0 0 0 21 0 Z" fill="#fde047"/>
+                <!-- 辐射状果肉筋脉与透光水珠 -->
+                <line x1="0" y1="0" x2="-12" y2="-15" stroke="#ffffff" stroke-width="1.6"/>
+                <line x1="0" y1="0" x2="0" y2="-19" stroke="#ffffff" stroke-width="1.6"/>
+                <line x1="0" y1="0" x2="12" y2="-15" stroke="#ffffff" stroke-width="1.6"/>
+                <circle cx="-5" cy="-9" r="1.6" fill="#ffffff" opacity="0.9"/>
+                <!-- 挂在杯沿的切口小暗线 (紧扣杯沿) -->
+                <line x1="0" y1="0" x2="0" y2="8" stroke="#ca8a04" stroke-width="2.5" stroke-linecap="round"/>
+            </g>
+        `,
+        // 🧋 晶莹高透玻璃直吸管 (深入杯底，自适应各杯型物理底部不穿透)
+        glass_straw: (containerBottom = 195, containerTop = 30) => {
+            const strawBottom = Math.max(containerTop + 40, Math.min(containerBottom - 10, 195));
+            const strawHeight = strawBottom - (-55);
+            return `
+            <g class="topper-group glass-straw-topper" transform="translate(142, 6) rotate(16)">
+                <!-- 晶莹高透玻璃直吸管 (深入杯内深处，绝不穿透杯底) -->
+                <rect x="-4.5" y="-55" width="9" height="${strawHeight}" rx="4.5" fill="#e0f2fe" opacity="0.75" stroke="#222" stroke-width="2.6"/>
+                <line x1="-2" y1="-50" x2="-2" y2="${strawHeight - 65}" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>
+                <ellipse cx="0" cy="-55" rx="4.5" ry="2" fill="#bae6fd" stroke="#222" stroke-width="1.8"/>
+            </g>
+            `;
+        },
+        // 💖 爱心吸管 (连续单根粉色吸管，左上到右下倾斜，高挺露出，光洁圆润无突刺)
+        heart_straw: (containerBottom = 195, containerTop = 30) => {
+            const strawBottom = Math.max(containerTop + 40, Math.min(containerBottom - 10, 195));
+            const endX = (96 + (strawBottom - 18) * 0.27).toFixed(1);
+            return `
+            <g class="topper-group heart-straw-topper">
+                <!-- 1. 深入杯底的下半截直管 (连续一根，从打结处斜插至右下(${endX}, ${strawBottom})，绝不穿透杯底) -->
+                <g class="straw-lower-tube">
+                    <line x1="94" y1="16" x2="${endX}" y2="${strawBottom}" stroke="#222" stroke-width="8" stroke-linecap="round"/>
+                    <line x1="94" y1="16" x2="${endX}" y2="${strawBottom}" stroke="#fb7185" stroke-width="5.2" stroke-linecap="round"/>
+                    <line x1="92.5" y1="16" x2="${endX - 1.5}" y2="${strawBottom - 1}" stroke="#fbcfe8" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+                    <ellipse cx="${endX}" cy="${strawBottom}" rx="2.8" ry="1.4" fill="#fda4af" stroke="#222" stroke-width="1.4"/>
+                </g>
+
+                <!-- 2. 向左上方高高挺立探出的饮用端吸管 (连续同根管，管口高挺露出在左上方) -->
+                <g class="straw-upper-tube">
+                    <line x1="94" y1="18" x2="66" y2="4" stroke="#222" stroke-width="8" stroke-linecap="round"/>
+                    <line x1="94" y1="18" x2="66" y2="4" stroke="#fb7185" stroke-width="5.2" stroke-linecap="round"/>
+                    <line x1="93" y1="16.5" x2="67" y2="3" stroke="#fbcfe8" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+                    <ellipse cx="66" cy="4" rx="3.2" ry="1.8" transform="rotate(-26 66 4)" fill="#fda4af" stroke="#222" stroke-width="1.6"/>
+                </g>
+
+                <!-- 3. 中间扭成的立体爱心环 (连续一根自然弯折打结，光洁饱满无任何突刺折痕) -->
+                <g class="straw-heart-loop">
+                    <!-- 爱心黑边底模 -->
+                    <path d="M 94 18 C 76 6, 68 -12, 68 -24 C 68 -38, 84 -40, 94 -26 C 104 -40, 120 -38, 120 -24 C 120 -12, 112 6, 94 18 Z" 
+                          fill="none" stroke="#222" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- 爱心粉色管身 -->
+                    <path d="M 94 18 C 76 6, 68 -12, 68 -24 C 68 -38, 84 -40, 94 -26 C 104 -40, 120 -38, 120 -24 C 120 -12, 112 6, 94 18 Z" 
+                          fill="none" stroke="#fb7185" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- 爱心通透内侧粉白高光线 -->
+                    <path d="M 94 18 C 76 6, 68 -12, 68 -24 C 68 -38, 84 -40, 94 -26 C 104 -40, 120 -38, 120 -24 C 120 -12, 112 6, 94 18 Z" 
+                          fill="none" stroke="#fbcfe8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+
+                    <!-- 4. 晶莹树脂/塑料质感柔和圆弧高光 (完全内嵌，绝不刺破管身) -->
+                    <!-- 左瓣拱顶亮光 -->
+                    <path d="M 74 -26 C 74 -35, 84 -37, 91 -28" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.85"/>
+                    <!-- 右瓣拱顶亮光 -->
+                    <path d="M 97 -28 C 104 -37, 114 -35, 114 -26" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.85"/>
+                    <!-- 左侧外沿通透光影 -->
+                    <path d="M 70 -16 C 70 -8, 76 2, 88 12" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.6"/>
+                </g>
+            </g>
+            `;
+        },
+        // 🌿 鲜薄荷叶 (带着晶莹露珠的清新双生薄荷叶)
+        fresh_mint: () => `
+            <g class="topper-group fresh-mint-topper" transform="translate(110, 16)">
+                <!-- 双生清新薄荷叶与晶莹露珠 -->
+                <path d="M 0 4 C -24 -4, -26 -26, 0 -32 C -5 -18, 0 -4, 0 4 Z" fill="#4ade80" stroke="#222" stroke-width="2.6"/>
+                <path d="M 0 4 C -14 -8, -15 -22, 0 -32" stroke="#16a34a" stroke-width="1.6" fill="none"/>
+                <path d="M 0 4 C 24 -4, 26 -26, 0 -32 C 5 -18, 0 -4, 0 4 Z" fill="#22c55e" stroke="#222" stroke-width="2.6"/>
+                <path d="M 0 4 C 14 -8, 15 -22, 0 -32" stroke="#15803d" stroke-width="1.6" fill="none"/>
+                <circle cx="-9" cy="-16" r="1.8" fill="#ffffff" opacity="0.85"/>
+                <circle cx="7" cy="-12" r="1.5" fill="#ffffff" opacity="0.85"/>
+            </g>
+        `,
+        // 🍒 晶红车厘子 (鲜红欲滴带翠绿果梗的双生小樱桃)
+        ruby_cherry: () => `
+            <g class="topper-group ruby-cherry-topper" transform="translate(118, 16)">
+                <!-- 鲜亮双生车厘子果梗与果实 -->
+                <path d="M 0 -35 C -5 -18, -16 -6, -12 6" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+                <path d="M 0 -35 C 7 -18, 15 -6, 11 8" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+                <!-- 车厘子 1 (左) -->
+                <circle cx="-13" cy="6" r="10" fill="#e11d48" stroke="#222" stroke-width="2.6"/>
+                <circle cx="-16" cy="3" r="2.5" fill="#ffffff" opacity="0.85"/>
+                <!-- 车厘子 2 (右) -->
+                <circle cx="11" cy="8" r="11" fill="#be123c" stroke="#222" stroke-width="2.6"/>
+                <circle cx="8" cy="4" r="2.8" fill="#ffffff" opacity="0.85"/>
+            </g>
+        `,
+        // 🧇 焦糖脆饼 (金黄酥脆的迷你手作华夫焦糖脆饼)
+        biscuit_waffle: () => `
+            <g class="topper-group biscuit-waffle-topper" transform="translate(140, 14) rotate(18)">
+                <rect x="-16" y="-16" width="32" height="32" rx="5" fill="#f59e0b" stroke="#222" stroke-width="2.8"/>
+                <rect x="-11" y="-11" width="9" height="9" rx="2" fill="#d97706" stroke="#92400e" stroke-width="1.2"/>
+                <rect x="2" y="-11" width="9" height="9" rx="2" fill="#d97706" stroke="#92400e" stroke-width="1.2"/>
+                <rect x="-11" y="2" width="9" height="9" rx="2" fill="#d97706" stroke="#92400e" stroke-width="1.2"/>
+                <rect x="2" y="2" width="9" height="9" rx="2" fill="#d97706" stroke="#92400e" stroke-width="1.2"/>
+                <path d="M -14 -14 L 14 14" stroke="#ffffff" stroke-width="1.6" opacity="0.4"/>
+            </g>
+        `,
+        // ⛱️ 小黄遮阳伞 (度假海滩经典鸡尾酒折叠迷你纸伞)
+        paper_umbrella: () => `
+            <g class="topper-group paper-umbrella-topper" transform="translate(86, 8) rotate(-14)">
+                <line x1="0" y1="18" x2="0" y2="-22" stroke="#a16207" stroke-width="2.8" stroke-linecap="round"/>
+                <path d="M -28 -12 Q 0 -38 28 -12 Q 16 -15 5 -12 Q -5 -15 -16 -12 Z" fill="#fde047" stroke="#222" stroke-width="2.6"/>
+                <line x1="0" y1="-30" x2="-16" y2="-12" stroke="#ea580c" stroke-width="1.5"/>
+                <line x1="0" y1="-30" x2="0" y2="-12" stroke="#ea580c" stroke-width="1.5"/>
+                <line x1="0" y1="-30" x2="16" y2="-12" stroke="#ea580c" stroke-width="1.5"/>
+                <circle cx="0" cy="-31" r="2.2" fill="#f97316" stroke="#222" stroke-width="1.4"/>
+            </g>
+        `,
+        // 🍡 炙烤棉花糖串 (微焦拉丝的竹签手串软糯棉花糖)
+        marshmallow_skewer: () => `
+            <g class="topper-group marshmallow-skewer-topper" transform="translate(134, 10) rotate(22)">
+                <line x1="0" y1="26" x2="0" y2="-42" stroke="#ca8a04" stroke-width="2.4" stroke-linecap="round"/>
+                <rect x="-8" y="-38" width="16" height="13" rx="3.5" fill="#fffbeb" stroke="#222" stroke-width="2"/>
+                <line x1="-4" y1="-32" x2="4" y2="-32" stroke="#b45309" stroke-width="1.8" stroke-linecap="round" opacity="0.8"/>
+                <rect x="-8" y="-21" width="16" height="13" rx="3.5" fill="#fef3c7" stroke="#222" stroke-width="2"/>
+                <line x1="-4" y1="-15" x2="4" y2="-15" stroke="#b45309" stroke-width="1.8" stroke-linecap="round" opacity="0.8"/>
+                <rect x="-8" y="-4" width="16" height="13" rx="3.5" fill="#fffbeb" stroke="#222" stroke-width="2"/>
+                <line x1="-4" y1="2" x2="4" y2="2" stroke="#b45309" stroke-width="1.8" stroke-linecap="round" opacity="0.8"/>
+            </g>
+        `,
+        // 🍭 彩虹波板糖 (梦幻旋转彩虹漩涡大棒棒糖，甜蜜高挺在杯口上方)
+        rainbow_lollipop: () => `
+            <g class="topper-group rainbow-lollipop-topper" transform="translate(108, -32) rotate(15)">
+                <!-- 1. 斜插白色细糖棍 (扎实圆润) -->
+                <rect x="-3" y="16" width="6" height="60" rx="3" fill="#f8fafc" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+                <line x1="-1" y1="20" x2="-1" y2="70" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+
+                <!-- 2. 俏皮亮黄色丝带蝴蝶结 (带飘带) -->
+                <g class="lollipop-bow" transform="translate(0, 22)">
+                    <path d="M -2 4 C -6 12, -14 18, -12 24 C -9 20, -4 14, 0 6 Z" fill="#fbbf24" stroke="#222" stroke-width="1.8" stroke-linejoin="round"/>
+                    <path d="M 2 4 C 6 12, 14 18, 12 24 C 9 20, 4 14, 0 6 Z" fill="#fbbf24" stroke="#222" stroke-width="1.8" stroke-linejoin="round"/>
+                    <ellipse cx="-8" cy="0" rx="7" ry="5" fill="#fde047" stroke="#222" stroke-width="2" transform="rotate(-15 -8 0)"/>
+                    <ellipse cx="8" cy="0" rx="7" ry="5" fill="#fde047" stroke="#222" stroke-width="2" transform="rotate(15 8 0)"/>
+                    <circle cx="0" cy="0" r="3.2" fill="#f59e0b" stroke="#222" stroke-width="1.8"/>
+                </g>
+
+                <!-- 3. 经典六彩旋转漩涡大波板糖圆盘 (R=26) -->
+                <g class="lollipop-candy-disk">
+                    <circle cx="0" cy="0" r="26" fill="#ffffff" stroke="#222" stroke-width="4.5"/>
+                    <!-- 炫彩螺旋花纹 (红、橙、黄、绿、青蓝、紫六色相间旋转) -->
+                    <path d="M 0 0 C -12 8, -24 -2, -26 0 A 26 26 0 0 1 -18 -18 C -14 -10, -6 -2, 0 0 Z" fill="#ef4444"/>
+                    <path d="M 0 0 C -6 -12, 2 -24, 0 -26 A 26 26 0 0 1 18 -18 C 10 -14, 2 -6, 0 0 Z" fill="#f97316"/>
+                    <path d="M 0 0 C 12 -6, 24 2, 26 0 A 26 26 0 0 1 18 18 C 14 10, 6 2, 0 0 Z" fill="#facc15"/>
+                    <path d="M 0 0 C 6 12, -2 24, 0 26 A 26 26 0 0 1 -18 18 C -10 14, -2 6, 0 0 Z" fill="#22c55e"/>
+                    <path d="M 0 0 C -10 10, -22 14, -25 7 A 26 26 0 0 1 -25 -7 C -16 -4, -6 2, 0 0 Z" fill="#06b6d4"/>
+                    <path d="M 0 0 C 10 -10, 22 -14, 25 -7 A 26 26 0 0 1 25 7 C 16 4, 6 -2, 0 0 Z" fill="#a855f7"/>
+
+                    <!-- 4. 旋转漩涡线条勾勒 -->
+                    <path d="M 0 0 C -12 8, -24 -2, -26 0" stroke="#222" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                    <path d="M 0 0 C -6 -12, 2 -24, 0 -26" stroke="#222" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                    <path d="M 0 0 C 12 -6, 24 2, 26 0" stroke="#222" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                    <path d="M 0 0 C 6 12, -2 24, 0 26" stroke="#222" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                    <circle cx="0" cy="0" r="26" fill="none" stroke="#222" stroke-width="4.2"/>
+
+                    <!-- 5. 晶莹玻璃糖衣高光弧 (营造晶亮反光) -->
+                    <path d="M -16 -18 A 22 22 0 0 1 18 -14" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.8"/>
+                    <circle cx="-19" cy="-7" r="2.2" fill="#ffffff" opacity="0.85"/>
+                    <circle cx="0" cy="0" r="3.5" fill="#ffffff" stroke="#222" stroke-width="1.8"/>
+                </g>
             </g>
         `
     }

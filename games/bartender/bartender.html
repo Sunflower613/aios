@@ -140,7 +140,7 @@
                     <button class="category-tab" data-step="liquid">2.液体</button>
                     <button class="category-tab" data-step="items">3.小料</button>
                     <button class="category-tab" data-step="foam">4.奶盖</button>
-                    <button class="category-tab" data-step="topper">5.顶饰</button>
+                    <button class="category-tab" data-step="topper">5.装饰</button>
                 </nav>
 
                 <!-- 🧪 量杯选择器 (仅在液体步骤显示，可选择 1/1、1/2、1/3、1/4 量杯调制分层) -->
@@ -159,8 +159,15 @@
 
         <!-- 底部常驻紧凑操作栏 -->
         <footer class="bottom-action-bar">
-            <button class="btn btn-secondary btn-compact" id="btnDump" title="清空重调">
-                <span>🧹</span> 清空
+            <button class="btn btn-secondary btn-compact" id="btnDump" title="清空杯中物料 (保持当前杯型不变)">
+                <span class="btn-dump-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px;">
+                        <path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"></path>
+                        <path d="m5 2 5 5"></path>
+                        <path d="M2 13h15"></path>
+                        <path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z"></path>
+                    </svg>
+                </span> 清空
             </button>
             <button class="btn btn-autobrew btn-compact" id="btnAutoBrew" title="满分通关后解锁自动调配">
                 <span id="autoBrewIcon">🔒</span> <span id="autoBrewText">自动</span>
@@ -247,7 +254,7 @@
                     </div>
                 </button>
 
-                <!-- 条状按钮 3：查阅配方表 (暂停时可安心翻看) -->
+                <!-- 条状按钮 3：配方大全 (暂停时可安心翻看) -->
                 <button class="settings-bar-btn" id="btnSettingOpenRecipes">
                     <div class="settings-bar-left">
                         <span class="settings-bar-icon">
@@ -256,10 +263,10 @@
                                 <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
                             </svg>
                         </span>
-                        <span class="settings-bar-label">查阅配方表</span>
+                        <span class="settings-bar-label">配方大全</span>
                     </div>
                     <div class="settings-bar-right">
-                        <span class="settings-bar-sub">暂停安心查阅</span>
+                        <span class="settings-bar-value" id="settingsRecipeCountText">18/54</span>
                         <span class="settings-arrow">
                             <svg class="settings-arrow-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="m9 18 6-6-6-6"></path>
@@ -278,7 +285,7 @@
                                 <circle cx="18" cy="16" r="3"></circle>
                             </svg>
                         </span>
-                        <span class="settings-bar-label">悠闲清吧 BGM</span>
+                        <span class="settings-bar-label">音乐音效</span>
                     </div>
                     <div class="settings-bar-right">
                         <span class="settings-badge" id="settingsBgmBadge">开启中</span>
@@ -293,23 +300,45 @@
                     </div>
                 </button>
 
-                <!-- 条状按钮 5：清空当前杯中原料 -->
+                <!-- 条状按钮 5：存档管理 (优化为 Lucide 标准 archive 档案柜图标) -->
+                <button class="settings-bar-btn" id="btnSettingManageSaves">
+                    <div class="settings-bar-left">
+                        <span class="settings-bar-icon">
+                            <svg class="settings-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="20" height="5" x="2" y="3" rx="1"></rect>
+                                <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"></path>
+                                <path d="M10 12h4"></path>
+                            </svg>
+                        </span>
+                        <span class="settings-bar-label">存档管理</span>
+                    </div>
+                    <div class="settings-bar-right">
+                        <span class="settings-badge" id="settingsSaveSlotBadge">存档 1</span>
+                        <span class="settings-arrow">
+                            <svg class="settings-arrow-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m9 18 6-6-6-6"></path>
+                            </svg>
+                        </span>
+                    </div>
+                </button>
+
+                <!-- 条状按钮 6：重置本关 (重新挑战本关) -->
                 <button class="settings-bar-btn" id="btnSettingResetCup">
                     <div class="settings-bar-left">
                         <span class="settings-bar-icon">
                             <svg class="settings-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="1 4 1 10 7 10"></polyline>
-                                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                <path d="M3 3v5h5"></path>
                             </svg>
                         </span>
-                        <span class="settings-bar-label">清空当前特调</span>
+                        <span class="settings-bar-label">重置本关</span>
                     </div>
                     <div class="settings-bar-right">
                         <span class="settings-bar-sub">重新开始</span>
                         <span class="settings-arrow">
                             <svg class="settings-arrow-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="1 4 1 10 7 10"></polyline>
-                                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                <path d="M3 3v5h5"></path>
                             </svg>
                         </span>
                     </div>
@@ -323,14 +352,7 @@
                                 <polygon points="6 3 20 12 6 21 6 3"></polygon>
                             </svg>
                         </span>
-                        <span class="settings-bar-label">继续调饮</span>
-                    </div>
-                    <div class="settings-bar-right">
-                        <span class="settings-arrow">
-                            <svg class="settings-arrow-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                        </span>
+                        <span class="settings-bar-label">继续游戏</span>
                     </div>
                 </button>
             </div>
@@ -341,6 +363,10 @@
     <div class="modal-overlay" id="recipeBookModal">
         <div class="modal-content-box recipe-book-modal-box">
             <button class="modal-close-btn" id="btnCloseRecipeBookModal">✕</button>
+            
+            <!-- 第三章多配方右侧仿真立体便签书签挂载容器 -->
+            <div class="book-side-bookmarks" id="bookSideBookmarks"></div>
+
             <div class="recipe-book-header">
                 <span class="recipe-book-title">📖 治愈特调手账</span>
             </div>
@@ -602,6 +628,32 @@
 
     <!-- 全局轻量金币飘字动画容器 (用于小料 -10💰、出杯收入、弃单罚款) -->
     <div class="floating-text-container" id="floatingTextContainer" pointer-events="none"></div>
+
+    <!-- 📂 存档档案室管理弹窗 -->
+    <div class="modal-overlay" id="saveManageModal">
+        <div class="modal-content-box save-modal-box">
+            <button class="modal-close-btn" id="btnCloseSaveManageModal" aria-label="关闭">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="modal-title-bar">
+                <span class="settings-title-icon-wrapper">
+                    <svg class="lucide-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="20" height="5" x="2" y="3" rx="1"></rect>
+                        <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"></path>
+                        <path d="M10 12h4"></path>
+                    </svg>
+                </span>
+                <span class="modal-title-text">档案室 · 存档管理</span>
+            </div>
+            <div class="save-modal-tip">💡 点击存档卡片即可直接无缝切换载入该档案</div>
+            <div class="save-slots-list" id="saveSlotsListContainer">
+                <!-- 动态渲染 3 个槽位卡片 -->
+            </div>
+        </div>
+    </div>
 
     <!-- 脚本加载 -->
     <script src="js/audio.js"></script>
