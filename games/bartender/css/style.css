@@ -492,25 +492,36 @@ body {
     z-index: 10;
 }
 
+/* ========================================================
+   🔘 统一手绘按钮体系规范 (Unified Button System)
+   ======================================================== */
 .btn {
-    border: 2.5px solid var(--counter-border);
+    border: 2px solid var(--counter-border);
     border-radius: 12px;
-    font-size: 0.82rem;
-    font-weight: 800;
-    padding: 7px 12px;
+    font-size: 0.84rem;
+    font-weight: 900;
+    font-family: inherit;
+    padding: 8px 14px;
     cursor: pointer;
-    box-shadow: var(--shadow-handdrawn);
+    box-shadow: 2px 2.5px 0px var(--counter-border);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 5px;
     white-space: nowrap;
-    transition: all 0.1s ease;
+    transition: all 0.12s ease;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 2px 3.5px 0px var(--counter-border);
 }
 
 .btn:active {
-    transform: translate(2px, 2px);
-    box-shadow: 0 0 0 transparent;
+    transform: translate(1.5px, 1.5px);
+    box-shadow: 0.5px 1px 0px var(--counter-border);
 }
 
 .btn-compact {
@@ -518,21 +529,45 @@ body {
     padding: 7px 4px;
 }
 
+/* 统一次要操作按钮 */
 .btn-secondary {
-    background: #fbf5ee;
+    background: #faeedd;
     color: #44372e;
+    border-color: var(--counter-border);
 }
 
+.btn-secondary:hover {
+    background: #f5debf;
+}
+
+/* 统一自动调配与功能操作按钮 */
 .btn-autobrew {
-    background: #fef0c7;
+    background: #fef08a;
     color: #78350f;
+    border-color: var(--counter-border);
+}
+
+.btn-autobrew:hover {
+    background: #fde047;
+}
+
+/* 统一主行动出杯与确认按钮 */
+.btn-primary,
+.btn-serve {
+    background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+    color: #ffffff;
+    border-color: var(--counter-border);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:hover,
+.btn-serve:hover {
+    background: linear-gradient(135deg, #f97316 0%, #c2410c 100%);
 }
 
 .btn-primary.btn-serve {
     flex: 2;
-    background: var(--primary-color);
-    color: #ffffff;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
 }
 
 /* 特效层 */
@@ -552,67 +587,100 @@ body {
     to { opacity: 0.6; transform: scale(1.15); }
 }
 
-/* 通用弹窗 (Modal) */
+/* ========================================================
+   🏛️ 统一弹窗体系规范 (Unified Modal System)
+   ======================================================== */
 .modal-overlay {
     position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.65);
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: rgba(35, 25, 18, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     display: none;
     justify-content: center;
     align-items: center;
-    z-index: 100;
-    padding: 12px;
+    z-index: 1000;
+    padding: 14px;
+    box-sizing: border-box;
 }
 
 .modal-overlay.active {
     display: flex;
-    animation: modalFadeIn 0.2s ease;
+    animation: modalFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes modalFadeIn {
-    from { opacity: 0; transform: scale(0.96); }
+    from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
 }
 
 .modal-content-box {
     width: 100%;
     max-width: 420px;
-    background: #fcf9f2;
-    border: 4px solid var(--counter-border);
+    background: #fdfaf5;
+    border: 3.5px solid var(--counter-border);
     border-radius: 20px;
-    padding: 16px;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 4px 6px 0px #2a221b;
+    padding: 18px 16px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), 3px 5px 0px var(--counter-border);
     position: relative;
-    max-height: 92vh;
+    max-height: 88vh;
+    max-height: 88dvh;
     overflow-y: auto;
+    box-sizing: border-box;
 }
 
 .modal-close-btn {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: #eedec8;
+    top: 12px;
+    right: 12px;
+    background: #faeedd;
     border: 2px solid var(--counter-border);
     border-radius: 50%;
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 900;
-    font-size: 0.85rem;
+    color: #44372e;
     cursor: pointer;
-    z-index: 10;
+    box-shadow: 1px 1.5px 0px var(--counter-border);
+    transition: all 0.12s ease;
+    z-index: 20;
+    padding: 0;
+}
+
+.modal-close-btn:hover {
+    background: #f5debf;
+    transform: translateY(-1px);
+    box-shadow: 1.5px 2px 0px var(--counter-border);
+}
+
+.modal-close-btn:active {
+    transform: translate(1px, 1px);
+    box-shadow: none;
 }
 
 .modal-title-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px dashed #ded0be;
 }
 
 .modal-title-text {
     font-size: 1.05rem;
     font-weight: 900;
     color: #2c221a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.5px;
 }
 
 /* 🌊 液体平滑注水与升起动画 */
@@ -683,18 +751,20 @@ body {
     background: linear-gradient(180deg, #f7f0e4 0%, #dfcca8 100%);
     border: 3px solid var(--counter-border);
     border-radius: 12px;
-    height: 260px;
+    height: 295px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
-    padding-top: 10px;
+    padding-top: 18px;
+    padding-bottom: 18px;
+    box-sizing: border-box;
 }
 
 .polaroid-drink-svg-box {
     width: 240px;
-    height: 260px;
+    height: 295px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1362,18 +1432,14 @@ body {
     overflow: visible;
     width: 92%;
     max-width: 440px;
-    background: #faf4ea;
-    border: 4px solid var(--counter-border);
-    border-radius: 20px;
     padding: 16px 14px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.35), 3px 5px 0px #2a221b;
 }
 
 /* 🏷️ 第三章多配方右侧仿真立体便签书签 (Bookmark Index Tabs) */
 .book-side-bookmarks {
     position: absolute;
     right: -26px;
-    top: 68px;
+    top: 110px;
     display: flex;
     flex-direction: column;
     gap: 7px;
@@ -1469,9 +1535,12 @@ body {
     background: #fff;
     border: 1.5px solid var(--counter-border);
     border-radius: 8px;
-    padding: 4px 10px;
-    font-size: 0.75rem;
-    font-weight: 900;
+    width: 34px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
     color: #2c221a;
     cursor: pointer;
     box-shadow: 1px 1.5px 0px rgba(0,0,0,0.25);
@@ -1757,31 +1826,27 @@ body {
 .notice-modal-box {
     width: 88%;
     max-width: 340px;
-    background: #fdfbf7;
-    border: 3.5px solid var(--counter-border);
-    border-radius: 20px;
     padding: 22px 18px 18px;
     text-align: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3), 3px 5px 0px #2a221b;
 }
 
 .notice-icon-bubble {
     width: 60px;
     height: 60px;
     background: #fff7ed;
-    border: 3px solid #fb923c;
+    border: 2.5px solid #fb923c;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
     margin: 0 auto 10px;
-    box-shadow: 0 3px 8px rgba(251, 146, 60, 0.3);
+    box-shadow: 0 3px 8px rgba(251, 146, 60, 0.25);
     animation: bounceIcon 2s infinite ease-in-out;
 }
 
 .notice-modal-title {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 900;
     color: #2c221a;
     margin-bottom: 8px;
@@ -1802,8 +1867,8 @@ body {
 
 .notice-confirm-btn {
     width: 100%;
-    padding: 9px;
-    font-size: 0.9rem;
+    padding: 10px 14px;
+    font-size: 0.92rem;
 }
 
 /* 底部自动调配按钮状态 (满分通关解锁) */
@@ -1842,9 +1907,7 @@ body {
 .shop-modal-box {
     width: 90%;
     max-width: 360px;
-    background: #fdfaf5;
     padding: 20px 18px 16px;
-    border-radius: 20px;
     text-align: center;
 }
 
@@ -2065,10 +2128,10 @@ body {
         font-size: 0.65rem;
     }
     .polaroid-image-frame {
-        height: 240px;
+        height: 275px;
     }
     .polaroid-drink-svg-box {
-        transform: scale(0.9);
+        transform: scale(0.92);
     }
 }
 
@@ -2211,11 +2274,7 @@ body {
 .achievement-modal-box {
     width: 92%;
     max-width: 440px;
-    background: #faf5ec;
-    border: 4px solid var(--counter-border);
-    border-radius: 20px;
     padding: 16px 14px 14px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.35), 3px 5px 0px #2a221b;
 }
 
 .achievement-summary-card {
@@ -2401,27 +2460,43 @@ body {
 }
 
 .ach-claim-btn {
-    background: var(--primary-color);
-    border: 2px solid #b45309;
-    border-radius: 8px;
+    background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+    border: 2px solid var(--counter-border);
+    border-radius: 10px;
     color: #ffffff;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     font-weight: 900;
-    padding: 4px 8px;
+    padding: 5px 10px;
     cursor: pointer;
-    box-shadow: 1px 2px 0px rgba(0,0,0,0.25);
-    transition: all 0.15s ease;
+    box-shadow: 1.5px 2px 0px var(--counter-border);
+    transition: all 0.12s ease;
     animation: gentlePulse 1.5s infinite ease-in-out;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .ach-claim-btn:hover {
-    background: #ea580c;
-    transform: scale(1.05);
+    background: linear-gradient(135deg, #f97316 0%, #c2410c 100%);
+    transform: translateY(-1px);
+    box-shadow: 2px 3px 0px var(--counter-border);
 }
 
 .ach-claim-btn:active {
-    transform: translateY(1px);
-    box-shadow: none;
+    transform: translate(1px, 1px);
+    box-shadow: 0.5px 0.5px 0px var(--counter-border);
+}
+
+/* 🎁 窄版纯 icon 领奖按钮：避免挤占左侧文本空间导致换行 */
+.ach-claim-btn.icon-only {
+    width: 36px;
+    height: 34px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    line-height: 1;
+    border-radius: 10px;
+    flex-shrink: 0;
 }
 
 .ach-uncompleted-badge {
@@ -2622,13 +2697,17 @@ body {
 }
 
 .chapter-unlock-btn {
-    background: #7c3aed !important;
-    border-color: #5b21b6 !important;
+    background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%) !important;
+    border-color: #9a3412 !important;
     color: #ffffff !important;
     padding: 10px 24px;
     font-size: 0.95rem;
-    box-shadow: 1.5px 3px 0px #4c1d95;
+    box-shadow: 1.5px 3px 0px #7c2d12;
     animation: gentlePulse 2s infinite ease-in-out;
+}
+
+.chapter-unlock-btn:hover {
+    filter: brightness(1.08);
 }
 
 .chapter-diamond-balance-tip {
@@ -2644,11 +2723,11 @@ body {
 /* 1. 吧台顶部经营控制台面板 */
 .c3-dashboard-section {
     width: 100%;
-    padding: 6px 12px;
+    padding: 4px 10px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     background: #fdfaf6;
     border-bottom: 2px solid #ecdac9;
     animation: fadeIn 0.3s ease-out;
@@ -2658,26 +2737,26 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .c3-shop-brand-tag {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     background: #fff7ed;
     border: 2px solid #ea580c;
-    border-radius: 20px;
-    padding: 3px 10px;
-    box-shadow: 1px 2px 0px rgba(234, 88, 12, 0.2);
+    border-radius: 16px;
+    padding: 2px 8px;
+    box-shadow: 1px 1.5px 0px rgba(234, 88, 12, 0.2);
 }
 
 .c3-shop-icon {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 
 .c3-shop-name {
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 900;
     color: #9a3412;
 }
@@ -2688,7 +2767,7 @@ body {
 }
 
 .c3-brand-sub {
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     font-weight: 800;
     color: #c2410c;
 }
@@ -2704,18 +2783,18 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 5px 8px;
+    padding: 3px 6px;
     background: #fdfaf6;
     border: 2px solid #a8a29e;
-    border-radius: 12px;
-    font-size: 0.72rem;
+    border-radius: 10px;
+    font-size: 0.68rem;
     font-weight: 900;
     color: #78716c;
     cursor: pointer;
     transition: all 0.15s ease;
-    box-shadow: 1.5px 2px 0px rgba(0, 0, 0, 0.15);
+    box-shadow: 1px 1.5px 0px rgba(0, 0, 0, 0.15);
     flex-shrink: 0;
-    min-width: 66px;
+    min-width: 58px;
 }
 
 .c3-close-shop-btn.disabled {
@@ -2800,30 +2879,30 @@ body {
 .c3-customer-card {
     background: #ffffff;
     border: 2px solid #3c2a21;
-    border-radius: 12px;
-    padding: 8px 10px;
-    box-shadow: 2px 2.5px 0px #3c2a21;
+    border-radius: 10px;
+    padding: 5px 8px;
+    box-shadow: 1.5px 2px 0px #3c2a21;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .c3-customer-info-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .c3-cust-avatar {
-    width: 38px;
-    height: 38px;
+    width: 32px;
+    height: 32px;
     background: #fef3c7;
     border: 2px solid #3c2a21;
-    border-radius: 10px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.3rem;
+    font-size: 1.15rem;
     flex-shrink: 0;
 }
 
@@ -3028,16 +3107,12 @@ body {
 
 /* 4. 店铺开业命名契约证书弹窗 */
 .shop-name-modal-box {
-    background: #fffbf0;
-    border: 3.5px solid #b45309;
-    border-radius: 18px;
+    max-width: 340px;
     padding: 20px 16px;
-    box-shadow: 4px 6px 0px #78350f;
     display: flex;
     flex-direction: column;
     gap: 12px;
     text-align: center;
-    max-width: 330px;
 }
 
 .shop-name-header {
@@ -3120,25 +3195,18 @@ body {
 }
 
 .shop-open-btn {
-    background: #ea580c !important;
-    border-color: #c2410c !important;
-    color: #ffffff !important;
     padding: 10px 16px;
     font-size: 0.95rem;
-    box-shadow: 2px 3px 0px #7c2d12;
 }
 
 /* 5. 公开配方快捷抽屉弹窗 */
 .quick-recipe-modal-box {
-    background: #fdfaf5;
-    border: 3px solid #3c2a21;
-    border-radius: 16px;
-    padding: 14px 12px;
     max-width: 350px;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding: 16px 14px;
 }
 
 .quick-recipe-tip {
@@ -3199,12 +3267,8 @@ body {
 
 /* 6. 第三章经营结算弹窗 */
 .c3-result-modal-box {
-    background: #ffffff;
-    border: 3.5px solid #3c2a21;
-    border-radius: 18px;
-    padding: 16px 14px;
-    box-shadow: 3px 5px 0px #3c2a21;
-    max-width: 340px;
+    max-width: 350px;
+    padding: 18px 16px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -3319,6 +3383,44 @@ body {
     font-size: 0.85rem;
 }
 
+.c3-res-actions-row .c3-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.c3-res-actions-row .c3-action-btn svg {
+    flex-shrink: 0;
+}
+
+/* 🌟 活力鲜明橙色按钮 (通关解锁、下一关卡、主行动推进，统一手绘立体风格) */
+.btn-orange,
+.btn-next-action,
+.c3-res-actions-row .btn-orange {
+    background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%) !important;
+    color: #ffffff !important;
+    border: 2px solid var(--counter-border) !important;
+    box-shadow: 2px 2.5px 0px var(--counter-border) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    font-weight: 900;
+}
+
+.btn-orange:hover,
+.btn-next-action:hover,
+.c3-res-actions-row .btn-orange:hover {
+    background: linear-gradient(135deg, #f97316 0%, #c2410c 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: 2px 3.5px 0px var(--counter-border) !important;
+}
+
+.btn-orange:active,
+.btn-next-action:active,
+.c3-res-actions-row .btn-orange:active {
+    transform: translate(1.5px, 1.5px) !important;
+    box-shadow: 0.5px 1px 0px var(--counter-border) !important;
+}
+
 /* 7. 全局轻量金币飘字动画 */
 .floating-text-container {
     position: fixed;
@@ -3373,10 +3475,6 @@ body {
     max-width: 440px;
     width: 92%;
     padding: 18px 16px 16px;
-    background: #fffbf5;
-    border: 3px solid #634f41;
-    border-radius: 18px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
 }
 
 .save-modal-tip {
@@ -3417,11 +3515,11 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
-/* 激活状态：加粗绿色边框 + 浅绿背景 */
+/* 激活状态：加粗活力橙边框 + 浅橙温润背景 */
 .save-slot-card.active {
-    border: 2.5px solid #16a34a !important;
-    background: #f0fdf4 !important;
-    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.15);
+    border: 2.5px solid #ea580c !important;
+    background: #fff7ed !important;
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.16);
 }
 
 .save-slot-card.empty {
@@ -3448,18 +3546,18 @@ body {
 }
 
 .save-slot-dot.active {
-    background: #22c55e;
-    border-color: #16a34a;
-    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
-    animation: pulseActiveDot 2s infinite ease-in-out;
+    background: #ea580c;
+    border-color: #c2410c;
+    box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.25);
+    animation: pulseActiveDotOrange 2s infinite ease-in-out;
 }
 
-@keyframes pulseActiveDot {
+@keyframes pulseActiveDotOrange {
     0%, 100% {
-        box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+        box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.3);
     }
     50% {
-        box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.15);
+        box-shadow: 0 0 0 5px rgba(234, 88, 12, 0.12);
     }
 }
 
@@ -3468,19 +3566,22 @@ body {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
+    overflow: hidden;
 }
 
 .save-slot-header {
     display: flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap;
 }
 
 .save-slot-title {
     font-size: 0.86rem;
     font-weight: 900;
     color: #1e293b;
+    white-space: nowrap;
 }
 
 .save-slot-badge {
@@ -3488,12 +3589,13 @@ body {
     font-weight: 800;
     padding: 1px 6px;
     border-radius: 6px;
+    white-space: nowrap;
 }
 
 .save-slot-badge.active {
-    background: #dcfce7;
-    color: #15803d;
-    border: 1px solid #bbf7d0;
+    background: #ffedd5;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
 }
 
 .save-slot-badge.empty {
@@ -3506,41 +3608,59 @@ body {
     font-size: 0.72rem;
     color: #94a3b8;
     font-style: italic;
-    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.save-slot-info-row {
+/* 存档单行紧凑数据展示，绝不折行 */
+.save-slot-info-line {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.74rem;
+    gap: 5px;
+    font-size: 0.72rem;
     font-weight: 800;
     color: #475569;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.save-slot-dot-sep {
+    color: #cbd5e1;
+    font-weight: 900;
+    font-size: 0.75rem;
 }
 
 .save-slot-level {
-    color: #b45309;
+    color: #ea580c;
+    font-weight: 900;
+    white-space: nowrap;
 }
 
 .save-slot-stars {
-    color: #ea580c;
+    color: #d97706;
+    white-space: nowrap;
 }
 
-.save-slot-assets-row {
+.save-slot-coins {
+    color: #ca8a04;
+    white-space: nowrap;
+}
+
+.save-slot-diamonds {
+    color: #0284c7;
+    white-space: nowrap;
+}
+
+/* 右侧按钮与右下角时间垂直分层 */
+.save-slot-right {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.7rem;
-    font-weight: 800;
-    color: #64748b;
-    margin-top: 1px;
-}
-
-.save-slot-time {
-    margin-left: auto;
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: #94a3b8;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-shrink: 0;
+    gap: 4px;
 }
 
 .save-slot-actions {
@@ -3550,11 +3670,24 @@ body {
     flex-shrink: 0;
 }
 
+.save-slot-time-bottom {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #94a3b8;
+    white-space: nowrap;
+    line-height: 1;
+    text-align: right;
+    letter-spacing: -0.2px;
+}
+
 .save-action-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 8px;
-    font-size: 0.72rem;
-    font-weight: 800;
-    padding: 5px 8px;
+    padding: 0;
     cursor: pointer;
     border: 1.5px solid transparent;
     transition: all 0.15s ease;
@@ -3578,11 +3711,99 @@ body {
     background: #fee2e2;
     border-color: #fecaca;
     color: #dc2626;
-    padding: 5px 6px;
 }
 
 .save-btn-delete:hover {
     background: #fecaca;
+}
+
+/* 🏆 成就卡片标题与类型阶段徽章标签 (手绘胶囊徽章规范) */
+.ach-title-main {
+    font-size: 0.88rem;
+    font-weight: 900;
+    color: #2c221a;
+}
+
+.ach-type-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.66rem;
+    font-weight: 800;
+    padding: 1.5px 8px;
+    border-radius: 9999px;
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1.5px solid #fed7aa;
+    box-shadow: 1px 1px 0px rgba(194, 65, 12, 0.15);
+    white-space: nowrap;
+    vertical-align: middle;
+    margin-left: 5px;
+    line-height: 1.25;
+}
+
+/* 各类型专属标签主题配色 */
+.ach-type-badge.badge-type-serves {
+    background: #f0fdf4;
+    color: #15803d;
+    border-color: #bbf7d0;
+    box-shadow: 1px 1px 0px rgba(21, 128, 61, 0.15);
+}
+
+.ach-type-badge.badge-type-collect {
+    background: #faf5ff;
+    color: #7e22ce;
+    border-color: #e9d5ff;
+    box-shadow: 1px 1px 0px rgba(126, 34, 206, 0.15);
+}
+
+.ach-type-badge.badge-type-wealth {
+    background: #fefce8;
+    color: #a16207;
+    border-color: #fef08a;
+    box-shadow: 1px 1px 0px rgba(161, 98, 7, 0.15);
+}
+
+.ach-type-badge.badge-type-recipes {
+    background: #f0f9ff;
+    color: #0369a1;
+    border-color: #bae6fd;
+    box-shadow: 1px 1px 0px rgba(3, 105, 161, 0.15);
+}
+
+.ach-type-badge.badge-type-stars {
+    background: #fff7ed;
+    color: #c2410c;
+    border-color: #fed7aa;
+    box-shadow: 1px 1px 0px rgba(194, 65, 12, 0.15);
+}
+
+.ach-type-badge.badge-type-workshop {
+    background: #fdf2f8;
+    color: #be185d;
+    border-color: #fbcfe8;
+    box-shadow: 1px 1px 0px rgba(190, 24, 93, 0.15);
+}
+
+.ach-type-badge.badge-type-business {
+    background: #fff1f2;
+    color: #be123c;
+    border-color: #fecdd3;
+    box-shadow: 1px 1px 0px rgba(190, 18, 60, 0.15);
+}
+
+.ach-type-badge.badge-type-chapter {
+    background: #ecfeff;
+    color: #0e7490;
+    border-color: #a5f3fc;
+    box-shadow: 1px 1px 0px rgba(14, 116, 144, 0.15);
+}
+
+.ach-type-badge.completed-badge {
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+    border-color: #a7f3d0 !important;
+    box-shadow: 1px 1px 0px rgba(4, 120, 87, 0.15) !important;
 }
 
 /* 🍞 轻量 Toast 提示框 */
@@ -3614,5 +3835,62 @@ body {
     transform: translateX(-50%) translateY(0) scale(1);
 }
 
+/* ========================================================
+   🏪 第三章专属工作台布局优化 (提升操作舒适度)
+   - 特调杯向上平移，视线聚焦
+   - 减小上半区所占比例，增大下半区调配抽屉
+   - 释放充裕空间给液体量杯与原料网格
+   ======================================================== */
+body.c3-active .cup-stage-area {
+    flex: 0.9;
+    min-height: 180px;
+    padding-top: 4px;
+    padding-bottom: 2px;
+}
 
+body.c3-active .drink-stage {
+    transform: translateY(-22px) scale(0.96);
+    transform-origin: center bottom;
+}
 
+body.c3-active .controls-drawer {
+    flex: 1.35;
+}
+
+body.c3-active .measuring-cup-bar {
+    padding: 4px 8px;
+    gap: 3px;
+}
+
+body.c3-active .measuring-cup-pill {
+    padding: 3px 2px;
+}
+
+body.c3-active .ingredients-grid-container {
+    padding: 6px;
+    gap: 6px;
+}
+
+/* 移动端特殊紧凑适配 */
+@media (max-width: 600px) {
+    body.c3-active .cup-stage-area {
+        min-height: 160px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    body.c3-active .drink-stage {
+        transform: translateY(-24px) scale(0.92);
+        transform-origin: center bottom;
+    }
+    body.c3-active .controls-drawer {
+        flex: 1.45;
+    }
+    body.c3-active .c3-dashboard-section {
+        padding: 3px 6px;
+        gap: 3px;
+    }
+    body.c3-active .c3-customer-card {
+        padding: 4px 6px;
+        gap: 3px;
+    }
+}

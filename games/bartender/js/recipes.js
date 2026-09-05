@@ -522,7 +522,7 @@ const DRINK_RECIPES = [
         chapter: 3,
         brand: "蜜雪冰冰",
         brandLogo: "⛄",
-        name: "蜜雪冰冰·甜蜜蜜",
+        name: "蜜雪冰冰",
         subtitle: "Mixue Bingbing",
         minOrders: 5,
         customerCount: 5,
@@ -541,21 +541,21 @@ const DRINK_RECIPES = [
                 name: "冰鲜柠檬水",
                 glassType: "cup_medium",
                 liquid: { id: "lime_green", name: "青柠仙草" },
-                inCupItems: ["lemon_slice"],
+                inCupItems: ["lemon_slice", "classic_ice"],
                 foamLayer: "none",
                 topper: "none",
                 price: 60,
-                desc: "【默认中杯】+ 青柠仙草 + 鲜切柠檬片（客人可要求大杯+40%或吨吨桶双倍价）"
+                desc: "【默认中杯】+ 青柠仙草 + 鲜切柠檬片 + 方形冰块"
             },
             {
                 name: "珍珠奶茶",
                 glassType: "cup_medium",
                 liquid: { id: "golden_sand", name: "流金沙茶" },
-                inCupItems: ["boba_pearls"],
+                inCupItems: ["boba_pearls", "classic_ice"],
                 foamLayer: "none",
                 topper: "none",
                 price: 70,
-                desc: "【中杯】+ 流金沙茶 + 黑糖珍珠波霸"
+                desc: "【中杯】+ 流金沙茶 + 黑糖珍珠波霸 + 方形冰块"
             },
             {
                 name: "蜜桃四季春",
@@ -575,7 +575,7 @@ const DRINK_RECIPES = [
         // 默认第一款用于基础展示
         glassType: "cup_medium",
         liquid: { id: "lime_green", name: "青柠仙草" },
-        inCupItems: ["lemon_slice"],
+        inCupItems: ["lemon_slice", "classic_ice"],
         foamLayer: "none",
         topper: "none",
         tags: ["蜜雪冰冰", "最少5单(1★)", "蜜桃四季春"]
@@ -586,7 +586,7 @@ const DRINK_RECIPES = [
         chapter: 3,
         brand: "亿点点",
         brandLogo: "🟢",
-        name: "亿点点·波霸狂潮",
+        name: "亿点点",
         subtitle: "YiDianDian Tea",
         minOrders: 7,
         customerCount: 7,
@@ -652,7 +652,7 @@ const DRINK_RECIPES = [
         chapter: 3,
         brand: "谷茗",
         brandLogo: "🥤",
-        name: "谷茗·鲜果风味",
+        name: "谷茗",
         subtitle: "Gu Ming",
         minOrders: 10,
         customerCount: 10,
@@ -688,11 +688,11 @@ const DRINK_RECIPES = [
                     { id: "mango_puree", name: "浓香芒果浆", colorTop: "#fef08a", colorBottom: "#f59e0b", ratio: 0.5 },
                     { id: "coconut_white", name: "浓纯生椰乳", colorTop: "#ffffff", colorBottom: "#ede5d8", ratio: 0.5 }
                 ],
-                inCupItems: ["boba_pearls", "classic_ice"],
+                inCupItems: ["grapefruit_pulp", "classic_ice"],
                 foamLayer: "none",
                 topper: "none",
                 price: 95,
-                desc: "【大杯】+ 芒果生椰半杯渐变 + 黑糖珍珠 + 方形冰块"
+                desc: "【大杯】+ 芒果生椰半杯渐变 + 柚子粒 + 方形冰块"
             },
             {
                 name: "云顶水牛乳",
@@ -722,7 +722,7 @@ const DRINK_RECIPES = [
         chapter: 3,
         brand: "茶百客",
         brandLogo: "🐼",
-        name: "茶百客·国潮茶韵",
+        name: "茶百客",
         subtitle: "Cha Bai Ke",
         minOrders: 13,
         customerCount: 13,
@@ -758,11 +758,11 @@ const DRINK_RECIPES = [
                     { id: "golden_sand", name: "流金沙茶", colorTop: "#f9e0b8", colorBottom: "#d89c56", ratio: 0.5 },
                     { id: "pure_milk", name: "牧场纯牛乳", colorTop: "#ffffff", colorBottom: "#f1f5f9", ratio: 0.5 }
                 ],
-                inCupItems: ["taro_balls"],
+                inCupItems: ["taro_balls", "classic_ice"],
                 foamLayer: "none",
                 topper: "none",
                 price: 85,
-                desc: "【大杯】+ 沙茶纯牛乳半杯渐变 + 三色小芋圆"
+                desc: "【大杯】+ 沙茶纯牛乳半杯渐变 + 三色小芋圆 + 方形冰块"
             },
             {
                 name: "鲜橙双皮奶",
@@ -772,11 +772,11 @@ const DRINK_RECIPES = [
                     { id: "coconut_white", name: "浓纯生椰乳", colorTop: "#ffffff", colorBottom: "#ede5d8", ratio: 0.5 },
                     { id: "sunset_orange", name: "绯红落日", colorTop: "#ff5e62", colorBottom: "#dc2626", ratio: 0.5 }
                 ],
-                inCupItems: ["orange_slice"],
+                inCupItems: ["orange_slice", "classic_ice"],
                 foamLayer: "none",
                 topper: "none",
                 price: 85,
-                desc: "【中杯】+ 生椰落日半杯渐变 + 鲜切橙片"
+                desc: "【中杯】+ 生椰落日半杯渐变 + 鲜切橙片 + 方形冰块"
             },
             {
                 name: "茉莉奶绿",
@@ -806,7 +806,7 @@ const DRINK_RECIPES = [
         chapter: 3,
         brand: "霸道茶姬",
         brandLogo: "👑",
-        name: "霸道茶姬·东方原叶",
+        name: "霸道茶姬",
         subtitle: "BaDao Tea Bar",
         minOrders: 16,
         customerCount: 16,
@@ -890,7 +890,7 @@ const DRINK_RECIPES = [
         chapter: 3,
         brand: "禧茶",
         brandLogo: "🧋",
-        name: "禧茶·灵感多肉",
+        name: "禧茶",
         subtitle: "Xi Tea Studio",
         minOrders: 20,
         customerCount: 20,
@@ -908,11 +908,11 @@ const DRINK_RECIPES = [
                 name: "多肉葡萄",
                 glassType: "cup_large",
                 liquid: { id: "grape_tea", name: "巨峰葡萄茶" },
-                inCupItems: ["grape_pulp"],
+                inCupItems: ["grape_pulp", "classic_ice"],
                 foamLayer: "cheese_foam",
                 topper: "none",
                 price: 105,
-                desc: "【大杯】+ 巨峰葡萄茶 + 多肉葡萄果肉 + 芝士厚奶盖"
+                desc: "【大杯】+ 巨峰葡萄茶 + 多肉葡萄果肉 + 方形冰块 + 芝士厚奶盖"
             },
             {
                 name: "芝芝莓莓",
@@ -928,11 +928,11 @@ const DRINK_RECIPES = [
                 name: "烤黑糖波波牛乳",
                 glassType: "cup_medium",
                 liquid: { id: "pure_milk", name: "牧场纯牛乳" },
-                inCupItems: ["boba_pearls"],
+                inCupItems: ["boba_pearls", "classic_ice"],
                 foamLayer: "none",
                 topper: "caramel_drizzle",
                 price: 95,
-                desc: "【中杯】+ 牧场纯牛乳 + 黑糖珍珠波霸 + 焦糖淋酱"
+                desc: "【中杯】+ 牧场纯牛乳 + 黑糖珍珠波霸 + 方形冰块 + 焦糖淋酱"
             },
             {
                 name: "多肉芒芒甘露",
@@ -942,16 +942,16 @@ const DRINK_RECIPES = [
                     { id: "mango_puree", name: "浓香芒果浆", colorTop: "#fef08a", colorBottom: "#f59e0b", ratio: 0.5 },
                     { id: "coconut_white", name: "浓纯生椰乳", colorTop: "#ffffff", colorBottom: "#ede5d8", ratio: 0.5 }
                 ],
-                inCupItems: ["orange_slice", "boba_pearls"],
+                inCupItems: ["grapefruit_pulp", "classic_ice"],
                 foamLayer: "none",
                 topper: "none",
                 price: 105,
-                desc: "【大杯】+ 芒果生椰半杯渐变 + 鲜橙片 + 黑糖珍珠"
+                desc: "【大杯】+ 芒果生椰半杯渐变 + 柚子粒 + 方形冰块"
             }
         ],
         glassType: "cup_large",
         liquid: { id: "grape_tea", name: "巨峰葡萄茶" },
-        inCupItems: ["grape_pulp"],
+        inCupItems: ["grape_pulp", "classic_ice"],
         foamLayer: "cheese_foam",
         topper: "none",
         tags: ["禧茶", "最少20单(1★)", "多肉葡萄"]
@@ -962,7 +962,7 @@ const DRINK_RECIPES = [
         chapter: 3,
         brand: "奶雪的茶",
         brandLogo: "🍵",
-        name: "奶雪的茶·美好茶事",
+        name: "奶雪的茶",
         subtitle: "Nai Xue Tea",
         minOrders: 23,
         customerCount: 23,
@@ -1004,11 +1004,11 @@ const DRINK_RECIPES = [
                     { id: "amber_oolong", name: "琥珀乌龙", colorTop: "#e9bc84", colorBottom: "#a35b1d", ratio: 0.5 },
                     { id: "pure_milk", name: "牧场纯牛乳", colorTop: "#ffffff", colorBottom: "#f1f5f9", ratio: 0.5 }
                 ],
-                inCupItems: ["boba_pearls"],
+                inCupItems: ["boba_pearls", "classic_ice"],
                 foamLayer: "whipped_cream",
                 topper: "none",
                 price: 110,
-                desc: "【大杯】+ 乌龙牛乳半杯渐变 + 黑糖珍珠 + 鲜奶油雪顶"
+                desc: "【大杯】+ 乌龙牛乳半杯渐变 + 黑糖珍珠 + 方形冰块 + 鲜奶油雪顶"
             },
             {
                 name: "霸气玉油柑",
@@ -1028,11 +1028,11 @@ const DRINK_RECIPES = [
                     { id: "peach_pink", name: "蜜桃落雨", colorTop: "#ffdbe1", colorBottom: "#f88195", ratio: 0.5 },
                     { id: "amber_oolong", name: "琥珀乌龙", colorTop: "#e9bc84", colorBottom: "#a35b1d", ratio: 0.5 }
                 ],
-                inCupItems: ["peach_jelly"],
+                inCupItems: ["peach_jelly", "classic_ice"],
                 foamLayer: "cheese_foam",
                 topper: "none",
                 price: 105,
-                desc: "【大杯】+ 蜜桃乌龙半杯渐变 + 蜜桃晶珠 + 芝士厚奶盖"
+                desc: "【大杯】+ 蜜桃乌龙半杯渐变 + 蜜桃晶珠 + 方形冰块 + 芝士厚奶盖"
             }
         ],
         glassType: "cup_large",
@@ -1048,7 +1048,7 @@ const DRINK_RECIPES = [
         chapter: 3,
         brand: "茶言悦色",
         brandLogo: "🏮",
-        name: "茶言悦色·风雅江城",
+        name: "茶言悦色",
         subtitle: "ChaYan Yuese",
         minOrders: 26,
         customerCount: 26,
@@ -1146,7 +1146,7 @@ const DRINK_RECIPES = [
         chapter: 3,
         brand: "星巴客",
         brandLogo: "☕",
-        name: "星巴客·西雅图回响",
+        name: "星巴客",
         subtitle: "Starbucks Reserve",
         minOrders: 30,
         customerCount: 30,
@@ -1308,11 +1308,12 @@ const INGREDIENTS_CATALOG = {
         { id: "orange_slice", name: "鲜切橙片", chapter: 3, price: 0, emoji: "🍊", desc: "现切多汁甜橙切片！" },
         { id: "taro_balls", name: "三色小芋圆", chapter: 3, price: 0, emoji: "🍠", desc: "软糯弹牙的手工芋圆！" },
         { id: "grape_pulp", name: "多肉葡萄果肉", chapter: 3, price: 0, emoji: "🍇", desc: "颗颗手剥爆汁晶莹葡萄果肉！" },
-        { id: "peach_jelly", name: "蜜桃晶珠", chapter: 3, price: 0, emoji: "🍑", desc: "脆嫩多汁的蜜桃果肉凝珠，蜜桃四季春必备！" }
+        { id: "peach_jelly", name: "蜜桃晶珠", chapter: 3, price: 0, emoji: "🍑", desc: "脆嫩多汁的蜜桃果肉凝珠，蜜桃四季春必备！" },
+        { id: "grapefruit_pulp", name: "柚子粒", chapter: 3, price: 0, emoji: "🍊", desc: "粒粒爆汁金黄红心西柚果肉粒，杨枝甘露灵魂小料！" }
     ],
     foams: [
         { id: "none", name: "无封层", price: 0, emoji: "🚫" },
-        { id: "snow_wood", name: "浮木积雪", price: 0, emoji: "🪵" },
+        { id: "snow_wood", name: "寒冬积雪", price: 0, emoji: "❄️" },
         { id: "sand_plate", name: "金色沙顶", price: 0, emoji: "🏖️" },
         { id: "pumpkin_cream", name: "南瓜奶油", price: 150, emoji: "🎃" },
         { id: "rain_cloud", name: "落雨白云", price: 180, emoji: "☁️" },
@@ -1357,24 +1358,24 @@ const INGREDIENTS_CATALOG = {
 
 // 🏆 阶梯式成就系统全量配置 (同类型成就聚合展示，领奖后自动切换下一阶段)
 const ACHIEVEMENT_GROUPS_CONFIG = [
-    // 1. 🍹 调制出杯大师系列 (1, 10, 100, 1000 杯)
+    // 1. 🍹 调饮出杯系列 (1, 10, 100, 1000 杯)
     {
         groupId: "group_serves",
         icon: "🍹",
-        title: "调饮出杯大师",
+        title: "调饮出杯",
         tiers: [
             { id: "serve_1", aliasIds: ["first_serve"], name: "初出茅庐", desc: "成功调制并完成出杯第 1 杯特调", target: 1, type: "totalServes", rewardDiamonds: 20, rewardCoins: 200 },
             { id: "serve_10", name: "吧台熟手", desc: "熟能生巧！累计调制出杯达到 10 杯", target: 10, type: "totalServes", rewardDiamonds: 50, rewardCoins: 800 },
             { id: "serve_100", name: "调饮名家", desc: "顾客盈门！累计调制出杯达到 100 杯", target: 100, type: "totalServes", rewardDiamonds: 150, rewardCoins: 3000 },
-            { id: "serve_1000", name: "特调传奇宗师", desc: "震烁全城！累计调制出杯突破 1000 杯", target: 1000, type: "totalServes", rewardDiamonds: 500, rewardCoins: 20000 }
+            { id: "serve_1000", name: "特调宗师", desc: "震烁全城！累计调制出杯突破 1000 杯", target: 1000, type: "totalServes", rewardDiamonds: 500, rewardCoins: 20000 }
         ]
     },
 
-    // 2. 🛍️ 物料大满贯系列 (小料、液体、奶盖、顶饰、杯型)
+    // 2. 🛍️ 物料大满贯系列 (小料、原液、奶盖、装饰、杯具)
     {
         groupId: "group_collect_items",
         icon: "🧊",
-        title: "小料收集家",
+        title: "小料收集",
         tiers: [
             { id: "items_all", name: "小料大满贯", desc: "购买解锁货架上的全部在售特色小料", target: 1, type: "collect_items", rewardDiamonds: 60, rewardCoins: 1200 }
         ]
@@ -1382,7 +1383,7 @@ const ACHIEVEMENT_GROUPS_CONFIG = [
     {
         groupId: "group_collect_liquids",
         icon: "🧪",
-        title: "原液收集家",
+        title: "原液收集",
         tiers: [
             { id: "liquids_all", name: "原液大满贯", desc: "购买解锁货架上的全部在售特调原液", target: 1, type: "collect_liquids", rewardDiamonds: 60, rewardCoins: 1200 }
         ]
@@ -1390,7 +1391,7 @@ const ACHIEVEMENT_GROUPS_CONFIG = [
     {
         groupId: "group_collect_foams",
         icon: "☁️",
-        title: "奶盖收集家",
+        title: "奶盖收集",
         tiers: [
             { id: "foams_all", name: "奶盖大满贯", desc: "购买解锁货架上的全部在售云朵与特色奶盖", target: 1, type: "collect_foams", rewardDiamonds: 60, rewardCoins: 1200 }
         ]
@@ -1398,7 +1399,7 @@ const ACHIEVEMENT_GROUPS_CONFIG = [
     {
         groupId: "group_collect_toppers",
         icon: "🌹",
-        title: "装饰收集家",
+        title: "装饰收集",
         tiers: [
             { id: "toppers_all", name: "装饰大满贯", desc: "购买解锁货架上的全部在售艺术摆件与装饰", target: 1, type: "collect_toppers", rewardDiamonds: 100, rewardCoins: 2500 }
         ]
@@ -1406,17 +1407,17 @@ const ACHIEVEMENT_GROUPS_CONFIG = [
     {
         groupId: "group_collect_glasses",
         icon: "🥂",
-        title: "杯具鉴赏家",
+        title: "杯具鉴赏",
         tiers: [
             { id: "glasses_all", name: "杯具大全套", desc: "集齐全部在售常规杯型、进阶量杯及终极奇迹圣杯", target: 1, type: "collect_glasses", rewardDiamonds: 200, rewardCoins: 5000 }
         ]
     },
 
-    // 3. 💰 财富累积系列 (100, 1k, 1w, 10w, 100w)
+    // 3. 💰 财富宝盆系列 (100, 1k, 1w, 10w, 100w)
     {
         groupId: "group_wealth_coins",
         icon: "💰",
-        title: "财富聚宝盆",
+        title: "财富宝盆",
         tiers: [
             { id: "coin_100", name: "初获积蓄", desc: "赚取第一桶金，当前金币达到 100 💰", target: 100, type: "coins", rewardDiamonds: 10, rewardCoins: 50 },
             { id: "coin_1k", name: "小有积蓄", desc: "钱包渐鼓！当前金币达到 1,000 (1k) 💰", target: 1000, type: "coins", rewardDiamonds: 30, rewardCoins: 300 },
@@ -1426,7 +1427,7 @@ const ACHIEVEMENT_GROUPS_CONFIG = [
         ]
     },
 
-    // 4. 📖 配方收录系列 (3, 9, 18, 27, 54全部)
+    // 4. 📖 配方大全系列 (3, 9, 18, 27, 54全部)
     {
         groupId: "group_recipes",
         icon: "📖",
@@ -1440,7 +1441,7 @@ const ACHIEVEMENT_GROUPS_CONFIG = [
         ]
     },
 
-    // 5. 🌟 星级璀璨系列 (9阶: 9, 18, 27, 36, 45, 54, 63, 72, 81★)
+    // 5. 🌟 星河璀璨系列 (9阶: 9, 18, 27, 36, 45, 54, 63, 72, 81★)
     {
         groupId: "group_stars",
         icon: "🌟",
@@ -1454,45 +1455,45 @@ const ACHIEVEMENT_GROUPS_CONFIG = [
             { id: "star_54", name: "微醺宗师", desc: "第二章全满星！关卡累计集齐 54 颗星星 ★", target: 54, type: "stars", rewardDiamonds: 220, rewardCoins: 5000 },
             { id: "star_63", name: "商业领航", desc: "关卡中累计集齐 63 颗星星 ★", target: 63, type: "stars", rewardDiamonds: 300, rewardCoins: 8000 },
             { id: "star_72", name: "调饮宗师", desc: "关卡中累计集齐 72 颗星星 ★", target: 72, type: "stars", rewardDiamonds: 400, rewardCoins: 12000 },
-            { id: "star_81", name: "三界特调神祇", desc: "集齐全部 81 颗星星！成就全关卡终极神祇 ★★★", target: 81, type: "stars", rewardDiamonds: 600, rewardCoins: 25000 }
+            { id: "star_81", name: "特调神祇", desc: "集齐全部 81 颗星星！成就全关卡终极神祇 ★★★", target: 81, type: "stars", rewardDiamonds: 600, rewardCoins: 25000 }
         ]
     },
 
-    // 6. 🎨 自由灵感系列 (3, 9, 21, 100, 365)
+    // 6. 🎨 灵感工坊系列 (3, 9, 21, 100, 365)
     {
         groupId: "group_free_creations",
         icon: "🎨",
-        title: "自由灵感工坊",
+        title: "灵感工坊",
         tiers: [
             { id: "free_3", aliasIds: ["free_creator"], name: "灵感萌芽", desc: "在自由模式中不受拘束随心创作 3 次", target: 3, type: "freeServes", rewardDiamonds: 20, rewardCoins: 300 },
             { id: "free_9", name: "妙笔生花", desc: "灵感泉涌！在自由模式中创作达到 9 次", target: 9, type: "freeServes", rewardDiamonds: 40, rewardCoins: 800 },
             { id: "free_21", name: "自成一派", desc: "独具匠心！在自由模式中创作达到 21 次", target: 21, type: "freeServes", rewardDiamonds: 80, rewardCoins: 1800 },
             { id: "free_100", name: "艺术狂想", desc: "千姿百态！在自由模式中累计创作达到 100 次", target: 100, type: "freeServes", rewardDiamonds: 200, rewardCoins: 5000 },
-            { id: "free_365", name: "一日一特调", desc: "年度里程碑！自由创作突破 365 次", target: 365, type: "freeServes", rewardDiamonds: 500, rewardCoins: 25000 }
+            { id: "free_365", name: "一日一调", desc: "年度里程碑！自由创作突破 365 次", target: 365, type: "freeServes", rewardDiamonds: 500, rewardCoins: 25000 }
         ]
     },
 
-    // 7. 🏮 商业头脑系列 (500, 1000, 10000)
+    // 7. 🏮 商业大亨系列 (500, 1000, 10000)
     {
         groupId: "group_c3_profit",
         icon: "🏮",
-        title: "商业头脑大亨",
+        title: "商业大亨",
         tiers: [
             { id: "c3_profit_500", name: "初露锋芒", desc: "第三章连锁经营单关净利润达到 500 💰", target: 500, type: "c3MaxProfit", rewardDiamonds: 50, rewardCoins: 800 },
             { id: "c3_profit_1000", name: "生意兴隆", desc: "客似云来！第三章单关净利润达到 1,000 💰", target: 1000, type: "c3MaxProfit", rewardDiamonds: 100, rewardCoins: 2000 },
-            { id: "c3_profit_1w", name: "商业帝国奇迹", desc: "传奇经营！第三章单关净利润突破 10,000 (1w) 💰", target: 10000, type: "c3MaxProfit", rewardDiamonds: 300, rewardCoins: 10000 }
+            { id: "c3_profit_1w", name: "商业奇迹", desc: "传奇经营！第三章单关净利润突破 10,000 (1w) 💰", target: 10000, type: "c3MaxProfit", rewardDiamonds: 300, rewardCoins: 10000 }
         ]
     },
 
-    // 8. 🏆 章节通关征程系列 (第一章、第二章、第三章全通关大奖)
+    // 8. 🏆 通关征程系列 (第一章、第二章、第三章全通关大奖)
     {
         groupId: "group_chapter_clear",
         icon: "🚩",
-        title: "章节通关征程",
+        title: "通关征程",
         tiers: [
             { id: "chap1_clear", chapter: 1, name: "晨曦破晓", desc: "通关第一章（海风与晨曦）全部 9 关！", target: 9, type: "chapter_clear", rewardDiamonds: 100, rewardCoins: 2000 },
             { id: "chap2_clear", chapter: 2, name: "微醺落幕", desc: "通关第二章（晚霞与微醺）全部 9 关！", target: 9, type: "chapter_clear", rewardDiamonds: 200, rewardCoins: 5000 },
-            { id: "chap3_clear", chapter: 3, name: "商业霸业大圆满", desc: "通关第三章（连锁经营篇）全部 9 关！特调全盘大通关！", target: 9, type: "chapter_clear", rewardDiamonds: 500, rewardCoins: 20000 }
+            { id: "chap3_clear", chapter: 3, name: "商业圆满", desc: "通关第三章（连锁经营篇）全部 9 关！特调全盘大通关！", target: 9, type: "chapter_clear", rewardDiamonds: 500, rewardCoins: 20000 }
         ]
     },
 
@@ -1505,43 +1506,43 @@ const ACHIEVEMENT_GROUPS_CONFIG = [
             { id: "ice_5", aliasIds: ["ice_lover"], name: "冰爽初尝", desc: "特调中累计放入经典冰块或心形冰块 5 次", target: 5, type: "iceUsed", rewardDiamonds: 20, rewardCoins: 300 },
             { id: "ice_30", name: "吧台碎冰手", desc: "清爽加倍！特调中累计放入冰块达到 30 次", target: 30, type: "iceUsed", rewardDiamonds: 50, rewardCoins: 800 },
             { id: "ice_100", name: "冰封王座", desc: "透心清凉！特调中累计放入冰块达到 100 次", target: 100, type: "iceUsed", rewardDiamonds: 150, rewardCoins: 3000 },
-            { id: "ice_500", name: "极地冰河世纪", desc: "冰爽神话！特调中累计放入冰块达到 500 次", target: 500, type: "iceUsed", rewardDiamonds: 300, rewardCoins: 10000 }
+            { id: "ice_500", name: "冰河世纪", desc: "冰爽神话！特调中累计放入冰块达到 500 次", target: 500, type: "iceUsed", rewardDiamonds: 300, rewardCoins: 10000 }
         ]
     },
 
-    // 10. 🌈 层层渐变魔法师系列 (3, 15, 50 杯分层特调)
+    // 10. 🌈 层层渐变系列 (3, 15, 50 杯分层特调)
     {
         groupId: "group_layer",
         icon: "🌈",
-        title: "层层渐变魔法师",
+        title: "层层渐变",
         tiers: [
             { id: "layer_3", name: "色彩初试", desc: "成功调制并出杯 3 杯分层渐变特调", target: 3, type: "layeredDrinks", rewardDiamonds: 20, rewardCoins: 300 },
             { id: "layer_15", name: "调色大师", desc: "层层流光！累计出杯 15 杯分层渐变特调", target: 15, type: "layeredDrinks", rewardDiamonds: 60, rewardCoins: 1000 },
-            { id: "layer_50", name: "梦幻视觉宗师", desc: "奇迹极光！累计出杯 50 杯梦幻分层特调", target: 50, type: "layeredDrinks", rewardDiamonds: 150, rewardCoins: 4000 }
+            { id: "layer_50", name: "视觉宗师", desc: "奇迹极光！累计出杯 50 杯梦幻分层特调", target: 50, type: "layeredDrinks", rewardDiamonds: 150, rewardCoins: 4000 }
         ]
     },
 
-    // 11. ☁️ 云朵厚乳控系列 (5, 25, 100 次奶盖/雪顶)
+    // 11. ☁️ 云朵厚乳系列 (5, 25, 100 次奶盖/雪顶)
     {
         groupId: "group_foam",
         icon: "☁️",
-        title: "云朵厚乳控",
+        title: "云朵厚乳",
         tiers: [
             { id: "foam_5", name: "云朵初盖", desc: "特调中累计注入云朵奶盖或雪顶 5 次", target: 5, type: "foamUsed", rewardDiamonds: 20, rewardCoins: 300 },
-            { id: "foam_25", name: "芝士厚乳狂热", desc: "绵密咸甜！累计注入奶盖达到 25 次", target: 25, type: "foamUsed", rewardDiamonds: 60, rewardCoins: 1000 },
-            { id: "foam_100", name: "云端绵密王国", desc: "雪顶仙境！特调中累计注入奶盖达到 100 次", target: 100, type: "foamUsed", rewardDiamonds: 150, rewardCoins: 4000 }
+            { id: "foam_25", name: "厚乳狂热", desc: "绵密咸甜！累计注入奶盖达到 25 次", target: 25, type: "foamUsed", rewardDiamonds: 60, rewardCoins: 1000 },
+            { id: "foam_100", name: "绵密王国", desc: "雪顶仙境！特调中累计注入奶盖达到 100 次", target: 100, type: "foamUsed", rewardDiamonds: 150, rewardCoins: 4000 }
         ]
     },
 
-    // 12. 🚿 断舍离吧台师系列 (3, 10, 30 次清空重置)
+    // 12. 🚿 吧台断舍离系列 (3, 10, 30 次清空重置)
     {
         groupId: "group_dump",
         icon: "🚿",
-        title: "断舍离吧台师",
+        title: "断舍离",
         tiers: [
             { id: "dump_3", name: "精益求精", desc: "不满意就重来！累计清空重置杯子 3 次", target: 3, type: "cupDumped", rewardDiamonds: 10, rewardCoins: 200 },
             { id: "dump_10", name: "完美主义者", desc: "追求完美！累计清空重置杯子达到 10 次", target: 10, type: "cupDumped", rewardDiamonds: 30, rewardCoins: 600 },
-            { id: "dump_30", name: "从头再来的从容", desc: "精工细作！累计清空重置杯子达到 30 次", target: 30, type: "cupDumped", rewardDiamonds: 100, rewardCoins: 2000 }
+            { id: "dump_30", name: "从容归零", desc: "精工细作！累计清空重置杯子达到 30 次", target: 30, type: "cupDumped", rewardDiamonds: 100, rewardCoins: 2000 }
         ]
     },
 
@@ -1553,11 +1554,11 @@ const ACHIEVEMENT_GROUPS_CONFIG = [
         tiers: [
             { id: "auto_1", aliasIds: ["auto_master"], name: "极速初体验", desc: "首次使用【⚡ 自动出单】完成特调调配", target: 1, type: "autoServes", rewardDiamonds: 30, rewardCoins: 300 },
             { id: "auto_20", name: "省心掌柜", desc: "全神贯注！累计使用自动出餐 20 次", target: 20, type: "autoServes", rewardDiamonds: 60, rewardCoins: 1000 },
-            { id: "auto_100", name: "全自动流光工厂", desc: "神速出单！累计使用自动出餐达到 100 次", target: 100, type: "autoServes", rewardDiamonds: 150, rewardCoins: 3000 }
+            { id: "auto_100", name: "流光工厂", desc: "神速出单！累计使用自动出餐达到 100 次", target: 100, type: "autoServes", rewardDiamonds: 150, rewardCoins: 3000 }
         ]
     },
 
-    // 14. 🏆 奇迹圣杯点石成金 (单阶压轴)
+    // 14. 🏆 奇迹圣杯系列 (单阶压轴)
     {
         groupId: "group_holy_miracle",
         icon: "🏆",

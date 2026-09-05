@@ -62,8 +62,8 @@
                     <div class="c3-cust-avatar" id="c3CustAvatar">⛄</div>
                     <div class="c3-cust-main">
                         <div class="c3-cust-title-row">
-                            <span class="c3-cust-name" id="c3CustName">客人 #1</span>
-                            <span class="c3-order-counter" id="c3OrderCounter">👨‍🍳 订单 1 (目标≥5单⭐)</span>
+                            <span class="c3-cust-name" id="c3CustName">客人：芳芳</span>
+                            <span class="c3-order-counter" id="c3OrderCounter" style="display:none;"></span>
                         </div>
                         <div class="c3-drink-demand-row">
                             <span class="c3-wants-label">点单需求：</span>
@@ -75,7 +75,7 @@
                     <!-- 🛎️ 打烊按钮 (从顶部移到顾客卡片右边) -->
                     <button class="c3-close-shop-btn disabled" id="btnC3CloseShop" title="达成最少订单后可提前打烊盘点">
                         <span class="c3-close-shop-icon">🛎️</span>
-                        <span class="c3-close-shop-text" id="c3CloseShopText">打烊(需≥5单)</span>
+                        <span class="c3-close-shop-text" id="c3CloseShopText">打烊 (0/5)</span>
                     </button>
                 </div>
 
@@ -86,7 +86,7 @@
                     </div>
                     <div class="c3-patience-label-row">
                         <span class="c3-patience-text" id="c3PatienceText">客人耐心：100% 😊</span>
-                        <span class="c3-patience-tip">超时将弃单离店并罚款 -50💰！</span>
+                        <span class="c3-patience-tip">超时将弃单离店并换下一位！</span>
                     </div>
                 </div>
             </div>
@@ -98,7 +98,7 @@
                     <strong class="text-green" id="c3TotalRevenue">0 💰</strong>
                 </div>
                 <div class="c3-fin-item">
-                    <span>小料成本(-10/次)：</span>
+                    <span>成本：</span>
                     <strong class="text-orange" id="c3MaterialCosts">0 💰</strong>
                 </div>
                 <div class="c3-fin-item c3-fin-profit">
@@ -181,7 +181,12 @@
     <!-- 弹窗 1：拍立得特调分享卡片弹窗 -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-content-box polaroid-modal-box">
-            <button class="modal-close-btn" id="btnCloseModal">✕</button>
+            <button class="modal-close-btn" id="btnCloseModal" aria-label="关闭">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
             <div id="resultCard"></div>
         </div>
     </div>
@@ -362,7 +367,12 @@
     <!-- 弹窗 3：独立可翻页配方手账书 (Recipe Book Modal) -->
     <div class="modal-overlay" id="recipeBookModal">
         <div class="modal-content-box recipe-book-modal-box">
-            <button class="modal-close-btn" id="btnCloseRecipeBookModal">✕</button>
+            <button class="modal-close-btn" id="btnCloseRecipeBookModal" aria-label="关闭">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
             
             <!-- 第三章多配方右侧仿真立体便签书签挂载容器 -->
             <div class="book-side-bookmarks" id="bookSideBookmarks"></div>
@@ -371,11 +381,15 @@
                 <span class="recipe-book-title">📖 治愈特调手账</span>
             </div>
 
-            <!-- 翻页导航栏 -->
+            <!-- 翻页导航栏 (去文字纯SVG矢量箭头) -->
             <div class="recipe-book-navbar">
-                <button class="book-nav-btn" id="btnBookPrevPage">◀ 上一页</button>
+                <button class="book-nav-btn" id="btnBookPrevPage" aria-label="上一页" title="上一页">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
                 <div class="book-page-indicator" id="bookPageIndicator">第 1 / 9 页</div>
-                <button class="book-nav-btn" id="btnBookNextPage">下一页 ▶</button>
+                <button class="book-nav-btn" id="btnBookNextPage" aria-label="下一页" title="下一页">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
             </div>
 
             <!-- 手绘复古书页核心内容 -->
@@ -388,7 +402,12 @@
     <!-- 弹窗 4：关卡选择器弹窗 -->
     <div class="modal-overlay" id="levelSelectModal">
         <div class="modal-content-box level-modal-box">
-            <button class="modal-close-btn" id="btnCloseLevelModal">✕</button>
+            <button class="modal-close-btn" id="btnCloseLevelModal" aria-label="关闭">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
             <div class="modal-title-bar level-modal-title-bar">
                 <span class="modal-title-text">🚩 选择挑战关卡</span>
                 <button class="level-stars-trophy-badge" id="btnLevelStarsTrophy" title="查看星级成就勋章">
@@ -426,17 +445,17 @@
                 <div class="chapter-diamond-balance-tip" id="chapUnlockDiamondTip">当前拥有：0 💎</div>
             </div>
 
-            <!-- 第三章锁定与 1000 钻石解锁卡片 -->
+            <!-- 第三章锁定与 3000 钻石解锁卡片 -->
             <div class="chapter-lock-panel" id="chapter3LockPanel" style="display: none;">
                 <div class="chapter-lock-icon">🏪</div>
                 <div class="chapter-lock-title">经营·开业！</div>
                 <div class="chapter-lock-desc">
                     挂上属于你的专属招牌，打造整条街最火爆的治愈茶饮店！<br>
                     客流如潮，挑战手速极限，体验飞速出杯与收银的经营乐趣！<br>
-                    消耗 <strong>1000 💎 钻石</strong>，立刻签约开张大吉！
+                    消耗 <strong>3000 💎 钻石</strong>，立刻签约开张大吉！
                 </div>
-                <button class="btn btn-primary chapter-unlock-btn" id="btnUnlockChapter3">
-                    🔓 消耗 1000 💎 盘下店铺开业！
+                <button class="btn btn-primary chapter-unlock-btn chapter-unlock-btn-orange" id="btnUnlockChapter3">
+                    3000💎盘下小店开业
                 </button>
                 <div class="chapter-diamond-balance-tip" id="chap3UnlockDiamondTip">当前拥有：0 💎</div>
             </div>
@@ -448,7 +467,12 @@
     <!-- 弹窗 4：手绘风商品购买/解锁弹窗 -->
     <div class="modal-overlay" id="shopModal">
         <div class="modal-content-box shop-modal-box">
-            <button class="modal-close-btn" id="btnCloseShopModal">✕</button>
+            <button class="modal-close-btn" id="btnCloseShopModal" aria-label="关闭">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
             <div class="shop-modal-header">
                 <div class="shop-item-icon-bubble" id="shopModalIcon">🏆</div>
                 <div class="shop-item-title" id="shopModalTitle">奇迹圣杯</div>
@@ -491,7 +515,12 @@
     <!-- 弹窗 5：手绘风统一通知提示弹窗 (彻底替代系统原生 alert) -->
     <div class="modal-overlay" id="noticeModal">
         <div class="modal-content-box notice-modal-box">
-            <button class="modal-close-btn" id="btnCloseNoticeModal">✕</button>
+            <button class="modal-close-btn" id="btnCloseNoticeModal" aria-label="关闭">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
             <div class="notice-icon-bubble" id="noticeModalIcon">💡</div>
             <div class="notice-modal-title" id="noticeModalTitle">温馨提示</div>
             <div class="notice-modal-message" id="noticeModalMessage">提示内容</div>
@@ -502,7 +531,12 @@
     <!-- 弹窗 6：成就勋章馆弹窗 (Achievement Modal) -->
     <div class="modal-overlay" id="achievementModal">
         <div class="modal-content-box achievement-modal-box">
-            <button class="modal-close-btn" id="btnCloseAchievementModal">✕</button>
+            <button class="modal-close-btn" id="btnCloseAchievementModal" aria-label="关闭">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
             <div class="modal-title-bar">
                 <span class="modal-title-text">🏆 调饮师成就勋章馆</span>
             </div>
@@ -527,7 +561,12 @@
     <!-- 弹窗 7：专属店铺开业与命名契约证书弹窗 (Shop Name Modal) -->
     <div class="modal-overlay" id="shopNameModal">
         <div class="modal-content-box shop-name-modal-box">
-            <button class="modal-close-btn" id="btnCloseShopNameModal">✕</button>
+            <button class="modal-close-btn" id="btnCloseShopNameModal" aria-label="关闭">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
             <div class="shop-name-header">
                 <div class="shop-name-icon">🏮</div>
                 <div class="shop-name-title">茶饮小店 · 开业契约</div>
@@ -555,7 +594,12 @@
     <!-- 弹窗 8：第三章公开配方快捷抽屉弹窗 (Quick Recipe Drawer Modal) -->
     <div class="modal-overlay" id="quickRecipeModal">
         <div class="modal-content-box quick-recipe-modal-box">
-            <button class="modal-close-btn" id="btnCloseQuickRecipeModal">✕</button>
+            <button class="modal-close-btn" id="btnCloseQuickRecipeModal" aria-label="关闭">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
             <div class="modal-title-bar">
                 <span class="modal-title-text" id="quickRecipeBrandTitle">📖 本店特调秘籍 (全公开)</span>
             </div>
@@ -620,8 +664,19 @@
 
             <!-- 结算操作按钮 -->
             <div class="c3-res-actions-row">
-                <button class="btn btn-secondary" id="btnC3Replay">↺ 再次营业</button>
-                <button class="btn btn-primary" id="btnC3NextLevel">下一关卡 ▶</button>
+                <button class="btn btn-secondary c3-action-btn" id="btnC3Replay" title="再次营业">
+                    <svg class="btn-icon-svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="1 4 1 10 7 10"></polyline>
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                    </svg>
+                    <span>再次营业</span>
+                </button>
+                <button class="btn btn-primary btn-orange c3-action-btn" id="btnC3NextLevel" title="下一关卡">
+                    <span>下一关卡</span>
+                    <svg class="btn-icon-svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>

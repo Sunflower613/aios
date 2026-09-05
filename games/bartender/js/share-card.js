@@ -194,7 +194,7 @@ class ShareCardManager {
                 </button>
 
                 <!-- 4. 下一关 / 跨章解锁 / 调下一杯 (主行动按钮) -->
-                <button class="btn btn-primary btn-next-action" id="btnCardNextAction" title="${nextBtnTitle}">
+                <button class="btn btn-primary btn-orange btn-next-action" id="btnCardNextAction" title="${nextBtnTitle}">
                     <span>${nextBtnText}</span>
                 </button>
             </div>

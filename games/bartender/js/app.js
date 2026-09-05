@@ -109,6 +109,7 @@ class BartenderApp {
         this.bindEvents();
         this.updateCurrencyDisplay();
         this.initModeView();
+        this.resetCup(false); // 确保游戏开局精确使用当前关卡的推荐杯型
         this.renderIngredientsPanel();
         this.updateDrinkView();
     }
@@ -506,6 +507,7 @@ class BartenderApp {
                             message: "恭喜开启【第二章：微醺与星芒】！\n\n已自动为您解锁开启【2-1】！全新量杯渐变分层系统与 9 款网红渐变特调已就绪，快去一探究竟吧！🔮",
                             icon: "✨",
                             btnText: "立即前往 2-1 🍹",
+                            btnClass: "btn-orange",
                             onConfirm: () => {
                                 this.currentLevel = 10;
                                 this.selectedChapter = 2;
@@ -523,6 +525,7 @@ class BartenderApp {
                         message: `解锁第二章需要 300 💎 钻石，当前还差 ${shortage} 💎！\n\n💡 提示：可通过达成各种阶段成就或关卡满分挑战领取丰厚钻石哦~ 🏆`,
                         icon: "🔒",
                         btnText: "查看成就领钻石 🏆",
+                        btnClass: "btn-orange",
                         onConfirm: () => {
                             this.openAchievementModal();
                         }
@@ -531,13 +534,13 @@ class BartenderApp {
             });
         }
 
-        // 🏪 消耗 1000 钻石盘下店铺解锁第三章
+        // 🏪 消耗 3000 钻石盘下店铺解锁第三章
         if (this.dom.btnUnlockChapter3) {
             this.dom.btnUnlockChapter3.addEventListener("click", () => {
                 this.loadSaveData();
                 const currentDiamonds = this.saveData.diamonds || 0;
-                if (currentDiamonds >= 1000) {
-                    const res = window.StorageManager.unlockChapter(3, 1000);
+                if (currentDiamonds >= 3000) {
+                    const res = window.StorageManager.unlockChapter(3, 3000);
                     if (res && res.success) {
                         window.soundEngine.playSparkle();
                         window.soundEngine.playCoin();
@@ -547,12 +550,13 @@ class BartenderApp {
                         this.openShopNameModal(true);
                     }
                 } else {
-                    const shortage = 1000 - currentDiamonds;
+                    const shortage = 3000 - currentDiamonds;
                     this.showNotice({
                         title: "钻石不足",
-                        message: `盘下茶饮小店开业需要 1000 💎 钻石，当前还差 ${shortage} 💎！\n\n💡 提示：可通过达成各种阶段成就或关卡满分挑战领取大量钻石哦~ 🏆`,
+                        message: `盘下茶饮小店开业需要 3000 💎 钻石，当前还差 ${shortage} 💎！\n\n💡 提示：可通过达成各种阶段成就或关卡满分挑战领取大量钻石哦~ 🏆`,
                         icon: "🏪",
                         btnText: "查看成就领钻石 🏆",
+                        btnClass: "btn-orange",
                         onConfirm: () => {
                             this.openAchievementModal();
                         }
@@ -581,6 +585,7 @@ class BartenderApp {
                     message: `恭喜店长！【${name}】今日正式挂牌开业！\n\n已自动为您解锁开启【3-1】！9 家经典茶饮名店订单汹涌而来，小料放一次仅 10💰，祝您生意兴隆，出杯大卖！🍹`,
                     icon: "🏮",
                     btnText: "前往 3-1 迎客 👨‍🍳",
+                    btnClass: "btn-orange",
                     onConfirm: () => {
                         this.currentLevel = 19;
                         this.selectedChapter = 3;
@@ -646,6 +651,7 @@ class BartenderApp {
         if (this.dom.btnC3Replay) {
             this.dom.btnC3Replay.addEventListener("click", () => {
                 this.closeC3ResultModal();
+                this.updateAutoBrewBtnState();
                 this.startC3Level(this.currentLevel);
             });
         }
@@ -1037,6 +1043,7 @@ class BartenderApp {
             if (isChapter3) {
                 // 🏪 激活第三章连锁模拟经营模式
                 this.c3State.active = true;
+                document.body.classList.add("c3-active");
                 if (this.dom.targetSection) this.dom.targetSection.style.display = "none";
                 if (this.dom.c3DashboardSection) this.dom.c3DashboardSection.style.display = "flex";
 
@@ -1049,6 +1056,7 @@ class BartenderApp {
             } else {
                 // 🚩 第一章与第二章传统特调模式
                 this.c3State.active = false;
+                document.body.classList.remove("c3-active");
                 this.clearC3Timers();
                 if (this.dom.c3DashboardSection) this.dom.c3DashboardSection.style.display = "none";
                 if (this.dom.targetSection) this.dom.targetSection.style.display = "flex";
@@ -1070,6 +1078,7 @@ class BartenderApp {
         } else {
             // 🎨 自由工坊模式
             this.c3State.active = false;
+            document.body.classList.remove("c3-active");
             this.clearC3Timers();
             if (this.dom.c3DashboardSection) this.dom.c3DashboardSection.style.display = "none";
             if (this.dom.targetSection) this.dom.targetSection.style.display = "flex";
@@ -1211,7 +1220,7 @@ class BartenderApp {
             const isEmpty = sum.isEmpty;
             const timeText = sum.updatedAt
                 ? new Date(sum.updatedAt).toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })
-                : "尚未保存";
+                : "未保存";
 
             return `
                 <div class="save-slot-card ${isActive ? 'active' : ''} ${isEmpty ? 'empty' : ''}" data-slot="${sum.slot}">
@@ -1220,32 +1229,35 @@ class BartenderApp {
                     </div>
                     <div class="save-slot-main">
                         <div class="save-slot-header">
-                            <span class="save-slot-title">存档位 ${sum.slot}</span>
-                            ${isActive ? '<span class="save-slot-badge active">当前使用中</span>' : (isEmpty ? '<span class="save-slot-badge empty">空存档</span>' : '')}
+                            <span class="save-slot-title">存档 ${sum.slot}</span>
+                            ${isActive ? '<span class="save-slot-badge active">使用中</span>' : (isEmpty ? '<span class="save-slot-badge empty">空档</span>' : '')}
                         </div>
                         ${isEmpty ? `
-                            <div class="save-slot-empty-text">暂无数据 · 点击可切换开启全新开局</div>
+                            <div class="save-slot-empty-text">暂无数据 · 点击开启全新开局</div>
                         ` : `
-                            <div class="save-slot-info-row">
-                                <span class="save-slot-level">🚩 第 ${sum.levelCode} 关 · ${sum.levelName}</span>
-                                <span class="save-slot-stars">⭐ ${sum.stars} 颗星</span>
-                            </div>
-                            <div class="save-slot-assets-row">
-                                <span>💰 ${sum.coins}</span>
-                                <span>💎 ${sum.diamonds}</span>
-                                <span class="save-slot-time">🕒 ${timeText}</span>
+                            <div class="save-slot-info-line">
+                                <span class="save-slot-level">🚩 第${sum.levelCode}关</span>
+                                <span class="save-slot-dot-sep">·</span>
+                                <span class="save-slot-stars">⭐ ${sum.stars}</span>
+                                <span class="save-slot-dot-sep">·</span>
+                                <span class="save-slot-coins">💰 ${sum.coins}</span>
+                                <span class="save-slot-dot-sep">·</span>
+                                <span class="save-slot-diamonds">💎 ${sum.diamonds}</span>
                             </div>
                         `}
                     </div>
-                    <div class="save-slot-actions">
-                        <button class="save-action-btn save-btn-save" data-slot="${sum.slot}" title="保存当前游玩数据到此位">
-                            💾 保存
-                        </button>
-                        ${!isEmpty ? `
-                            <button class="save-action-btn save-btn-delete" data-slot="${sum.slot}" title="清空删除此存档位">
-                                🗑️
+                    <div class="save-slot-right">
+                        <div class="save-slot-actions">
+                            <button class="save-action-btn save-btn-save" data-slot="${sum.slot}" title="保存当前游玩数据到此位">
+                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                             </button>
-                        ` : ''}
+                            ${!isEmpty ? `
+                                <button class="save-action-btn save-btn-delete" data-slot="${sum.slot}" title="清空删除此存档位">
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                </button>
+                            ` : ''}
+                        </div>
+                        <div class="save-slot-time-bottom">${timeText}</div>
                     </div>
                 </div>
             `;
@@ -1371,6 +1383,18 @@ class BartenderApp {
             return a.originalIndex - b.originalIndex;
         });
 
+        const getAchTypeClass = (groupId) => {
+            if (groupId.includes("serves")) return "badge-type-serves";
+            if (groupId.includes("collect")) return "badge-type-collect";
+            if (groupId.includes("wealth") || groupId.includes("coin")) return "badge-type-wealth";
+            if (groupId.includes("recipe")) return "badge-type-recipes";
+            if (groupId.includes("star")) return "badge-type-stars";
+            if (groupId.includes("free")) return "badge-type-workshop";
+            if (groupId.includes("profit") || groupId.includes("c3")) return "badge-type-business";
+            if (groupId.includes("clear") || groupId.includes("chapter")) return "badge-type-chapter";
+            return "badge-type-default";
+        };
+
         this.dom.achievementListContainer.innerHTML = listWithProg.map(({ group, groupProg }) => {
             const curTier = groupProg.currentTier;
             let actionHtml = "";
@@ -1380,16 +1404,13 @@ class BartenderApp {
                 actionHtml = `<span class="ach-claimed-badge">全部达成 ✔</span>`;
                 cardClass = "claimed";
             } else if (groupProg.isCompleted && !groupProg.isClaimed) {
-                actionHtml = `<button class="ach-claim-btn" data-group-id="${group.groupId}">领取奖励 🎁</button>`;
+                actionHtml = `<button class="ach-claim-btn icon-only" data-group-id="${group.groupId}" title="领取奖励">🎁</button>`;
                 cardClass = "completed";
             } else {
                 actionHtml = `<span class="ach-uncompleted-badge">${groupProg.current}/${groupProg.target}</span>`;
             }
 
-            const tierBadgeText = groupProg.isAllClaimed
-                ? "全部达成"
-                : (groupProg.totalTiers > 1 ? `阶段 ${groupProg.tierIndex}/${groupProg.totalTiers}` : "单阶勋章");
-            const tierBadgeClass = groupProg.isAllClaimed ? "ach-tier-badge max" : "ach-tier-badge";
+            const typeColorClass = getAchTypeClass(group.groupId);
 
             return `
                 <div class="ach-card ${cardClass}">
@@ -1397,10 +1418,9 @@ class BartenderApp {
                         <div class="ach-card-icon">${group.icon}</div>
                         <div class="ach-card-info">
                             <div class="ach-card-title">
-                                <span>${group.title}</span>
-                                <span class="${tierBadgeClass}">${tierBadgeText}</span>
+                                <span class="ach-title-main">${curTier.name}</span>
+                                <span class="ach-type-badge ${typeColorClass} ${groupProg.isAllClaimed ? 'completed-badge' : ''}">${group.title} ${groupProg.isAllClaimed ? '✔' : `${groupProg.tierIndex}/${groupProg.totalTiers}`}</span>
                             </div>
-                            <div class="ach-tier-subname">【${curTier.name}】</div>
                             <div class="ach-card-desc">${curTier.desc}</div>
                             <div class="ach-card-rewards">
                                 <span class="reward-tag">💎 +${curTier.rewardDiamonds}</span>
@@ -1415,7 +1435,7 @@ class BartenderApp {
             `;
         }).join("");
 
-        // 绑定领取按钮 (领取后卡片自动无缝升阶展示为下一阶段)
+        // 绑定领取按钮 (领取后卡片自动无缝升阶展示为下一阶段，采用轻量 Toast 提示，不打断游玩)
         this.dom.achievementListContainer.querySelectorAll(".ach-claim-btn").forEach(btn => {
             btn.addEventListener("click", () => {
                 const groupId = btn.dataset.groupId;
@@ -1428,16 +1448,7 @@ class BartenderApp {
                     this.updateAchievementRedDot();
                     this.renderAchievements();
 
-                    const nextInfo = res.nextGroupProg && !res.nextGroupProg.isAllClaimed
-                        ? `\n\n🌟 自动解锁下一阶段：【${res.nextGroupProg.currentTier.name}】`
-                        : (res.nextGroupProg && res.nextGroupProg.isAllClaimed ? "\n\n🏆 该系列全阶梯成就已全部达成！" : "");
-
-                    this.showNotice({
-                        title: "🎉 阶段成就达成！",
-                        message: `恭喜达成【${res.claimedTier.name}】！\n\n💎 +${res.rewardDiamonds} 钻石\n💰 +${res.rewardCoins} 金币！${nextInfo}`,
-                        icon: "🎁",
-                        btnText: "开心收下 ✨"
-                    });
+                    this.showToast(`🎉 达成【${res.claimedTier.name}】！ 💎+${res.rewardDiamonds} 💰+${res.rewardCoins}`);
                 }
             });
         });
@@ -1795,7 +1806,7 @@ class BartenderApp {
                         ${isUnlocked ? (isChapter3 ? `${r.brandLogo || '🏪'} 第 ${levelCode} 关` : `第 ${levelCode} 关`) : '🔒 待解锁'}
                     </div>
                     <div class="level-name">${isUnlocked ? r.name : '???'}</div>
-                    <div class="level-sub">${isUnlocked ? (isChapter3 ? `最少${minOrders}单⭐ · 目标${r.targetProfit}💰` : r.subtitle) : '通关上一关解锁'}</div>
+                    <div class="level-sub">${isUnlocked ? (isChapter3 ? `最少${minOrders}单 · ${r.targetProfit}💰` : r.subtitle) : '通关上一关解锁'}</div>
                     ${isUnlocked ? `
                         <div class="level-score-info">
                             <span class="level-stars">${starsText}</span>
@@ -1857,16 +1868,16 @@ class BartenderApp {
         }, 280);
 
         setTimeout(() => {
-            this.currentDrink.inCupItems = [...recipe.inCupItems];
-            if (recipe.inCupItems.includes("heart_ice") || recipe.inCupItems.includes("classic_ice")) {
+            this.currentDrink.inCupItems = Array.isArray(recipe.inCupItems) ? [...recipe.inCupItems] : [];
+            if (this.currentDrink.inCupItems.includes("heart_ice") || this.currentDrink.inCupItems.includes("classic_ice")) {
                 window.soundEngine.playIceDrop();
-            } else {
+            } else if (this.currentDrink.inCupItems.length > 0) {
                 window.soundEngine.playSoftDrop();
             }
 
             // 🏪 第三章模拟经营模式：店员自动/自动特调扣除小料物料成本 (每项小料 10 💰)
-            if (this.c3State && this.c3State.active && recipe.inCupItems && recipe.inCupItems.length > 0) {
-                const cost = recipe.inCupItems.length * 10;
+            if (this.c3State && this.c3State.active && this.currentDrink.inCupItems.length > 0) {
+                const cost = this.currentDrink.inCupItems.length * 10;
                 window.StorageManager.spendCoins(cost);
                 this.c3State.materialCosts += cost;
                 this.updateC3Financials();
@@ -1879,7 +1890,7 @@ class BartenderApp {
         }, 600);
 
         setTimeout(() => {
-            if (recipe.foamLayer !== "none") {
+            if (recipe.foamLayer && recipe.foamLayer !== "none") {
                 this.currentDrink.foamLayer = recipe.foamLayer;
                 window.soundEngine.playFoam();
                 this.updateDrinkView();
@@ -1888,22 +1899,27 @@ class BartenderApp {
         }, 950);
 
         setTimeout(() => {
-            if (recipe.topper !== "none") {
-                this.currentDrink.topper = recipe.topper;
+            // 🌟 修复顶饰数据：同时完整装填 toppers 多选数组与 topper 单值
+            const targetToppers = Array.isArray(recipe.toppers) ? [...recipe.toppers] : (recipe.topper && recipe.topper !== "none" ? [recipe.topper] : []);
+            this.currentDrink.toppers = [...targetToppers];
+            this.currentDrink.topper = targetToppers[0] || "none";
+
+            if (targetToppers.length > 0) {
                 window.soundEngine.playTopperPlace();
 
                 // 🏪 第三章模拟经营模式：店员自动/自动特调扣除顶饰物料成本 (每个顶饰 10 💰)
                 if (this.c3State && this.c3State.active) {
-                    window.StorageManager.spendCoins(10);
-                    this.c3State.materialCosts += 10;
+                    const topperCost = targetToppers.length * 10;
+                    window.StorageManager.spendCoins(topperCost);
+                    this.c3State.materialCosts += topperCost;
                     this.updateC3Financials();
                     this.updateCurrencyDisplay();
-                    this.showFloatingText("-10 💰", "cost");
+                    this.showFloatingText(`-${topperCost} 💰`, "cost");
                 }
-
-                this.updateDrinkView();
-                this.renderIngredientsPanel();
             }
+
+            this.updateDrinkView();
+            this.renderIngredientsPanel();
             this.triggerEffect(recipe.effect);
         }, 1250);
     }
@@ -1988,7 +2004,7 @@ class BartenderApp {
                     return items.filter(l => c3Liquids.includes(l.id));
                 }
                 if (category === "item") {
-                    const c3Items = ["classic_ice", "boba_pearls", "lemon_slice", "orange_slice", "taro_balls", "grape_pulp", "peach_jelly"];
+                    const c3Items = ["classic_ice", "boba_pearls", "lemon_slice", "orange_slice", "taro_balls", "grape_pulp", "peach_jelly", "grapefruit_pulp"];
                     return items.filter(i => c3Items.includes(i.id));
                 }
                 if (category === "foam") {
@@ -2395,13 +2411,14 @@ class BartenderApp {
     }
 
     // 💡 统一手绘风通知弹窗 (替代浏览器原生 alert)
-    showNotice({ title = "温馨提示", message = "", icon = "💡", btnText = "我知道啦 🍹", onConfirm = null }) {
+    showNotice({ title = "温馨提示", message = "", icon = "💡", btnText = "我知道啦 🍹", btnClass = "", onConfirm = null }) {
         this.pauseC3Timers();
         window.soundEngine.playBubble();
         this.dom.noticeModalTitle.textContent = title;
         this.dom.noticeModalMessage.textContent = message;
         this.dom.noticeModalIcon.textContent = icon;
         this.dom.btnConfirmNotice.textContent = btnText;
+        this.dom.btnConfirmNotice.className = "btn btn-primary notice-confirm-btn" + (btnClass ? " " + btnClass : "");
         this.noticeConfirmCallback = onConfirm;
         this.dom.noticeModal.classList.add("active");
     }
@@ -2409,6 +2426,9 @@ class BartenderApp {
     closeNotice() {
         if (this.dom.noticeModal) {
             this.dom.noticeModal.classList.remove("active");
+            if (this.dom.btnConfirmNotice) {
+                this.dom.btnConfirmNotice.className = "btn btn-primary notice-confirm-btn";
+            }
             window.soundEngine.playBubble();
             if (this.noticeConfirmCallback) {
                 this.noticeConfirmCallback();
@@ -2556,11 +2576,15 @@ class BartenderApp {
         let recommendedGlass = isC3 ? "cup_medium" : "classic";
         if (!isC3 && isLevel && recipe && recipe.glassType) {
             recommendedGlass = recipe.glassType;
+        } else if (isC3 && this.c3State && this.c3State.currentCustomer && this.c3State.currentCustomer.drink && this.c3State.currentCustomer.drink.glassType) {
+            recommendedGlass = this.c3State.currentCustomer.drink.glassType;
+        } else if (isC3 && recipe && recipe.glassType) {
+            recommendedGlass = recipe.glassType;
         }
 
         // 2. 检查玩家是否已购买解锁该推荐杯型 (未购买则回退默认)
-        const isUnlocked = (window.StorageManager && window.StorageManager.isGlassUnlocked)
-            ? window.StorageManager.isGlassUnlocked(recommendedGlass)
+        const isUnlocked = (window.StorageManager && window.StorageManager.isUnlocked)
+            ? window.StorageManager.isUnlocked("glass", recommendedGlass)
             : true;
         const defaultFallback = isC3 ? "cup_medium" : "classic";
         const validRecommended = isUnlocked ? recommendedGlass : defaultFallback;
@@ -2776,6 +2800,7 @@ class BartenderApp {
                                     message: `恭喜通关第一章全部 9 款经典特调！\n\n开启【第二章：微醺与星芒】需要消耗 300 💎 钻石。\n当前拥有：${currentDiamonds} 💎\n\n是否立即解锁第二章（开放全新量杯分层渐变系统与 9 款网红渐变特调）？`,
                                     icon: "🔮",
                                     btnText: "消耗 300 💎 解锁开启 🚀",
+                                    btnClass: "btn-orange",
                                     onConfirm: () => {
                                         const res = window.StorageManager.unlockChapter(2, 300);
                                         if (res && res.success) {
@@ -2796,6 +2821,7 @@ class BartenderApp {
                                     message: `恭喜通关第一章！开启【第二章：微醺与星芒】需要 300 💎 钻石，当前还差 ${shortage} 💎！\n\n💡 提示：可以通过达成各种阶段成就或满分挑战领取丰厚钻石哦~ 🏆`,
                                     icon: "🔒",
                                     btnText: "查看成就领钻石 🏆",
+                                    btnClass: "btn-orange",
                                     onConfirm: () => {
                                         this.openAchievementModal();
                                     }
@@ -2818,14 +2844,15 @@ class BartenderApp {
                         const isC3Unlocked = window.StorageManager.isChapterUnlocked(3);
                         if (!isC3Unlocked) {
                             const currentDiamonds = this.saveData.diamonds || 0;
-                            if (currentDiamonds >= 1000) {
+                            if (currentDiamonds >= 3000) {
                                 this.showNotice({
                                     title: "🎉 第二章全满通关！",
-                                    message: `恭喜征服第二章全部微醺星芒特调！\n\n盘下独立店铺开启【第三章：烟火与茶香】连锁经营模式需要 1000 💎 钻石。\n当前拥有：${currentDiamonds} 💎\n\n是否立即盘店挂牌开业？`,
+                                    message: `恭喜征服第二章全部微醺星芒特调！\n\n盘下独立店铺开启【第三章：烟火与茶香】连锁经营模式需要 3000 💎 钻石。\n当前拥有：${currentDiamonds} 💎\n\n是否立即盘下小店开业？`,
                                     icon: "🏮",
-                                    btnText: "盘下小店开业 🏮",
+                                    btnText: "3000💎盘下小店开业 🏮",
+                                    btnClass: "btn-orange",
                                     onConfirm: () => {
-                                        const res = window.StorageManager.unlockChapter(3, 1000);
+                                        const res = window.StorageManager.unlockChapter(3, 3000);
                                         if (res && res.success) {
                                             window.soundEngine.playSparkle();
                                             window.soundEngine.playCoin();
@@ -2836,12 +2863,13 @@ class BartenderApp {
                                     }
                                 });
                             } else {
-                                const shortage = 1000 - currentDiamonds;
+                                const shortage = 3000 - currentDiamonds;
                                 this.showNotice({
                                     title: "🎉 第二章全满通关！",
-                                    message: `恭喜通关第二章！盘下店铺开启【第三章：烟火与茶香】需要 1000 💎 钻石，当前还差 ${shortage} 💎！\n\n💡 提示：可以通过达成各种阶段成就领取丰厚钻石哦~ 🏆`,
+                                    message: `恭喜通关第二章！盘下店铺开启【第三章：烟火与茶香】需要 3000 💎 钻石，当前还差 ${shortage} 💎！\n\n💡 提示：可以通过达成各种阶段成就领取丰厚钻石哦~ 🏆`,
                                     icon: "🏮",
                                     btnText: "查看成就领钻石 🏆",
+                                    btnClass: "btn-orange",
                                     onConfirm: () => {
                                         this.openAchievementModal();
                                     }
@@ -2923,6 +2951,7 @@ class BartenderApp {
 
         this.updateC3Financials();
         this.updateC3CloseShopBtn();
+        this.updateAutoBrewBtnState();
         this.resetCup();
 
         // 启动营业打烊倒计时
@@ -3066,7 +3095,7 @@ class BartenderApp {
         }
     }
 
-    // 动态刷新提前打烊按钮外观与交互状态
+    // 动态刷新提前打烊按钮外观与交互状态 (出杯进度整合进打烊按钮)
     updateC3CloseShopBtn() {
         if (!this.dom.btnC3CloseShop || !this.dom.c3CloseShopText) return;
         const minOrders = this.c3State.minOrders || 5;
@@ -3074,11 +3103,11 @@ class BartenderApp {
         if (completed >= minOrders) {
             this.dom.btnC3CloseShop.className = "c3-close-shop-btn ready";
             this.dom.btnC3CloseShop.title = `已达成 1★ 基础指标(出杯${completed}单)！随时可点击打烊结算`;
-            this.dom.c3CloseShopText.textContent = `打烊结算 ⭐ (${completed})`;
+            this.dom.c3CloseShopText.textContent = `打烊 (${completed}/${minOrders})`;
         } else {
             this.dom.btnC3CloseShop.className = "c3-close-shop-btn disabled";
             this.dom.btnC3CloseShop.title = `达成最少 ${minOrders} 单后可提前打烊盘点 (当前 ${completed}/${minOrders})`;
-            this.dom.c3CloseShopText.textContent = `打烊(需≥${minOrders}单)`;
+            this.dom.c3CloseShopText.textContent = `打烊 (${completed}/${minOrders})`;
         }
     }
 
@@ -3173,7 +3202,14 @@ class BartenderApp {
 
         const avatars = ["⛄", "🧋", "🕶️", "🐼", "🏮", "👒", "💼", "👑", "🦊", "🐱", "🐰", "🐻", "🦄", "🐶", "🦁", "🐨", "🐵", "🐯", "🐹", "🐸"];
         const custAvatar = avatars[Math.floor(Math.random() * avatars.length)];
-        const custName = `第 ${index + 1} 位顾客`;
+        // 顾客趣味姓名池 (包含芳芳、冰冰、东方不败等)
+        const poolNames = [
+            "芳芳", "冰冰", "东方不败", "翠花", "强哥", "大雄", "静香", 
+            "小龙女", "令狐冲", "紫霞", "至尊宝", "小龙", "秋香", "唐伯虎",
+            "风清扬", "西门吹雪", "花满楼", "楚留香", "乔峰", "段誉", "虚竹"
+        ];
+        const randName = poolNames[Math.floor(Math.random() * poolNames.length)];
+        const custName = `客人：${randName}`;
 
         // 耐心时长递减机制：关卡越靠后客人越急促 (从 38s 逐步降至 22s)
         const basePatience = Math.max(22, 38 - Math.floor((this.currentLevel - 19) * 1.8));
@@ -3187,18 +3223,11 @@ class BartenderApp {
             remainMs: basePatience * 1000
         };
 
-        // 更新客人 UI 与订单计数器 (显示当前客人序号与最少达标订单目标)
-        const minOrders = this.c3State.minOrders || 5;
-        const completed = this.c3State.ordersCompleted || 0;
-
+        // 更新客人 UI (出杯进度已移入打烊按钮，此处精简展示顾客身份)
         if (this.dom.c3CustAvatar) this.dom.c3CustAvatar.textContent = custAvatar;
         if (this.dom.c3CustName) this.dom.c3CustName.textContent = custName;
         if (this.dom.c3OrderCounter) {
-            if (completed < minOrders) {
-                this.dom.c3OrderCounter.textContent = `👨‍🍳 客人 #${index + 1} · 进度 ${completed}/${minOrders}单⭐`;
-            } else {
-                this.dom.c3OrderCounter.textContent = `⭐ 客人 #${index + 1} · 目标已达成(${completed}单🔥)`;
-            }
+            this.dom.c3OrderCounter.textContent = custName;
         }
         if (this.dom.c3CupDemandBadge) {
             const gType = selectedDrink.glassType || "cup_medium";
@@ -3253,28 +3282,20 @@ class BartenderApp {
         }
     }
 
-    // 客人耐心耗尽弃单处理
+    // 客人耐心耗尽弃单处理：超时不罚款，不弹窗打扰，清空杯子后直接迎来下一位客人
     onC3CustomerTimeout() {
-        window.soundEngine.playDump();
-        const custName = this.c3State.currentCustomer?.name || "客人";
-        this.showFloatingText("-50 💰 弃单罚款", "penalty");
-        window.StorageManager.spendCoins(50);
+        if (window.soundEngine?.playSoftDrop) {
+            window.soundEngine.playSoftDrop();
+        } else if (window.soundEngine?.playDump) {
+            window.soundEngine.playDump();
+        }
+        this.showFloatingText("💨 客人等太久离开了...", "penalty");
 
-        this.c3State.penaltyCosts += 50;
         this.c3State.ordersFailed++;
-        this.updateC3Financials();
-        this.updateCurrencyDisplay();
         this.resetCup();
 
-        this.showNotice({
-            title: "💨 客人等太久生气离店！",
-            message: `【${custName}】耐心归零愤然离店！\n\n商誉受损，扣除弃单违约金 50 💰！手速要加快哦，快迎进下一位客人吧！`,
-            icon: "😤",
-            btnText: "迎进下一位 🏃",
-            onConfirm: () => {
-                this.spawnC3Customer(this.c3State.currentCustomerIndex + 1);
-            }
-        });
+        // 直接无缝迎进下一位客人（不弹窗、不扣罚金）
+        this.spawnC3Customer(this.c3State.currentCustomerIndex + 1);
     }
 
     // 🧑‍🍳 触发店员自动调配与出单 (按普通的自动速度调配)
@@ -3457,6 +3478,14 @@ class BartenderApp {
             window.soundEngine.playSoftDrop();
             this.triggerCupShake();
 
+            // 做错了罚款：扣除赔偿金 30 💰
+            const penalty = 30;
+            this.showFloatingText(`-${penalty} 💰 做错罚款`, "penalty");
+            window.StorageManager.spendCoins(penalty);
+            this.c3State.penaltyCosts += penalty;
+            this.updateC3Financials();
+            this.updateCurrencyDisplay();
+
             // 扣除客人 25% 耐心
             if (this.c3State.currentCustomer) {
                 this.c3State.currentCustomer.currentTime = Math.max(1, this.c3State.currentCustomer.currentTime - 7);
@@ -3466,10 +3495,10 @@ class BartenderApp {
             if (reasons.length > 0) {
                 failMsg += `⚠️ 原因：\n${reasons.map(r => `· ${r}`).join('\n')}\n\n`;
             }
-            failMsg += `请点击右上角【📖 本店秘籍】仔细核对杯型与配料重新调制吧！`;
+            failMsg += `赔偿客人 ${penalty} 💰 损失。请点击右上角【📖 本店秘籍】仔细核对杯型与配料重新调制吧！`;
 
             this.showNotice({
-                title: "😣 饮品不符合点单要求！",
+                title: "😣 饮品做错罚款！",
                 message: failMsg,
                 icon: "⚠️",
                 btnText: "查阅秘籍重新做 🍹"
