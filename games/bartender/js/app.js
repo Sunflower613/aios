@@ -664,7 +664,7 @@ class BartenderApp {
                         title: "营业未达标",
                         message: "今日出杯量未达标，需至少达成 1★ 目标方可开启下一关！\n\n请重新挑战提升出杯手速与利润吧~ 👨‍🍳",
                         icon: "🔒",
-                        btnText: "重新挑战 ↺",
+                        btnText: "重新挑战",
                         onConfirm: () => {
                             this.closeC3ResultModal();
                             this.startC3Level(this.currentLevel);

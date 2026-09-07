@@ -1,5 +1,7 @@
 /**
- * 治愈系拍立得特调分享卡片渲染与高清图片保存导出引擎 (Share Card & Canvas Exporter)
+ * 治愈系拍立得特调分享卡片渲染与图片保存导出引擎 (Share Card & Canvas Exporter)
+ * 智能自适应架构：当存在 QRCodeEngine 时自动启用二维码渲染与扫码导流；
+ * 当无 QRCodeEngine (如小红书小工具环境) 时自动降级为手绘独家特调印章与原生相册知情授权保存。
  */
 
 class ShareCardManager {
@@ -10,6 +12,8 @@ class ShareCardManager {
             btnCloseModal: document.getElementById("btnCloseModal")
         };
         this.onCloseCallback = null;
+        this.cachedShareFile = null;
+        this.cachedShareCanvas = null;
         this.initEvents();
     }
 
@@ -34,17 +38,25 @@ class ShareCardManager {
     close() {
         if (this.dom.modalOverlay) {
             this.dom.modalOverlay.classList.remove("active");
-            window.soundEngine.playBubble();
+            if (window.soundEngine && window.soundEngine.playBubble) {
+                window.soundEngine.playBubble();
+            }
             if (this.onCloseCallback) {
-                this.onCloseCallback();
+                const cb = this.onCloseCallback;
                 this.onCloseCallback = null;
+                cb();
             }
         }
     }
 
+    /**
+     * 核心弹窗展示方法 (双端统一)
+     */
     showCard(drinkData, modeData, callbacks = {}) {
+        if (!modeData) modeData = {};
+        if (!callbacks) callbacks = {};
         const isLevel = modeData.mode === "level";
-        const targetRecipe = modeData.recipe || window.DRINK_RECIPES[0];
+        const targetRecipe = modeData.recipe || (window.DRINK_RECIPES && window.DRINK_RECIPES[0]) || {};
         let drinkName = isLevel ? targetRecipe.name : (drinkData.customName || "我的专属奇迹特调");
         const subtitle = isLevel ? targetRecipe.subtitle : "Signature Cozy Drink";
         const poem = isLevel ? targetRecipe.desc : "在微风与灯火之间，调制专属于此刻的治愈风味。";
@@ -52,8 +64,8 @@ class ShareCardManager {
         const stars = (typeof modeData.stars === "number") ? modeData.stars : (isLevel ? 0 : 3);
         const earnedCoins = (typeof modeData.earnedCoins === "number") ? modeData.earnedCoins : 0;
 
-        // 动态计算主行动按钮文案与标题 (支持多章节与未及格拦截，历史最佳通关战绩始终有效)
-        let nextBtnText = "调下一杯 🍹";
+        // 动态计算主行动按钮文案与标题
+        let nextBtnText = "调下一杯";
         let nextBtnTitle = "清空杯子调下一杯";
         const historyRecord = (isLevel && window.StorageManager) ? (window.StorageManager.getData().levelRecords[modeData.level] || null) : null;
         const isHistoryPassed = Boolean(historyRecord && (historyRecord.score >= 60 || historyRecord.stars >= 1));
@@ -61,22 +73,21 @@ class ShareCardManager {
         if (isLevel) {
             const lvl = modeData.level;
             if (!isPass) {
-                // 未达 60 分及格线且历史从未通关：主行动按钮为重新挑战
-                nextBtnText = "重新挑战 ↺";
+                nextBtnText = "重新挑战";
                 nextBtnTitle = "得分未达及格线 (需≥60分通关)，清空杯子重新挑战本关";
             } else if (lvl === 9) {
                 const isC2Unlocked = window.StorageManager ? window.StorageManager.isChapterUnlocked(2) : false;
-                nextBtnText = isC2Unlocked ? "进入第二章 ➔" : "解锁第2章 💎";
+                nextBtnText = isC2Unlocked ? "进入第二章" : "解锁第2章 💎";
                 nextBtnTitle = isC2Unlocked ? "前往第二章第一关" : "消耗 300 钻石解锁开启第二章";
             } else if (lvl === 18) {
                 const isC3Unlocked = window.StorageManager ? window.StorageManager.isChapterUnlocked(3) : false;
-                nextBtnText = isC3Unlocked ? "进入第三章 ➔" : "盘店开业第3章 🏮";
+                nextBtnText = isC3Unlocked ? "进入第三章" : "盘店开业第3章 🏮";
                 nextBtnTitle = isC3Unlocked ? "前往第三章连锁经营第一关" : "盘下小店开启第三章连锁经营";
             } else if (lvl === 27 || (window.DRINK_RECIPES && lvl >= window.DRINK_RECIPES.length)) {
                 nextBtnText = "圆满通关 🏆";
                 nextBtnTitle = "已通关全部关卡！";
             } else {
-                nextBtnText = "下一关 ➔";
+                nextBtnText = "下一关";
                 nextBtnTitle = "进入下一关";
             }
         }
@@ -109,6 +120,22 @@ class ShareCardManager {
                 <span class="polaroid-edit-icon" id="polaroidEditIcon" title="点击修改名称">✏️</span>
             </div>
         `;
+
+        if (!this.dom.resultCard) {
+            this.dom.resultCard = document.getElementById("resultCard");
+        }
+        if (!this.dom.modalOverlay) {
+            this.dom.modalOverlay = document.getElementById("modalOverlay");
+        }
+
+        // 二维码条件化渲染解耦 (存在 QRCodeEngine 时渲染，小红书等无二维码环境自动为空)
+        const hasQr = Boolean(window.QRCodeEngine);
+        const footerBadgeHtml = hasQr ? `
+            <div class="polaroid-qr-badge" title="当前网址二维码：扫码即可在线品尝同款特调">
+                <canvas class="polaroid-qr-canvas" id="polaroidQrCanvas" width="46" height="46"></canvas>
+                <span class="polaroid-qr-sub">扫码同玩</span>
+            </div>
+        ` : "";
 
         this.dom.resultCard.innerHTML = `
             <div class="polaroid-card" id="polaroidCardNode">
@@ -154,19 +181,15 @@ class ShareCardManager {
                                 <span>COZY BAR</span>
                                 <span>治愈特调馆</span>
                             </div>
-                            <!-- 右下角当前网址二维码 -->
-                            <div class="polaroid-qr-badge" title="当前网址二维码：扫码即可在线品尝同款特调">
-                                <canvas class="polaroid-qr-canvas" id="polaroidQrCanvas" width="46" height="46"></canvas>
-                                <span class="polaroid-qr-sub">扫码同玩</span>
-                            </div>
+                            ${footerBadgeHtml}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 操作按钮栏 (前3个采用标准 Lucide 矢量图标，彻底释放空间；第4个为主操作按钮) -->
+            <!-- 操作按钮栏 (前3个矢量图标按钮 + 1个主行动按钮) -->
             <div class="card-action-buttons">
-                <!-- 1. 保存图片 (Lucide Camera 矢量相机图标) -->
+                <!-- 1. 保存图片 -->
                 <button class="btn card-icon-btn btn-save-img" id="btnSaveCardImg" title="保存特调拍立得到相册" aria-label="保存图片">
                     <svg class="btn-icon-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
@@ -174,8 +197,8 @@ class ShareCardManager {
                     </svg>
                 </button>
 
-                <!-- 2. 分享 (Lucide Share-2 矢量分享节点图标) -->
-                <button class="btn card-icon-btn btn-share-action" id="btnShareCardAction" title="调出手机系统原生分享" aria-label="分享特调">
+                <!-- 2. 分享 -->
+                <button class="btn card-icon-btn btn-share-action" id="btnShareCardAction" title="调出分享选项" aria-label="分享特调">
                     <svg class="btn-icon-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="18" cy="5" r="3"/>
                         <circle cx="6" cy="12" r="3"/>
@@ -185,7 +208,7 @@ class ShareCardManager {
                     </svg>
                 </button>
 
-                <!-- 3. 重玩 (Lucide Rotate-Ccw 矢量重调图标) -->
+                <!-- 3. 重玩 -->
                 <button class="btn card-icon-btn btn-retry-action" id="btnCardRetryAction" title="清空杯子重玩本关" aria-label="重玩本关">
                     <svg class="btn-icon-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="1 4 1 10 7 10"/>
@@ -193,7 +216,7 @@ class ShareCardManager {
                     </svg>
                 </button>
 
-                <!-- 4. 下一关 / 跨章解锁 / 调下一杯 (主行动按钮) -->
+                <!-- 4. 主行动按钮 -->
                 <button class="btn btn-primary btn-orange btn-next-action" id="btnCardNextAction" title="${nextBtnTitle}">
                     <span>${nextBtnText}</span>
                 </button>
@@ -208,9 +231,8 @@ class ShareCardManager {
                 const newName = titleInput.value.trim() || "我的专属奇迹特调";
                 drinkName = newName;
                 drinkData.customName = newName;
-                // 名称变更时使缓存失效以便重新生成
-                this.cachedShareFile = null;
                 this.cachedShareCanvas = null;
+                this.cachedShareFile = null;
             };
             titleInput.addEventListener("input", commitNameChange);
             titleInput.addEventListener("change", commitNameChange);
@@ -223,19 +245,23 @@ class ShareCardManager {
             titleInput.addEventListener("keydown", (e) => {
                 if (e.key === "Enter") {
                     titleInput.blur();
-                    window.soundEngine.playBubble();
+                    if (window.soundEngine && window.soundEngine.playBubble) {
+                        window.soundEngine.playBubble();
+                    }
                 }
             });
             if (editIcon) {
                 editIcon.addEventListener("click", () => {
                     titleInput.focus();
                     titleInput.select();
-                    window.soundEngine.playBubble();
+                    if (window.soundEngine && window.soundEngine.playBubble) {
+                        window.soundEngine.playBubble();
+                    }
                 });
             }
         }
 
-        // 渲染拍立得卡片右下角当前网址二维码
+        // 条件化渲染二维码 DOM
         const qrCanvas = document.getElementById("polaroidQrCanvas");
         if (qrCanvas && window.QRCodeEngine) {
             try {
@@ -246,103 +272,84 @@ class ShareCardManager {
                     lightColor: "#ffffff"
                 });
             } catch (err) {
-                console.error("卡片右下角二维码渲染失败", err);
+                console.error("二维码渲染失败", err);
             }
         }
 
-        // 🚀 后台静默预热：在卡片弹出的第一时间将高清 Canvas 与分享 File 缓存就绪
-        // 这样在移动端点击【分享】时能直接在原生同步手势栈中触发 navigator.share，绝不丢失用户手势凭证！
-        this.cachedShareFile = null;
-        this.cachedShareCanvas = null;
-        const prepareData = {
-            drinkName,
-            subtitle,
-            poem,
-            score,
-            stars,
-            isLevel,
-            drinkSvgHtml
-        };
-        setTimeout(() => {
-            this.generateCardCanvas(prepareData, (canvas) => {
-                this.cachedShareCanvas = canvas;
-                if (canvas.toBlob) {
-                    canvas.toBlob((blob) => {
-                        if (blob) {
-                            try {
-                                this.cachedShareFile = new File([blob], `${drinkName}_治愈特调.png`, { type: "image/png" });
-                            } catch (e) {
-                                console.log("File 对象预封装", e);
-                            }
-                        }
-                    }, "image/png");
-                }
-            });
-        }, 30);
+        // 绑定按钮交互事件
+        this.bindCardActions(drinkName, subtitle, poem, score, stars, isLevel, drinkSvgHtml, titleInput, callbacks);
 
-        // 1. 保存图片
-        document.getElementById("btnSaveCardImg").addEventListener("click", () => {
-            const finalDrinkName = (!isLevel && titleInput) ? (titleInput.value.trim() || "我的专属奇迹特调") : drinkName;
-            this.exportToCanvasAndDownload({
-                drinkName: finalDrinkName,
-                subtitle,
-                poem,
-                score,
-                stars,
-                isLevel,
-                drinkSvgHtml
-            });
-        });
-
-        // 2. 📤 分享当前图片与网址 (同步直达移动端系统原生分享面板)
-        document.getElementById("btnShareCardAction").addEventListener("click", () => {
-            const finalDrinkName = (!isLevel && titleInput) ? (titleInput.value.trim() || "我的专属奇迹特调") : drinkName;
-            this.shareCardImage({
-                drinkName: finalDrinkName,
-                subtitle,
-                poem,
-                score,
-                stars,
-                isLevel,
-                drinkSvgHtml
-            });
-        });
-
-        // 3. 重玩本关
-        document.getElementById("btnCardRetryAction").addEventListener("click", () => {
-            if (this.dom.modalOverlay) {
-                this.dom.modalOverlay.classList.remove("active");
-            }
-            if (callbacks.onRetry) {
-                callbacks.onRetry();
-            }
-        });
-
-        // 4. 下一关 / 再调一杯 / 未及格重新挑战
-        document.getElementById("btnCardNextAction").addEventListener("click", () => {
-            if (this.dom.modalOverlay) {
-                this.dom.modalOverlay.classList.remove("active");
-            }
-            if (isLevel && score < 60) {
-                // 得分低于 60 分未及格，强制执行重新挑战
-                if (callbacks.onRetry) {
-                    callbacks.onRetry();
-                } else if (callbacks.onNext) {
-                    callbacks.onNext();
-                }
-                return;
-            }
-            if (callbacks.onNext) {
-                callbacks.onNext();
-            }
-        });
-
-        this.dom.modalOverlay.classList.add("active");
+        // 激活展示弹窗
+        if (this.dom.modalOverlay) {
+            this.dom.modalOverlay.classList.add("active");
+        }
+        if (window.soundEngine && window.soundEngine.playSuccess) {
+            window.soundEngine.playSuccess();
+        }
     }
 
-    /**
-     * 高清 Canvas 拍立得卡片离线合成器 (720x980 纯净拍立得比例，无任何外层大黑框)
-     */
+    bindCardActions(drinkName, subtitle, poem, score, stars, isLevel, drinkSvgHtml, titleInput, callbacks) {
+        const btnSave = document.getElementById("btnSaveCardImg");
+        if (btnSave) {
+            btnSave.addEventListener("click", () => {
+                const finalDrinkName = (!isLevel && titleInput) ? (titleInput.value.trim() || "我的专属奇迹特调") : drinkName;
+                this.exportToCanvasAndDownload({
+                    drinkName: finalDrinkName,
+                    subtitle: subtitle,
+                    poem: poem,
+                    score: score,
+                    stars: stars,
+                    isLevel: isLevel,
+                    drinkSvgHtml: drinkSvgHtml
+                });
+            });
+        }
+
+        const btnShare = document.getElementById("btnShareCardAction");
+        if (btnShare) {
+            btnShare.addEventListener("click", () => {
+                const finalDrinkName = (!isLevel && titleInput) ? (titleInput.value.trim() || "我的专属奇迹特调") : drinkName;
+                this.shareCardImage({
+                    drinkName: finalDrinkName,
+                    subtitle: subtitle,
+                    poem: poem,
+                    score: score,
+                    stars: stars,
+                    isLevel: isLevel,
+                    drinkSvgHtml: drinkSvgHtml
+                });
+            });
+        }
+
+        const btnRetry = document.getElementById("btnCardRetryAction");
+        if (btnRetry) {
+            btnRetry.addEventListener("click", () => {
+                this.close();
+                if (callbacks.onRetry) {
+                    callbacks.onRetry();
+                }
+            });
+        }
+
+        const btnNext = document.getElementById("btnCardNextAction");
+        if (btnNext) {
+            btnNext.addEventListener("click", () => {
+                this.close();
+                if (isLevel && score < 60) {
+                    if (callbacks.onRetry) {
+                        callbacks.onRetry();
+                    } else if (callbacks.onNext) {
+                        callbacks.onNext();
+                    }
+                    return;
+                }
+                if (callbacks.onNext) {
+                    callbacks.onNext();
+                }
+            });
+        }
+    }
+
     generateCardCanvas(data, callback) {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
@@ -351,7 +358,7 @@ class ShareCardManager {
         canvas.width = width;
         canvas.height = height;
 
-        // 1. 纯净米白拍立得卡片主体与经典黑色手绘轮廓线 (全幅铺满，无外层深色背景，保留手绘黑边)
+        // 1. 拍立得卡片底托与边框
         ctx.fillStyle = "#faf6ed";
         ctx.strokeStyle = "#2c221a";
         ctx.lineWidth = 5;
@@ -362,7 +369,7 @@ class ShareCardManager {
         const cardW = width;
         const cardH = height;
 
-        // 2. 绘制照片框背景 (拍立得特调特写区，恢复内部经典黑色手绘框线)
+        // 2. 特调照片框
         const photoX = 26;
         const photoY = 26;
         const photoW = width - 52;
@@ -373,14 +380,13 @@ class ShareCardManager {
         ctx.lineWidth = 5;
         this.roundRect(ctx, photoX, photoY, photoW, photoH, 14, true, true);
 
-        // 照片框内部柔和温润光晕
         const grad = ctx.createRadialGradient(photoX + photoW / 2, photoY + photoH / 2, 20, photoX + photoW / 2, photoY + photoH / 2, photoW / 1.5);
         grad.addColorStop(0, "#f9f2e7");
         grad.addColorStop(1, "#dfcca8");
         ctx.fillStyle = grad;
         this.roundRect(ctx, photoX + 3, photoY + 3, photoW - 6, photoH - 6, 11, true, false);
 
-        // 3. 将 SVG 转换为图片绘制到照片框中
+        // 3. 绘制 SVG 特调图形
         const svgEl = document.querySelector(".polaroid-drink-svg-box svg") || document.querySelector("#drinkStage svg");
         const onSvgDrawn = () => {
             this.drawCardTypography(ctx, data, cardX, cardY, cardW, cardH);
@@ -414,19 +420,203 @@ class ShareCardManager {
     }
 
     /**
-     * 高清 Canvas 离线合成并触发直接下载保存
+     * 保存图片：自适应小红书相册授权与普通环境下载/预览
      */
     exportToCanvasAndDownload(data) {
-        window.soundEngine.playSparkle();
+        if (window.soundEngine && window.soundEngine.playSparkle) {
+            window.soundEngine.playSparkle();
+        }
+
         this.generateCardCanvas(data, (canvas) => {
-            this.triggerDownload(canvas, data.drinkName);
-            this.showToast("📸 拍立得特调卡片已保存到本地！✨");
+            const hasXhsBridge = typeof window.xhs !== "undefined" && window.xhs && window.xhs.miniTool && typeof window.xhs.miniTool.saveImageToPhotosAlbum === "function";
+
+            if (hasXhsBridge) {
+                // 检查是否已经获得过用户主动授权，若已授权过一次则无需重复询问
+                let hasGranted = false;
+                try {
+                    hasGranted = window.localStorage && window.localStorage.getItem("xhs_photo_permission_granted") === "1";
+                } catch (e) {}
+
+                if (hasGranted) {
+                    this.executeXhsSave(canvas);
+                } else {
+                    this.showPhotoPermissionModal(() => {
+                        try {
+                            if (window.localStorage) {
+                                window.localStorage.setItem("xhs_photo_permission_granted", "1");
+                            }
+                        } catch (e) {}
+                        this.executeXhsSave(canvas);
+                    });
+                }
+            } else {
+                // 普通浏览器直接下载
+                this.triggerDownload(canvas, data.drinkName);
+            }
         });
     }
 
-    /**
-     * 辅助方法：安全将文本复制到剪贴板
-     */
+    showPhotoPermissionModal(onConfirm) {
+        let permModal = document.getElementById("photoPermModal");
+        if (!permModal) {
+            permModal = document.createElement("div");
+            permModal.className = "modal-overlay photo-perm-modal";
+            permModal.id = "photoPermModal";
+            permModal.style.display = "none";
+            permModal.innerHTML = `
+                <div class="modal-content-box perm-modal-box">
+                    <button class="modal-close-btn" id="btnClosePermModal" aria-label="关闭">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="perm-modal-badge-wrapper">
+                        <div class="perm-modal-icon-badge">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                                <circle cx="9" cy="9" r="2"/>
+                                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="perm-modal-title">保存拍立得到相册</div>
+                    <div class="perm-modal-desc">
+                        需要使用手机<strong>相册存储权限</strong>，将您亲手调配的独家特调拍立得卡片存入相册留念，方便随时翻阅回味与好友分享。
+                    </div>
+                    <div class="perm-privacy-tip">
+                        <span class="tip-dot">🔒</span> 仅用于将本次特调图片写入您的系统相册，我们绝不读取任何私密照片
+                    </div>
+                    <div class="perm-modal-actions">
+                        <button class="btn btn-secondary perm-btn-cancel" id="btnCancelPerm">暂不保存</button>
+                        <button class="btn btn-primary btn-orange perm-btn-confirm" id="btnConfirmPerm">同意并保存</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(permModal);
+        }
+
+        const btnCancel = permModal.querySelector("#btnCancelPerm");
+        const btnConfirm = permModal.querySelector("#btnConfirmPerm");
+        const btnClose = permModal.querySelector("#btnClosePermModal");
+
+        const dismiss = () => {
+            permModal.classList.remove("active");
+            try {
+                permModal.style.setProperty("display", "none", "important");
+            } catch (e) {
+                permModal.style.display = "none";
+            }
+        };
+
+        if (btnCancel) btnCancel.onclick = dismiss;
+        if (btnClose) btnClose.onclick = dismiss;
+        permModal.onclick = (e) => {
+            if (e.target === permModal) dismiss();
+        };
+
+        if (btnConfirm) {
+            btnConfirm.onclick = () => {
+                dismiss();
+                if (onConfirm) onConfirm();
+            };
+        }
+
+        permModal.classList.add("active");
+        try {
+            permModal.style.setProperty("display", "flex", "important");
+        } catch (e) {
+            permModal.style.display = "flex";
+        }
+    }
+
+    executeXhsSave(canvas) {
+        try {
+            const base64Data = canvas.toDataURL("image/png");
+            const tempFileName = `cozy_bar_${Date.now()}.png`;
+
+            if (typeof window.xhs.miniTool.writeTempFile === "function") {
+                window.xhs.miniTool.writeTempFile({
+                    filePath: tempFileName,
+                    data: base64Data,
+                    encoding: "base64",
+                    success: (res) => {
+                        const savedPath = (res && res.filePath) ? res.filePath : tempFileName;
+                        window.xhs.miniTool.saveImageToPhotosAlbum({
+                            filePath: savedPath,
+                            success: () => {
+                                this.showToast("📸 拍立得已成功保存到手机相册！✨");
+                            },
+                            fail: (err) => {
+                                console.warn("相册保存未成功", err);
+                                this.showToast("保存已取消或未获得相册权限");
+                            }
+                        });
+                    },
+                    fail: (err) => {
+                        console.error("写入临时文件失败", err);
+                        this.showToast("图片生成失败，请稍后重试");
+                    }
+                });
+            } else {
+                this.showToast("当前环境暂不支持直接写入相册");
+            }
+        } catch (err) {
+            console.error("相册存储流程异常", err);
+            this.showToast("相册保存异常，请稍后重试");
+        }
+    }
+
+    triggerDownload(canvas, name) {
+        try {
+            const link = document.createElement("a");
+            link.download = `${name}_治愈特调.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+            this.showToast("📸 拍立得特调卡片已保存到本地！✨");
+        } catch (e) {
+            console.error("下载失败", e);
+            this.showToast("图片下载失败，请稍后重试");
+        }
+    }
+
+    shareCardImage(data) {
+        if (window.soundEngine && window.soundEngine.playSparkle) {
+            window.soundEngine.playSparkle();
+        }
+
+        const drinkName = data.drinkName || "治愈奇迹特调";
+        const hasQr = Boolean(window.QRCodeEngine);
+        const shareText = hasQr
+            ? `我在治愈特调吧亲手调配了一杯【${drinkName}】，快来扫码品尝吧！🍹`
+            : `我在治愈特调吧亲手调配了一杯【${drinkName}】，快来品尝这杯治愈特调吧！🍹`;
+        this.copyTextToClipboard(shareText);
+
+        const hasXhsShare = typeof window.xhs !== "undefined" && window.xhs && window.xhs.miniTool && typeof window.xhs.miniTool.share === "function";
+
+        if (hasXhsShare) {
+            window.xhs.miniTool.share({
+                title: `治愈特调 · ${drinkName}`,
+                desc: shareText,
+                success: () => {
+                    this.showToast("分享成功！✨");
+                },
+                fail: () => {
+                    this.showToast("若未弹出分享面板，请点击右上角【...】分享哦 🍹");
+                }
+            });
+        } else if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+            navigator.share({
+                title: `治愈特调 · ${drinkName}`,
+                text: shareText
+            }).catch(() => {
+                this.showToast("文案已复制！请点击右上角【...】分享给好友 🍹");
+            });
+        } else {
+            this.showToast("分享文案已复制！可直接粘贴发给好友 🍹");
+        }
+    }
+
     copyTextToClipboard(text) {
         if (!text) return false;
         let success = false;
@@ -449,108 +639,10 @@ class ShareCardManager {
 
         if (!success && typeof navigator !== "undefined" && navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
             navigator.clipboard.writeText(text).catch(() => {});
-            success = true;
         }
         return success;
     }
 
-    /**
-     * 📤 唤起分享 (点击即自动复制链接到剪贴板，并调起原生分享)
-     */
-    shareCardImage(data) {
-        window.soundEngine.playSparkle();
-        const currentUrl = window.location.href;
-        const shareTitle = `${data.drinkName} · 治愈特调`;
-        const shareText = `我在治愈特调吧亲手调配了一杯【${data.drinkName}】，快来扫码品尝吧！🍹`;
-
-        // 🔗 核心：在用户点击手势的第一时间，立即同步自动将特调链接写入剪贴板！
-        const copyOk = this.copyTextToClipboard(currentUrl);
-        if (copyOk) {
-            this.showToast("已自动复制特调链接！快分享给好友吧~ 🍹");
-        }
-
-        // 📱 核心：如果手机浏览器支持 Web Share API，进一步唤起系统分享面板
-        if (typeof navigator !== "undefined" && navigator.share) {
-            // 1. 如果已预先缓存好带二维码的图片文件且支持文件分享，优先分享图片文件
-            if (this.cachedShareFile && navigator.canShare) {
-                try {
-                    if (navigator.canShare({ files: [this.cachedShareFile] })) {
-                        navigator.share({
-                            title: shareTitle,
-                            text: shareText,
-                            url: currentUrl,
-                            files: [this.cachedShareFile]
-                        }).then(() => {
-                            this.showToast("🎉 分享成功！感谢将治愈特调传递给好友~ ✨");
-                        }).catch((err) => {
-                            if (err && err.name !== "AbortError") {
-                                console.log("图片文件分享受限，降级为原生纯文本/网址分享", err);
-                                // 快速降级尝试纯链接分享
-                                navigator.share({
-                                    title: shareTitle,
-                                    text: shareText,
-                                    url: currentUrl
-                                }).catch(() => {});
-                            }
-                        });
-                        return;
-                    }
-                } catch (e) {
-                    console.log("canShare 检测跳过", e);
-                }
-            }
-
-            // 2. 若不支持文件或文件未就绪：在同步手势栈中立刻唤起系统原生分享面板！
-            navigator.share({
-                title: shareTitle,
-                text: shareText,
-                url: currentUrl
-            }).then(() => {
-                this.showToast("🎉 分享成功！感谢将治愈特调传递给好友~ ✨");
-            }).catch((err) => {
-                if (err && err.name !== "AbortError") {
-                    this.fallbackShare(data.drinkName, currentUrl);
-                }
-            });
-            return;
-        }
-
-        // 💻 3. 桌面端或无原生分享 API 环境：自动下载图片 + 复制链接 + 手绘 Toast 提示
-        this.fallbackShare(data.drinkName, currentUrl);
-    }
-
-    /**
-     * 降级分享：自动下载保存图片 + 复制链接到剪贴板 + 弹出手绘 Toast
-     */
-    fallbackShare(drinkName, url) {
-        if (this.cachedShareCanvas) {
-            this.triggerDownload(this.cachedShareCanvas, drinkName);
-        } else {
-            // 现场极速合成并下载
-            this.exportToCanvasAndDownload({
-                drinkName,
-                subtitle: "Signature Cozy Drink",
-                poem: "在微风与灯火之间，调制专属于此刻的治愈风味。",
-                score: 100,
-                stars: 3,
-                isLevel: false
-            });
-        }
-
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(url).then(() => {
-                this.showToast("📸 特调图片已保存！网址已复制到剪贴板，快分享给好友吧~ ✨");
-            }).catch(() => {
-                this.showToast("📸 特调图片已保存！可直接发送给好友一起品尝~ ✨");
-            });
-        } else {
-            this.showToast("📸 特调图片已保存！快把图片发送给好友吧~ ✨");
-        }
-    }
-
-    /**
-     * 弹出手绘风悬浮温馨提示气泡
-     */
     showToast(msg) {
         let toast = document.getElementById("shareToastNode");
         if (!toast) {
@@ -570,7 +662,7 @@ class ShareCardManager {
     drawCardTypography(ctx, data, cardX, cardY, cardW, cardH) {
         const textStartY = 616;
 
-        // 特调名称大标题 (根据名称字数动态自适应字号，确保无论用户起的名字多长都完美展现)
+        // 特调名称大标题
         ctx.fillStyle = "#2c221a";
         const nameLen = (data.drinkName || "").length;
         const fontSize = nameLen > 10 ? Math.max(26, 44 - (nameLen - 10) * 1.8) : 44;
@@ -587,7 +679,10 @@ class ShareCardManager {
         if (data.isLevel) {
             ctx.fillStyle = "#f59e0b";
             ctx.font = "bold 30px sans-serif";
-            let starStr = "★".repeat(data.stars) + "☆".repeat(3 - data.stars);
+            let starStr = "";
+            for (let i = 0; i < 3; i++) {
+                starStr += i < data.stars ? "★" : "☆";
+            }
             ctx.textAlign = "right";
             ctx.fillText(starStr, cardW - 32, textStartY - 5);
         } else {
@@ -623,34 +718,33 @@ class ShareCardManager {
         ctx.font = "bold 17px -apple-system, 'PingFang SC', sans-serif";
         ctx.fillText(data.isLevel ? (data.score === 100 ? "· 奇迹调饮大师 S+" : "· 完美通关") : "· 自由灵感之作", 195, textStartY + 232);
 
-        // 底部中间偏右：复古手绘印章
-        const sealX = cardW - 225;
-        const sealY = textStartY + 232;
-        ctx.strokeStyle = "#c2410c";
-        ctx.lineWidth = 3.5;
-        ctx.fillStyle = "rgba(194, 65, 12, 0.08)";
-        this.roundRect(ctx, sealX, sealY - 40, 92, 50, 10, true, true);
-
-        ctx.fillStyle = "#c2410c";
-        ctx.font = "900 12px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("COZY BAR", sealX + 46, sealY - 21);
-        ctx.font = "bold 14px -apple-system, 'PingFang SC', sans-serif";
-        ctx.fillText("治愈特调", sealX + 46, sealY - 4);
-
-        // 底部最右侧：当前网址二维码
-        const qrSize = 74;
-        const qrX = cardW - 110;
-        const qrY = textStartY + 182;
-
-        // 二维码外层白色底托与手绘圆角边框
-        ctx.fillStyle = "#ffffff";
-        ctx.strokeStyle = "#2c221a";
-        ctx.lineWidth = 2.5;
-        this.roundRect(ctx, qrX, qrY, qrSize, qrSize, 8, true, true);
-
-        // 绘制二维码黑白模块矩阵
+        // 底部右侧：自适应渲染印章与二维码
         if (window.QRCodeEngine) {
+            // Web 环境：左侧为 COZY BAR 印章，右侧为二维码
+            const sealX = cardW - 225;
+            const sealY = textStartY + 232;
+            ctx.strokeStyle = "#c2410c";
+            ctx.lineWidth = 3.5;
+            ctx.fillStyle = "rgba(194, 65, 12, 0.08)";
+            this.roundRect(ctx, sealX, sealY - 40, 92, 50, 10, true, true);
+
+            ctx.fillStyle = "#c2410c";
+            ctx.font = "900 12px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("COZY BAR", sealX + 46, sealY - 21);
+            ctx.font = "bold 13px -apple-system, 'PingFang SC', sans-serif";
+            ctx.fillText("治愈特调馆", sealX + 46, sealY - 4);
+
+            // 右侧二维码
+            const qrSize = 74;
+            const qrX = cardW - 110;
+            const qrY = textStartY + 182;
+
+            ctx.fillStyle = "#ffffff";
+            ctx.strokeStyle = "#2c221a";
+            ctx.lineWidth = 2.5;
+            this.roundRect(ctx, qrX, qrY, qrSize, qrSize, 8, true, true);
+
             try {
                 const qr = window.QRCodeEngine.generate(window.location.href);
                 const count = qr.getModuleCount();
@@ -674,13 +768,30 @@ class ShareCardManager {
             } catch (err) {
                 console.error("Canvas 绘制二维码异常", err);
             }
-        }
 
-        // 二维码下方微小提示文字
-        ctx.fillStyle = "#8a7566";
-        ctx.font = "bold 12px -apple-system, 'PingFang SC', sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("扫码同玩 🍹", qrX + qrSize / 2, qrY + qrSize + 16);
+            ctx.fillStyle = "#8a7566";
+            ctx.font = "bold 12px -apple-system, 'PingFang SC', sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("扫码同玩 🍹", qrX + qrSize / 2, qrY + qrSize + 16);
+        } else {
+            // 小红书/轻量环境：无二维码，只有 COZY BAR 治愈特调馆 印章自动靠在最右侧
+            const sealW = 106;
+            const sealH = 50;
+            const sealX = cardW - sealW - 28;
+            const sealY = textStartY + 232;
+
+            ctx.strokeStyle = "#c2410c";
+            ctx.lineWidth = 3.5;
+            ctx.fillStyle = "rgba(194, 65, 12, 0.08)";
+            this.roundRect(ctx, sealX, sealY - 40, sealW, sealH, 10, true, true);
+
+            ctx.fillStyle = "#c2410c";
+            ctx.font = "900 13px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("COZY BAR", sealX + sealW / 2, sealY - 21);
+            ctx.font = "bold 14px -apple-system, 'PingFang SC', sans-serif";
+            ctx.fillText("治愈特调馆", sealX + sealW / 2, sealY - 4);
+        }
     }
 
     roundRect(ctx, x, y, width, height, radius, fill, stroke) {
@@ -714,21 +825,6 @@ class ShareCardManager {
             }
         }
         ctx.fillText(line, x, y);
-    }
-
-    triggerDownload(canvas, name) {
-        try {
-            const link = document.createElement("a");
-            link.download = `${name}_治愈特调.png`;
-            link.href = canvas.toDataURL("image/png");
-            link.click();
-        } catch (e) {
-            console.error("下载失败，尝试新窗口打开", e);
-            const win = window.open();
-            if (win) {
-                win.document.write(`<img src="${canvas.toDataURL('image/png')}" style="max-width:100%"/>`);
-            }
-        }
     }
 }
 
