@@ -18,7 +18,12 @@ const GLASS_PHYSICS = {
     holy_grail: { bottom: 155, top: 25, width: 170, rimWidth: 172, bottomWidth: 110 },
     burgundy: { bottom: 140, top: 25, width: 180, rimWidth: 180, bottomWidth: 120 },
     champagne: { bottom: 146, top: 22, width: 120, rimWidth: 64, bottomWidth: 58 },
-    flower_tea: { bottom: 158, top: 36, width: 176, rimWidth: 176, bottomWidth: 76 }
+    flower_tea: { bottom: 158, top: 36, width: 176, rimWidth: 176, bottomWidth: 76 },
+    // 🌟 十二星座专属全新手绘杯型物理参数
+    fishbowl: { bottom: 188, top: 48, width: 180, rimWidth: 140, bottomWidth: 110 },
+    ice_goblet: { bottom: 152, top: 26, width: 170, rimWidth: 176, bottomWidth: 90 },
+    wave_goblet: { bottom: 160, top: 30, width: 160, rimWidth: 168, bottomWidth: 110 },
+    lantern_coupe: { bottom: 146, top: 42, width: 185, rimWidth: 190, bottomWidth: 60 }
 };
 
 const SVG_ASSETS = {
@@ -416,6 +421,123 @@ const SVG_ASSETS = {
                         <!-- 托盘底圈稳稳坐落在吧台桌面 -->
                         <path d="M 68 186 L 70 192 Q 120 196 170 192 L 172 186" stroke="#222" stroke-width="3.5" fill="none"/>
                     </g>
+                `;
+                break;
+
+            case "fishbowl":
+                // 🐠 圆滚鱼缸杯 (巨蟹座专属：圆滚滚扁圆晶莹剔透鱼缸，宽敞弧口与平稳圈足)
+                clipPathD = `M 48 48 C 22 75, 14 140, 56 174 Q 120 188 184 174 C 226 140, 218 75, 192 48 Z`;
+                cupBodySvg = `
+                    <!-- 鱼缸晶莹反光面与玻璃厚度 -->
+                    <path d="${clipPathD}" fill="url(#glassReflection_${prefix})" opacity="0.32" pointer-events="none"/>
+                    <path d="M 40 68 C 24 95, 24 145, 54 168" stroke="#ffffff" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.65" pointer-events="none"/>
+                    <circle cx="36" cy="116" r="3.5" fill="#ffffff" opacity="0.75" pointer-events="none"/>
+
+                    <!-- 鱼缸治愈萌萌笑脸 (*^▽^*) -->
+                    <g class="cup-smile-face" pointer-events="none">
+                        <circle cx="106" cy="112" r="3.5" fill="#1e1e1e" />
+                        <circle cx="134" cy="112" r="3.5" fill="#1e1e1e" />
+                        <path d="M 108 121 Q 120 131 132 121" stroke="#1e1e1e" stroke-width="3.5" stroke-linecap="round" fill="none" />
+                        <circle cx="97" cy="116" r="4" fill="#fb7185" opacity="0.5"/>
+                        <circle cx="143" cy="116" r="4" fill="#fb7185" opacity="0.5"/>
+                    </g>
+
+                    <!-- 鱼缸圆滚滚外轮廓 -->
+                    <path d="M 48 48 C 22 75, 14 140, 56 174 Q 120 188 184 174 C 226 140, 218 75, 192 48" stroke="#222" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+                    <!-- 顶部外翻圆润大杯唇 -->
+                    <ellipse cx="120" cy="48" rx="72" ry="7" fill="none" stroke="#222" stroke-width="4.5"/>
+                    <!-- 鱼缸平稳圆润圈足底座 -->
+                    <path d="M 72 178 Q 120 188 168 178 L 172 192 Q 120 200 68 192 Z" fill="#e0f2fe" opacity="0.7" stroke="#222" stroke-width="4"/>
+                `;
+                break;
+
+            case "ice_goblet":
+                // ❄️ 北山冰雕高脚杯 (摩羯座专属：冰晶雕琢杯口波纹与多棱角冰柱高脚底座)
+                clipPathD = `M 32 26 L 40 100 C 44 138, 80 152, 120 152 C 160 152, 196 138, 200 100 L 208 26 Z`;
+                cupBodySvg = `
+                    <path d="${clipPathD}" fill="url(#glassReflection_${prefix})" opacity="0.35" pointer-events="none"/>
+                    <!-- 冰雕杯壁通透反光 -->
+                    <path d="M 42 36 L 48 95 C 52 125, 75 142, 100 146" stroke="#ffffff" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.7" pointer-events="none"/>
+                    <path d="M 198 36 L 192 95 C 188 125, 165 142, 140 146" stroke="#ffffff" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.4" pointer-events="none"/>
+
+                    <!-- 冰晶杯身治愈微笑脸 -->
+                    <g class="cup-smile-face" pointer-events="none">
+                        <circle cx="107" cy="98" r="3.2" fill="#1e1e1e" />
+                        <circle cx="133" cy="98" r="3.2" fill="#1e1e1e" />
+                        <path d="M 109 107 Q 120 116 131 107" stroke="#1e1e1e" stroke-width="3.2" stroke-linecap="round" fill="none" />
+                        <circle cx="98" cy="102" r="3.5" fill="#38bdf8" opacity="0.5"/>
+                        <circle cx="142" cy="102" r="3.5" fill="#38bdf8" opacity="0.5"/>
+                    </g>
+
+                    <!-- 杯身外框 -->
+                    <path d="M 30 24 L 40 100 C 44 140, 80 154, 120 154 C 160 154, 196 140, 200 100 L 210 24" stroke="#222" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+                    <!-- 杯口波浪冰棱边缘 -->
+                    <path d="M 30 24 Q 52 30 75 24 T 120 24 T 165 24 T 210 24" stroke="#222" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+
+                    <!-- 冰雕多棱高脚柱 (带晶石刻痕) -->
+                    <polygon points="112,154 128,154 125,188 115,188" fill="#bae6fd" stroke="#222" stroke-width="4"/>
+                    <line x1="120" y1="156" x2="120" y2="186" stroke="#ffffff" stroke-width="2"/>
+                    <!-- 冰雕阶梯晶座 -->
+                    <polygon points="90,188 150,188 165,208 75,208" fill="#e0f2fe" stroke="#222" stroke-width="4.5"/>
+                    <path d="M 85 208 Q 120 204 155 208" stroke="#38bdf8" stroke-width="2.5" fill="none"/>
+                `;
+                break;
+
+            case "wave_goblet":
+                // 🌊 双曲海浪杯 (水瓶座专属：中段收腰优美起伏双曲水波杯身配海浪高脚)
+                clipPathD = `M 36 30 C 48 70, 68 88, 56 120 C 44 148, 75 160, 120 160 C 165 160, 196 148, 184 120 C 172 88, 192 70, 204 30 Z`;
+                cupBodySvg = `
+                    <path d="${clipPathD}" fill="url(#glassReflection_${prefix})" opacity="0.32" pointer-events="none"/>
+                    <!-- 双曲高光弧线 -->
+                    <path d="M 46 45 C 55 75, 70 85, 62 115 C 55 135, 75 150, 100 154" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" fill="none" opacity="0.65" pointer-events="none"/>
+                    
+                    <!-- 水波杯身治愈微笑脸 -->
+                    <g class="cup-smile-face" pointer-events="none">
+                        <circle cx="107" cy="108" r="3.2" fill="#1e1e1e" />
+                        <circle cx="133" cy="108" r="3.2" fill="#1e1e1e" />
+                        <path d="M 109 116 Q 120 124 131 116" stroke="#1e1e1e" stroke-width="3.2" stroke-linecap="round" fill="none" />
+                        <circle cx="98" cy="111" r="3.5" fill="#34d399" opacity="0.5"/>
+                        <circle cx="142" cy="111" r="3.5" fill="#34d399" opacity="0.5"/>
+                    </g>
+
+                    <!-- 双曲外框轮廓线条 -->
+                    <path d="M 34 28 C 48 70, 68 88, 56 120 C 44 148, 75 162, 120 162 C 165 162, 196 148, 184 120 C 172 88, 192 70, 206 28" stroke="#222" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+                    <!-- 杯口波浪边缘 -->
+                    <ellipse cx="120" cy="28" rx="86" ry="6" fill="none" stroke="#222" stroke-width="4"/>
+                    
+                    <!-- 海浪卷纹高脚与水滴座 -->
+                    <path d="M 116 162 C 114 175, 126 178, 124 192" stroke="#222" stroke-width="6" stroke-linecap="round" fill="none"/>
+                    <path d="M 116 162 C 114 175, 126 178, 124 192" stroke="#67e8f9" stroke-width="3" stroke-linecap="round" fill="none"/>
+                    <path d="M 70 200 Q 120 188 170 200 L 165 210 Q 120 202 75 210 Z" fill="#bae6fd" stroke="#222" stroke-width="4"/>
+                `;
+                break;
+
+            case "lantern_coupe":
+                // 🏮 星灯浅碟杯 (双鱼座专属：极其优雅宽口的玛格丽特/香槟浅碟杯，配细金高脚)
+                clipPathD = `M 24 42 C 22 88, 55 146, 120 146 C 185 146, 218 88, 216 42 Z`;
+                cupBodySvg = `
+                    <path d="${clipPathD}" fill="url(#glassReflection_${prefix})" opacity="0.32" pointer-events="none"/>
+                    <!-- 浅碟弧面高光弧 -->
+                    <path d="M 36 55 C 32 90, 60 135, 105 142" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" fill="none" opacity="0.65" pointer-events="none"/>
+                    
+                    <!-- 浅碟杯治愈微笑脸 -->
+                    <g class="cup-smile-face" pointer-events="none">
+                        <circle cx="106" cy="100" r="3.2" fill="#1e1e1e" />
+                        <circle cx="134" cy="100" r="3.2" fill="#1e1e1e" />
+                        <path d="M 108 109 Q 120 118 132 109" stroke="#1e1e1e" stroke-width="3.5" stroke-linecap="round" fill="none" />
+                        <circle cx="97" cy="104" r="3.8" fill="#c084fc" opacity="0.5"/>
+                        <circle cx="143" cy="104" r="3.8" fill="#c084fc" opacity="0.5"/>
+                    </g>
+
+                    <!-- 浅碟外框轮廓线条 -->
+                    <path d="M 22 40 C 20 88, 54 148, 120 148 C 186 148, 220 88, 218 40" stroke="#222" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+                    <!-- 宽敞浅碟大杯口 -->
+                    <ellipse cx="120" cy="40" rx="98" ry="6.5" fill="none" stroke="#222" stroke-width="4.5"/>
+                    
+                    <!-- 纤细高挑金色高脚与金圆座 -->
+                    <line x1="120" y1="148" x2="120" y2="204" stroke="#222" stroke-width="5.5" stroke-linecap="round"/>
+                    <line x1="120" y1="148" x2="120" y2="204" stroke="#facc15" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M 70 210 Q 120 205 170 210 L 174 214 Q 120 208 66 214 Z" fill="#facc15" stroke="#222" stroke-width="4"/>
                 `;
                 break;
 
@@ -1008,6 +1130,318 @@ const SVG_ASSETS = {
                 <circle cx="14" cy="-6" r="3.2" fill="#ffffff" opacity="0.9"/>
                 <circle cx="8" cy="-14" r="2.2" fill="#ffffff" opacity="0.85"/>
                 <circle cx="-2" cy="18" r="2" fill="#ffffff" opacity="0.8"/>
+            </g>
+        `,
+        // 🐚 珍珠白贝 (巨蟹座与小美人鱼爱丽儿专属：柔美米白双层扇形贝壳，中心点缀晶莹微光大白珍珠)
+        pearl_shell: () => `
+            <g class="in-cup-item pearl-shell-group" transform="translate(120, 185)">
+                <!-- 贝壳后背扇贝外壳 (展开的贝壳下壳) -->
+                <path d="M -30 15 C -34 -8, -18 -26, 0 -24 C 18 -26, 34 -8, 30 15 C 20 22, -20 22, -30 15 Z" 
+                      fill="#fef2f2" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+                <!-- 贝壳内部肉粉珍珠母贝质感内衬 -->
+                <path d="M -24 13 C -28 -4, -14 -18, 0 -17 C 14 -18, 28 -4, 24 13 C 15 18, -15 18, -24 13 Z" 
+                      fill="#ffe4e6" opacity="0.95"/>
+                <!-- 扇形贝壳放射纹路 -->
+                <path d="M 0 16 L -16 -12 M 0 16 L -7 -16 M 0 16 L 0 -17 M 0 16 L 7 -16 M 0 16 L 16 -12" 
+                      stroke="#f43f5e" stroke-width="1.6" opacity="0.35" stroke-linecap="round"/>
+                
+                <!-- 珍珠底座小阴影 -->
+                <ellipse cx="0" cy="8" rx="14" ry="6" fill="#fb7185" opacity="0.4"/>
+
+                <!-- 🌟 魔法发光大白珍珠 (R=12) -->
+                <!-- 珍珠柔和外晕光环 -->
+                <circle cx="0" cy="2" r="14" fill="#bae6fd" opacity="0.35"/>
+                <!-- 珍珠主体 (纯白至淡蓝粉微光渐变) -->
+                <circle cx="0" cy="2" r="11" fill="#ffffff" stroke="#222" stroke-width="2.5"/>
+                <circle cx="0" cy="2" r="9.5" fill="#f0fdf4" opacity="0.6"/>
+                <circle cx="2" cy="4" r="8" fill="#fbcfe8" opacity="0.4"/>
+
+                <!-- 珍珠晶莹高光弧与星芒反光 -->
+                <ellipse cx="-3.5" cy="-2" rx="3.5" ry="2.2" fill="#ffffff" transform="rotate(-30 -3.5 -2)"/>
+                <circle cx="-3" cy="-1.5" r="1.5" fill="#ffffff"/>
+                <circle cx="3" cy="5" r="1.2" fill="#ffffff" opacity="0.8"/>
+
+                <!-- 珍珠旁的小微光星屑 -->
+                <polygon points="16,-6 18,-4 16,-2 14,-4" fill="#38bdf8" opacity="0.85"/>
+                <polygon points="-18,-4 -16,-2 -18,0 -20,-2" fill="#f43f5e" opacity="0.75"/>
+            </g>
+        `,
+        // 🧣 苏格兰格子围巾飘带 (白羊座与勇敢传说梅莉达专属：挂在杯沿左侧的经典墨绿黑红细格子呢围巾)
+        tartan_scarf: () => `
+            <g class="in-cup-item tartan-scarf-group" transform="translate(42, 60)">
+                <!-- 围巾挂在杯沿上的厚厚褶皱结 -->
+                <path d="M -18 -8 C -10 -16, 12 -16, 20 -8 C 22 2, -2 8, -18 -8 Z" fill="#1e3a2b" stroke="#222" stroke-width="3"/>
+                <!-- 围巾垂挂飘带主体 (自然向下舒展卷曲) -->
+                <path d="M -16 -6 C -24 25, -34 50, -18 78 L -4 74 C -18 50, -8 25, 4 -4 Z" 
+                      fill="#1e3a2b" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+                <!-- 苏格兰红黄格子线条 -->
+                <path d="M -18 15 L -2 19 M -22 35 L -6 39 M -26 55 L -10 59" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+                <path d="M -10 -4 C -16 25, -26 50, -12 76" stroke="#eab308" stroke-width="1.6" fill="none"/>
+                <!-- 围巾下摆流苏细穗 -->
+                <line x1="-18" y1="78" x2="-22" y2="86" stroke="#222" stroke-width="2"/>
+                <line x1="-14" y1="77" x2="-16" y2="87" stroke="#222" stroke-width="2"/>
+                <line x1="-9" y1="75" x2="-10" y2="86" stroke="#222" stroke-width="2"/>
+                <line x1="-4" y1="74" x2="-4" y2="85" stroke="#222" stroke-width="2"/>
+            </g>
+        `,
+        // 🌹 散落玫瑰花瓣 (金牛座与美女与野兽贝儿专属：沉浮在金黄茶汤底部的娇嫩红玫瑰花瓣与一朵单瓣浮花)
+        scattered_roses: () => `
+            <g class="in-cup-item scattered-roses-group" transform="translate(120, 160)">
+                <!-- 沉底单朵小玫瑰花 (左下侧) -->
+                <g transform="translate(-32, 10)">
+                    <circle cx="0" cy="0" r="10" fill="#dc2626" stroke="#222" stroke-width="2.5"/>
+                    <path d="M -5 -4 C -2 -8, 4 -8, 6 -3 C 8 2, 2 6, -3 5 Z" fill="#b91c1c" stroke="#222" stroke-width="1.8"/>
+                    <path d="M -2 -1 C 2 -4, 4 -1, 3 2 C 1 4, -1 3, -2 -1 Z" fill="#f87171"/>
+                    <circle cx="-1" cy="0" r="1.5" fill="#fef2f2"/>
+                </g>
+                <!-- 散落花瓣 1 (右侧轻扬浮起) -->
+                <path d="M 24 -12 C 34 -20, 42 -10, 36 0 C 30 8, 18 -2, 24 -12 Z" 
+                      fill="#ef4444" stroke="#222" stroke-width="2.2" opacity="0.9"/>
+                <!-- 散落花瓣 2 (中央轻柔沉底) -->
+                <path d="M -8 18 C -16 12, -12 2, -2 6 C 6 10, 2 22, -8 18 Z" 
+                      fill="#e11d48" stroke="#222" stroke-width="2" opacity="0.85"/>
+                <!-- 金色微光微粒 -->
+                <circle cx="16" cy="6" r="2" fill="#fde047" opacity="0.8"/>
+                <circle cx="-18" cy="-6" r="1.5" fill="#fde047" opacity="0.7"/>
+            </g>
+        `,
+        // 🃏 草花A牌与金怀表 (双子座与爱丽丝梦游仙境茶会专属：斜插扑克牌与杯身复古怀表)
+        poker_and_watch: () => `
+            <g class="in-cup-item poker-watch-group" transform="translate(120, 120)">
+                <!-- 扑克牌 (草花A) 斜插在左侧杯壁 -->
+                <g transform="translate(-75, -20) rotate(-16)">
+                    <rect x="-16" y="-24" width="32" height="48" rx="3.5" fill="#ffffff" stroke="#222" stroke-width="3"/>
+                    <!-- 草花符号 ♣ -->
+                    <circle cx="0" cy="-5" r="3.8" fill="#1e1e1e"/>
+                    <circle cx="-4" cy="1" r="3.8" fill="#1e1e1e"/>
+                    <circle cx="4" cy="1" r="3.8" fill="#1e1e1e"/>
+                    <polygon points="-1,1 1,1 2,7 -2,7" fill="#1e1e1e"/>
+                    <!-- 牌角 A -->
+                    <text x="-12" y="-14" font-size="8" font-weight="bold" fill="#1e1e1e" font-family="sans-serif">A</text>
+                </g>
+                <!-- 复古金色怀表 (挂在右侧) -->
+                <g transform="translate(82, 10)">
+                    <!-- 表链环 -->
+                    <path d="M 0 -18 C -8 -26, 8 -26, 0 -18" stroke="#ca8a04" stroke-width="3" fill="none"/>
+                    <circle cx="0" cy="-15" r="3" fill="#facc15" stroke="#222" stroke-width="2"/>
+                    <!-- 怀表金外壳 -->
+                    <circle cx="0" cy="0" r="16" fill="#facc15" stroke="#222" stroke-width="3"/>
+                    <!-- 白表盘 -->
+                    <circle cx="0" cy="0" r="12" fill="#fefce8" stroke="#222" stroke-width="2"/>
+                    <!-- 刻度与指针 -->
+                    <line x1="0" y1="-9" x2="0" y2="-11" stroke="#222" stroke-width="1.8"/>
+                    <line x1="0" y1="9" x2="0" y2="11" stroke="#222" stroke-width="1.8"/>
+                    <line x1="-9" y1="0" x2="-11" y2="0" stroke="#222" stroke-width="1.8"/>
+                    <line x1="9" y1="0" x2="11" y2="0" stroke="#222" stroke-width="1.8"/>
+                    <line x1="0" y1="0" x2="0" y2="-6" stroke="#222" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="0" y1="0" x2="5" y2="3" stroke="#222" stroke-width="1.8" stroke-linecap="round"/>
+                </g>
+            </g>
+        `,
+        // 🪸 海星珊瑚彩贝 (巨蟹座与小美人鱼专属：杯底粉贝壳、粉红鹿角珊瑚与金黄海星)
+        pink_seashell_coral: () => `
+            <g class="in-cup-item pink-seashell-coral-group" transform="translate(120, 162)">
+                <!-- 左下粉嫩大扇贝 -->
+                <g transform="translate(-48, 8)">
+                    <path d="M -18 10 C -22 -4, -10 -18, 0 -16 C 10 -18, 22 -4, 18 10 Z" fill="#fda4af" stroke="#222" stroke-width="2.5"/>
+                    <path d="M 0 10 L -9 -10 M 0 10 L 0 -14 M 0 10 L 9 -10" stroke="#f43f5e" stroke-width="1.5" opacity="0.6"/>
+                    <circle cx="0" cy="4" r="2.5" fill="#ffffff"/>
+                </g>
+                <!-- 右下粉红鹿角珊瑚 -->
+                <g transform="translate(46, -2)">
+                    <path d="M -8 18 C -6 6, -14 0, -12 -8 C -10 -14, -4 -12, -2 -6 C 0 4, 4 4, 6 -4 C 8 -10, 14 -8, 12 -2 C 10 6, 12 12, 8 18 Z" 
+                          fill="#fb7185" stroke="#222" stroke-width="2.5" stroke-linejoin="round"/>
+                </g>
+                <!-- 底部金黄萌萌小海星 -->
+                <g transform="translate(5, 12)">
+                    <polygon points="0,-8 2.5,-2.5 8,-2 4,2.5 5.5,8 0,5 -5.5,8 -4,2.5 -8,-2 -2.5,-2.5" 
+                             fill="#facc15" stroke="#222" stroke-width="2"/>
+                    <circle cx="0" cy="0" r="1.5" fill="#eab308"/>
+                </g>
+                <!-- 晶莹上升气泡 -->
+                <circle cx="-16" cy="-8" r="4" fill="#ffffff" opacity="0.75" stroke="#38bdf8" stroke-width="1.5"/>
+                <circle cx="20" cy="-16" r="3" fill="#ffffff" opacity="0.8" stroke="#38bdf8" stroke-width="1.2"/>
+            </g>
+        `,
+        // 🦁 荣耀石剪影与金箔 (狮子座与狮子王辛巴专属：非洲夕阳下荣耀石悬崖与小辛巴傲立黑剪影)
+        savanna_shadow: () => `
+            <g class="in-cup-item savanna-shadow-group" transform="translate(120, 108)">
+                <!-- 远景落日巨大红日 -->
+                <circle cx="-15" cy="-8" r="32" fill="#fef08a" opacity="0.65"/>
+                <!-- 荣耀石险峻悬崖 (向右探出尖角) -->
+                <path d="M -75 40 L -60 22 L -20 18 L 18 6 L 16 16 L -10 26 L -15 40 Z" fill="#291a10" stroke="#1c120c" stroke-width="2.2"/>
+                <!-- 悬崖尖端：幼狮辛巴傲立黑剪影 -->
+                <g transform="translate(14, -4) scale(0.75)">
+                    <!-- 辛巴身体与四肢 -->
+                    <path d="M -8 10 C -12 6, -10 -2, -4 -3 C 0 -4, 4 -2, 6 2 C 7 6, 9 8, 10 10 Z" fill="#291a10"/>
+                    <!-- 翘起的可爱小狮尾巴 -->
+                    <path d="M 8 7 C 12 5, 14 0, 15 -3" stroke="#291a10" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    <!-- 昂起的小狮脑袋与耳朵 -->
+                    <circle cx="-4" cy="-6" r="4" fill="#291a10"/>
+                    <circle cx="-6" cy="-9" r="1.8" fill="#291a10"/>
+                    <circle cx="-2" cy="-9" r="1.8" fill="#291a10"/>
+                </g>
+                <!-- 远方非洲金合欢树剪影 -->
+                <g transform="translate(-48, 16)">
+                    <path d="M 0 16 L 0 6 C -4 3, -12 4, -14 0 C -16 -4, -4 -3, 0 -2 C 2 -4, 8 -3, 14 0 C 16 4, 6 3, 0 6 Z" fill="#291a10"/>
+                </g>
+            </g>
+        `,
+        // 🌲 初雪松林剪影 (处女座与白雪公主专属：深绿雪松林与落雪大红苹果)
+        pine_forest_shadow: () => `
+            <g class="in-cup-item pine-forest-shadow-group" transform="translate(120, 165)">
+                <!-- 左侧松树 -->
+                <g transform="translate(-42, 6)">
+                    <polygon points="0,-24 8,-12 4,-12 11,0 6,0 14,14 -14,14 -6,0 -11,0 -4,-12 -8,-12" fill="#14532d" stroke="#222" stroke-width="2.2"/>
+                    <!-- 松枝上的积雪 -->
+                    <path d="M -8 14 Q 0 10 8 14 L 6 12 Q 0 8 -6 12 Z" fill="#ffffff"/>
+                </g>
+                <!-- 右侧两棵错落松树 -->
+                <g transform="translate(36, 4)">
+                    <polygon points="0,-28 9,-14 5,-14 12,0 7,0 15,16 -15,16 -7,0 -12,0 -5,-14 -9,-14" fill="#166534" stroke="#222" stroke-width="2.2"/>
+                    <path d="M -9 16 Q 0 11 9 16 L 7 13 Q 0 9 -7 13 Z" fill="#ffffff"/>
+                </g>
+                <g transform="translate(56, 10) scale(0.75)">
+                    <polygon points="0,-22 8,-11 4,-11 11,0 6,0 13,13 -13,13 -6,0 -11,0 -4,-11 -8,-11" fill="#14532d" stroke="#222" stroke-width="2"/>
+                </g>
+                <!-- 林间红苹果 -->
+                <g transform="translate(-18, 12)">
+                    <circle cx="0" cy="0" r="7.5" fill="#ef4444" stroke="#222" stroke-width="2"/>
+                    <path d="M 0 -7 C 2 -10, 5 -10, 4 -7" stroke="#78350f" stroke-width="1.8" fill="none"/>
+                    <circle cx="-2.5" cy="-2.5" r="1.8" fill="#ffffff"/>
+                </g>
+            </g>
+        `,
+        // 🌸 悬浮玫瑰花瓣 (天秤座与睡美人爱洛专属：层叠漂浮在粉晶露中的娇嫩玫瑰花蕾)
+        rose_petals_layer: () => `
+            <g class="in-cup-item rose-petals-layer-group" transform="translate(120, 100)">
+                <!-- 层叠散布的花苞 1 -->
+                <g transform="translate(-15, -28)">
+                    <circle cx="0" cy="0" r="8" fill="#fda4af" stroke="#222" stroke-width="2"/>
+                    <path d="M -4 -2 C -2 -6, 4 -6, 5 -1 C 5 3, 1 5, -2 4 Z" fill="#f43f5e" stroke="#222" stroke-width="1.5"/>
+                    <circle cx="0" cy="0" r="1" fill="#ffffff"/>
+                </g>
+                <!-- 花苞 2 -->
+                <g transform="translate(16, -10)">
+                    <circle cx="0" cy="0" r="9" fill="#f43f5e" stroke="#222" stroke-width="2"/>
+                    <path d="M -5 -3 C -3 -7, 4 -7, 5 -2 C 6 2, 2 5, -2 4 Z" fill="#fb7185" stroke="#222" stroke-width="1.5"/>
+                    <circle cx="-1" cy="-1" r="1.2" fill="#ffffff"/>
+                </g>
+                <!-- 花苞 3 -->
+                <g transform="translate(-8, 14)">
+                    <circle cx="0" cy="0" r="8.5" fill="#fb7185" stroke="#222" stroke-width="2"/>
+                    <path d="M -4 -2 C -2 -6, 3 -6, 4 -1 C 4 3, 1 5, -2 4 Z" fill="#fda4af" stroke="#222" stroke-width="1.5"/>
+                </g>
+                <!-- 飘飞花瓣 -->
+                <path d="M -22 0 C -28 -6, -24 -12, -18 -8 C -14 -4, -16 4, -22 0 Z" fill="#ffe4e6" stroke="#222" stroke-width="1.8"/>
+                <path d="M 24 16 C 30 10, 32 18, 26 22 C 20 22, 20 18, 24 16 Z" fill="#fda4af" stroke="#222" stroke-width="1.8"/>
+            </g>
+        `,
+        // 🏰 荆棘黑城堡剪影 (天蝎座与黑魔女专属：黑色哥特尖塔城堡、尖锐荆棘刺与幽绿鬼火)
+        thorn_castle: () => `
+            <g class="in-cup-item thorn-castle-group" transform="translate(120, 145)">
+                <!-- 幽暗哥特尖顶黑城堡 -->
+                <polygon points="0,-36 8,-12 -8,-12" fill="#170d24" stroke="#000" stroke-width="2"/>
+                <polygon points="-16,-24 -8,-6 -24,-6" fill="#170d24" stroke="#000" stroke-width="2"/>
+                <polygon points="16,-24 24,-6 8,-6" fill="#170d24" stroke="#000" stroke-width="2"/>
+                <rect x="-30" y="-6" width="60" height="28" fill="#170d24" stroke="#000" stroke-width="2"/>
+                <!-- 城堡城垛 -->
+                <rect x="-28" y="-12" width="6" height="8" fill="#170d24"/>
+                <rect x="-14" y="-12" width="6" height="8" fill="#170d24"/>
+                <rect x="8" y="-12" width="6" height="8" fill="#170d24"/>
+                <rect x="22" y="-12" width="6" height="8" fill="#170d24"/>
+                <!-- 尖锐蔓延黑荆棘 -->
+                <path d="M -48 18 C -36 10, -28 -12, -42 -18" stroke="#170d24" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+                <path d="M 48 18 C 36 10, 28 -12, 42 -18" stroke="#170d24" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+                <!-- 幽绿魔火荧光微粒 -->
+                <circle cx="-18" cy="-2" r="3" fill="#22c55e" opacity="0.85" class="glow-pulse-circle"/>
+                <circle cx="18" cy="-2" r="3" fill="#22c55e" opacity="0.85" class="glow-pulse-circle"/>
+                <circle cx="0" cy="-20" r="2.5" fill="#4ade80" opacity="0.9"/>
+            </g>
+        `,
+        // 🕌 苏丹金殿与流苏 (射手座与阿拉丁专属：金色穹顶宫殿、椰树剪影与杯侧金流苏)
+        arabian_palace_tassel: () => `
+            <g class="in-cup-item arabian-palace-tassel-group" transform="translate(120, 110)">
+                <!-- 夜空背景金月牙 -->
+                <path d="M -45 -22 A 10 10 0 0 0 -35 -8 A 12 12 0 0 1 -45 -22 Z" fill="#fde047" stroke="#222" stroke-width="1.8"/>
+                <!-- 金色圆顶宫殿群 (洋葱头穹顶) -->
+                <g transform="translate(18, 5)">
+                    <!-- 主殿洋葱头大穹顶 -->
+                    <path d="M 0 -22 C -6 -14, -10 -10, -10 -2 L 10 -2 C 10 -10, 6 -14, 0 -22 Z" fill="#facc15" stroke="#222" stroke-width="2"/>
+                    <rect x="-10" y="-2" width="20" height="22" fill="#eab308" stroke="#222" stroke-width="2"/>
+                    <path d="M -5 20 A 5 7 0 0 1 5 20 Z" fill="#1e1e1e"/>
+                    <!-- 侧殿小圆顶与宣礼塔 -->
+                    <path d="M -18 -14 C -22 -8, -24 -4, -24 0 L -12 0 C -12 -4, -14 -8, -18 -14 Z" fill="#facc15" stroke="#222" stroke-width="1.6"/>
+                    <rect x="-24" y="0" width="12" height="20" fill="#ca8a04" stroke="#222" stroke-width="1.8"/>
+                    <line x1="22" y1="-26" x2="22" y2="20" stroke="#facc15" stroke-width="3"/>
+                </g>
+                <!-- 剪影椰子树 -->
+                <g transform="translate(-25, 12)">
+                    <path d="M 0 14 Q -4 0 2 -12" stroke="#222" stroke-width="2.5" fill="none"/>
+                    <path d="M 2 -12 Q -8 -16 -12 -12 M 2 -12 Q -4 -20 0 -22 M 2 -12 Q 10 -18 12 -12 M 2 -12 Q 8 -6 10 -2" stroke="#222" stroke-width="2" fill="none"/>
+                </g>
+            </g>
+        `,
+        // ❄️ 冰雪城堡剪影 (摩羯座与艾莎女王专属：阿伦戴尔冰雕尖塔与冰晶)
+        ice_castle_shadow: () => `
+            <g class="in-cup-item ice-castle-shadow-group" transform="translate(120, 115)">
+                <!-- 冰雪大城堡通透尖峰 -->
+                <polygon points="0,-42 12,-6 -12,-6" fill="#e0f2fe" opacity="0.8" stroke="#38bdf8" stroke-width="2.5"/>
+                <polygon points="0,-40 6,-8 -6,-8" fill="#ffffff" opacity="0.9"/>
+                <polygon points="-18,-28 -8,-2 -26,-2" fill="#bae6fd" opacity="0.75" stroke="#38bdf8" stroke-width="2"/>
+                <polygon points="18,-28 26,-2 8,-2" fill="#bae6fd" opacity="0.75" stroke="#38bdf8" stroke-width="2"/>
+                <!-- 城堡底部冰城墙 -->
+                <rect x="-35" y="-2" width="70" height="26" fill="#7dd3fc" opacity="0.7" stroke="#222" stroke-width="2.5"/>
+                <!-- 璀璨反光星芒 -->
+                <polygon points="-28,-18 -26,-15 -28,-12 -30,-15" fill="#ffffff"/>
+                <polygon points="28,-18 30,-15 28,-12 26,-15" fill="#ffffff"/>
+                <polygon points="0,-48 2,-44 0,-40 -2,-44" fill="#ffffff"/>
+            </g>
+        `,
+        // 🐚 热带海礁彩贝 (水瓶座与莫阿娜专属：海螺壳、海星与热带海藻团)
+        lagoon_shell: () => `
+            <g class="in-cup-item lagoon-shell-group" transform="translate(120, 138)">
+                <!-- 左侧金黄螺旋海螺壳 -->
+                <g transform="translate(-36, 6)">
+                    <path d="M -12 8 C -16 -4, -6 -14, 4 -12 C 14 -10, 16 0, 12 8 Z" fill="#fde047" stroke="#222" stroke-width="2.5"/>
+                    <path d="M -6 6 C -4 0, 4 -2, 6 6" stroke="#ca8a04" stroke-width="2" fill="none"/>
+                </g>
+                <!-- 嫩绿水草海藻团 -->
+                <g transform="translate(2, 8)">
+                    <circle cx="0" cy="0" r="9" fill="#4ade80" stroke="#222" stroke-width="2.2"/>
+                    <circle cx="-6" cy="4" r="6" fill="#22c55e" stroke="#222" stroke-width="2"/>
+                    <circle cx="6" cy="3" r="6" fill="#16a34a" stroke="#222" stroke-width="2"/>
+                </g>
+                <!-- 右侧珊瑚与彩贝 -->
+                <g transform="translate(38, 2)">
+                    <path d="M -8 14 C -6 4, -12 0, -8 -8 C -4 -12, 4 -4, 4 4 C 8 -2, 12 4, 8 14 Z" fill="#fb7185" stroke="#222" stroke-width="2.2"/>
+                </g>
+            </g>
+        `,
+        // 🏮 水灯倒影与城堡 (双鱼座与长发公主专属：水波微型孔明灯倒影与王国城堡剪影)
+        water_lanterns_castle: () => `
+            <g class="in-cup-item water-lanterns-castle-group" transform="translate(120, 110)">
+                <!-- 远景科洛纳王国城堡深紫剪影 -->
+                <g transform="translate(32, -4)">
+                    <polygon points="0,-30 8,-8 -8,-8" fill="#3b0764" stroke="#222" stroke-width="1.8"/>
+                    <polygon points="-12,-18 -6,-2 -18,-2" fill="#3b0764" stroke="#222" stroke-width="1.6"/>
+                    <rect x="-20" y="-2" width="36" height="24" fill="#3b0764" stroke="#222" stroke-width="1.8"/>
+                </g>
+                <!-- 水中泛着暖光的天灯倒影 1 (大) -->
+                <g transform="translate(-24, 0)">
+                    <rect x="-8" y="-10" width="16" height="20" rx="3" fill="#fbbf24" stroke="#222" stroke-width="2.2"/>
+                    <!-- 内部火焰光晕 -->
+                    <circle cx="0" cy="2" r="5" fill="#fef08a"/>
+                    <!-- 天灯顶部提梁 -->
+                    <path d="M -8 -8 Q 0 -13 8 -8" stroke="#ca8a04" stroke-width="1.8" fill="none"/>
+                </g>
+                <!-- 小天灯倒影 2 (右上) -->
+                <g transform="translate(-4, -18) scale(0.65)">
+                    <rect x="-8" y="-10" width="16" height="20" rx="3" fill="#fde047" stroke="#222" stroke-width="2.5"/>
+                    <circle cx="0" cy="2" r="4.5" fill="#ffffff"/>
+                </g>
+                <!-- 极光水波倒影线 -->
+                <ellipse cx="-24" cy="16" rx="14" ry="2.5" fill="#fde047" opacity="0.6"/>
             </g>
         `
     },
@@ -1673,6 +2107,437 @@ const SVG_ASSETS = {
                     <path d="M -16 -18 A 22 22 0 0 1 18 -14" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.8"/>
                     <circle cx="-19" cy="-7" r="2.2" fill="#ffffff" opacity="0.85"/>
                     <circle cx="0" cy="0" r="3.5" fill="#ffffff" stroke="#222" stroke-width="1.8"/>
+                </g>
+            </g>
+        `,
+        // ❄️ 冰雪晶花 (摩羯座与冰雪奇缘艾莎女王专属：晶莹剔透的高光六角对称手绘冰晶雪花)
+        ice_snowflake: () => `
+            <g class="topper-group ice-snowflake-topper" transform="translate(120, 6)">
+                <!-- 1. 冰雪微光外晕环 -->
+                <circle cx="0" cy="0" r="28" fill="#38bdf8" opacity="0.18" class="glow-pulse-circle"/>
+                <circle cx="0" cy="0" r="18" fill="#e0f2fe" opacity="0.35"/>
+
+                <!-- 2. 六角冰晶主干与对称分枝 (利用旋转绘制6个对称分支) -->
+                ${[0, 60, 120, 180, 240, 300].map(deg => `
+                    <g transform="rotate(${deg})">
+                        <!-- 主冰柱 (长 26px) -->
+                        <line x1="0" y1="0" x2="0" y2="-25" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="0" y1="0" x2="0" y2="-25" stroke="#bae6fd" stroke-width="1.8" stroke-linecap="round"/>
+                        
+                        <!-- 顶端菱形冰晶尖峰 -->
+                        <polygon points="0,-29 3.5,-23 0,-21 -3.5,-23" fill="#e0f2fe" stroke="#222" stroke-width="1.5"/>
+                        <polygon points="0,-28 2.2,-23 0,-22 -2.2,-23" fill="#ffffff"/>
+
+                        <!-- 外侧羽状对称冰刺 (离中心约 16px 处) -->
+                        <line x1="0" y1="-16" x2="-7" y2="-21" stroke="#222" stroke-width="2.2" stroke-linecap="round"/>
+                        <line x1="0" y1="-16" x2="-7" y2="-21" stroke="#38bdf8" stroke-width="1.4" stroke-linecap="round"/>
+                        <line x1="0" y1="-16" x2="7" y2="-21" stroke="#222" stroke-width="2.2" stroke-linecap="round"/>
+                        <line x1="0" y1="-16" x2="7" y2="-21" stroke="#38bdf8" stroke-width="1.4" stroke-linecap="round"/>
+
+                        <!-- 内侧小对称冰刺 (离中心约 9px 处) -->
+                        <line x1="0" y1="-9" x2="-5" y2="-13" stroke="#222" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="0" y1="-9" x2="-5" y2="-13" stroke="#e0f2fe" stroke-width="1.2" stroke-linecap="round"/>
+                        <line x1="0" y1="-9" x2="5" y2="-13" stroke="#222" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="0" y1="-9" x2="5" y2="-13" stroke="#e0f2fe" stroke-width="1.2" stroke-linecap="round"/>
+                    </g>
+                `).join("")}
+
+                <!-- 3. 中心正六边形晶核 -->
+                <polygon points="0,-7 6,-3.5 6,3.5 0,7 -6,3.5 -6,-3.5" fill="#bae6fd" stroke="#222" stroke-width="2"/>
+                <polygon points="0,-5 4.2,-2.5 4.2,2.5 0,5 -4.2,2.5 -4.2,-2.5" fill="#ffffff"/>
+
+                <!-- 4. 中心璀璨反光星点 -->
+                <circle cx="0" cy="0" r="2" fill="#38bdf8"/>
+                <circle cx="-1.5" cy="-1.5" r="1.2" fill="#ffffff"/>
+            </g>
+        `,
+        // 🏹 烈焰金弓箭 (白羊座与勇敢传说梅莉达专属：火焰中搭着金色锐箭的长弓)
+        blazing_bow: () => `
+            <g class="topper-group blazing-bow-topper" transform="translate(120, 6)">
+                <!-- 熊熊燃烧的红橙外层火焰 -->
+                <path d="M -45 10 C -55 -15, -35 -25, -25 -42 C -18 -30, -5 -25, -8 -45 C 5 -30, 20 -20, 12 -42 C 25 -32, 45 -18, 42 10 Z" 
+                      fill="#ef4444" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+                <!-- 内层明亮金黄火焰 -->
+                <path d="M -30 10 C -36 -8, -24 -18, -16 -30 C -10 -20, 0 -18, -2 -34 C 8 -22, 18 -15, 12 -30 C 20 -22, 32 -10, 28 10 Z" 
+                      fill="#facc15" opacity="0.9"/>
+                <!-- 中央金色长弓 (弧形金色弓臂) -->
+                <path d="M -36 -2 C -24 -28, 20 -28, 38 -2" stroke="#ca8a04" stroke-width="6" stroke-linecap="round" fill="none"/>
+                <path d="M -36 -2 C -24 -28, 20 -28, 38 -2" stroke="#222" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                <!-- 纯白坚韧弓弦 -->
+                <line x1="-36" y1="-2" x2="38" y2="-2" stroke="#ffffff" stroke-width="2.2"/>
+                <!-- 搭在弦上的金色锐箭 (斜向右上贯穿飞出) -->
+                <g transform="rotate(-28 0 -2)">
+                    <line x1="-32" y1="-2" x2="38" y2="-2" stroke="#fef08a" stroke-width="3.5" stroke-linecap="round"/>
+                    <line x1="-32" y1="-2" x2="38" y2="-2" stroke="#222" stroke-width="1.8" stroke-linecap="round"/>
+                    <!-- 锐利金箭头 -->
+                    <polygon points="42,-2 32,-7 34,-2 32,3" fill="#facc15" stroke="#222" stroke-width="1.8"/>
+                    <!-- 箭尾羽翎 -->
+                    <polygon points="-32,-2 -26,-7 -22,-2 -26,3" fill="#ef4444" stroke="#222" stroke-width="1.6"/>
+                </g>
+            </g>
+        `,
+        // 🌹 玻璃罩红玫瑰与古籍 (金牛座与美女与野兽贝儿专属：晶莹透明钟罩下盛开的红玫瑰与深棕皮面古典书)
+        rose_cloche: () => `
+            <g class="topper-group rose-cloche-topper" transform="translate(120, 2)">
+                <!-- 右侧古典精装书 (斜放) -->
+                <g transform="translate(28, 12) rotate(14)">
+                    <rect x="-18" y="-7" width="36" height="14" rx="2.5" fill="#78350f" stroke="#222" stroke-width="2.4"/>
+                    <!-- 书页金边 -->
+                    <rect x="-16" y="-5" width="32" height="10" fill="#fefce8"/>
+                    <line x1="-16" y1="0" x2="16" y2="0" stroke="#ca8a04" stroke-width="1.2"/>
+                </g>
+                <!-- 玫瑰花枝与花瓣 (置于罩内) -->
+                <g transform="translate(-8, 4)">
+                    <!-- 翠绿花茎与小刺叶 -->
+                    <path d="M 0 14 Q 3 2 0 -8" stroke="#15803d" stroke-width="3" fill="none"/>
+                    <path d="M 2 2 Q 8 0 8 -4 Q 4 -2 2 2 Z" fill="#22c55e" stroke="#222" stroke-width="1.5"/>
+                    <!-- 娇艳盛开大红玫瑰 -->
+                    <circle cx="0" cy="-10" r="10" fill="#dc2626" stroke="#222" stroke-width="2.4"/>
+                    <path d="M -5 -13 C -2 -17, 4 -17, 6 -12 C 8 -7, 2 -3, -3 -4 Z" fill="#991b1b" stroke="#222" stroke-width="1.6"/>
+                    <circle cx="-1" cy="-9" r="1.8" fill="#fca5a5"/>
+                </g>
+                <!-- 晶莹半球形玻璃钟罩 (Cloche) -->
+                <g transform="translate(-8, 8)">
+                    <!-- 钟罩顶金提手圆珠 -->
+                    <circle cx="0" cy="-32" r="4" fill="#facc15" stroke="#222" stroke-width="2"/>
+                    <!-- 玻璃罩拱形主体 -->
+                    <path d="M -18 8 L -18 -18 C -18 -32, 18 -32, 18 -18 L 18 8 Z" 
+                          fill="#bae6fd" opacity="0.4" stroke="#222" stroke-width="2.6"/>
+                    <!-- 玻璃罩反光高光弧 -->
+                    <path d="M -13 4 L -13 -16 C -13 -26, 0 -28, 6 -28" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.85"/>
+                    <!-- 底座木托盘 -->
+                    <ellipse cx="0" cy="8" rx="22" ry="5" fill="#ca8a04" stroke="#222" stroke-width="2.4"/>
+                </g>
+            </g>
+        `,
+        // 🐰 探头白兔与叠放茶杯 (双子座与爱丽丝茶会专属：萌萌白兔双耳与倾斜碎花迷你小茶杯)
+        bunny_and_teacups: () => `
+            <g class="topper-group bunny-teacups-topper" transform="translate(120, 6)">
+                <!-- 左侧：探头萌萌小白兔 -->
+                <g transform="translate(-24, 0)">
+                    <!-- 白兔圆圆脑袋 -->
+                    <ellipse cx="0" cy="4" rx="14" ry="11" fill="#ffffff" stroke="#222" stroke-width="2.8"/>
+                    <!-- 左兔耳 (微弯) -->
+                    <path d="M -8 -4 C -18 -20, -18 -38, -8 -42 C -2 -42, 0 -22, -2 -4 Z" fill="#ffffff" stroke="#222" stroke-width="2.6"/>
+                    <path d="M -8 -8 C -14 -20, -14 -34, -8 -36 C -4 -36, -3 -22, -4 -8 Z" fill="#fbcfe8"/>
+                    <!-- 右兔耳 -->
+                    <path d="M 2 -4 C 2 -22, 6 -40, 12 -40 C 18 -38, 14 -20, 6 -4 Z" fill="#ffffff" stroke="#222" stroke-width="2.6"/>
+                    <path d="M 4 -8 C 4 -20, 8 -34, 12 -34 C 14 -32, 12 -20, 6 -8 Z" fill="#fbcfe8"/>
+                    <!-- 萌萌小黑眼与粉小鼻 -->
+                    <circle cx="-4" cy="2" r="1.8" fill="#1e1e1e"/>
+                    <circle cx="4" cy="2" r="1.8" fill="#1e1e1e"/>
+                    <polygon points="0,5 -2,7 2,7" fill="#f43f5e"/>
+                    <circle cx="-8" cy="6" r="2.2" fill="#fb7185" opacity="0.5"/>
+                    <circle cx="8" cy="6" r="2.2" fill="#fb7185" opacity="0.5"/>
+                </g>
+                <!-- 右侧：倾斜叠放迷你印花茶杯 -->
+                <g transform="translate(22, -10) rotate(18)">
+                    <!-- 下层托碟 -->
+                    <ellipse cx="0" cy="14" rx="18" ry="4.5" fill="#fbcfe8" stroke="#222" stroke-width="2.4"/>
+                    <!-- 叠放的小茶杯 -->
+                    <path d="M -12 -4 C -10 10, 10 10, 12 -4 Z" fill="#e0f2fe" stroke="#222" stroke-width="2.6"/>
+                    <ellipse cx="0" cy="-4" rx="12" ry="3.5" fill="#bae6fd" stroke="#222" stroke-width="2"/>
+                    <!-- 茶杯手柄 -->
+                    <path d="M 12 0 C 18 0, 18 8, 10 8" stroke="#222" stroke-width="2.2" fill="none"/>
+                    <!-- 碎花图案 -->
+                    <circle cx="-2" cy="3" r="2.2" fill="#f43f5e"/>
+                    <circle cx="-2" cy="3" r="0.8" fill="#fef08a"/>
+                </g>
+            </g>
+        `,
+        // 🧜‍♀️ 探水人鱼尾 (巨蟹座与小美人鱼爱丽儿专属：青翠微光探水美人鱼尾与贝壳胸衣饰物)
+        mermaid_tail: () => `
+            <g class="topper-group mermaid-tail-topper" transform="translate(120, 4)">
+                <!-- 水面激起浪花沫圈 -->
+                <ellipse cx="0" cy="14" rx="36" ry="7" fill="#bae6fd" opacity="0.65" stroke="#222" stroke-width="2.4"/>
+                
+                <!-- 美人鱼尾巴主体 (优雅弯曲翘出水面) -->
+                <g transform="translate(8, 0)">
+                    <!-- 鱼尾身躯 -->
+                    <path d="M -16 12 C -18 -8, -12 -28, 2 -40 C 8 -30, 4 -10, 0 12 Z" 
+                          fill="#34d399" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+                    <!-- 鱼鳞细致光泽 -->
+                    <path d="M -10 -6 C -6 -10, 0 -6, 2 -8 M -8 -18 C -4 -22, 2 -18, 4 -20" stroke="#059669" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+                    <!-- 优美双裂展开大尾鳍 -->
+                    <g transform="translate(2, -40)">
+                        <!-- 左尾鳍 -->
+                        <path d="M 0 0 C -12 -12, -24 -8, -26 4 C -20 6, -10 2, 0 0 Z" fill="#6ee7b7" stroke="#222" stroke-width="2.6"/>
+                        <path d="M -2 0 C -10 -6, -18 -4, -20 2" stroke="#059669" stroke-width="1.4" fill="none"/>
+                        <!-- 右尾鳍 (翘向天空) -->
+                        <path d="M 0 0 C 8 -16, 22 -14, 26 -2 C 18 2, 8 0, 0 0 Z" fill="#6ee7b7" stroke="#222" stroke-width="2.6"/>
+                        <path d="M 2 0 C 8 -8, 16 -6, 18 -2" stroke="#059669" stroke-width="1.4" fill="none"/>
+                        <!-- 尾鳍相交处高光小珍珠 -->
+                        <circle cx="0" cy="0" r="2.5" fill="#ffffff" stroke="#222" stroke-width="1.4"/>
+                    </g>
+                </g>
+                <!-- 左侧紫色贝壳胸衣饰物 -->
+                <g transform="translate(-24, 6)">
+                    <circle cx="0" cy="0" r="7" fill="#c084fc" stroke="#222" stroke-width="2.2"/>
+                    <path d="M -4 -2 L 4 -2 M -5 2 L 5 2" stroke="#9333ea" stroke-width="1.4"/>
+                </g>
+                <!-- 晶莹小水珠 -->
+                <circle cx="28" cy="-18" r="2.5" fill="#ffffff" opacity="0.8"/>
+                <circle cx="-12" cy="-22" r="2" fill="#ffffff" opacity="0.8"/>
+            </g>
+        `,
+        // 👑 金鬃焦糖雪顶与皇冠 (狮子座与狮子王辛巴专属：蓬松雄狮鬃毛奶盖与纯金璀璨王冠)
+        lion_crown: () => `
+            <g class="topper-group lion-crown-topper" transform="translate(120, 0)">
+                <!-- 蓬松焦糖雄狮金鬃奶盖 (多层起伏云团) -->
+                <path d="M -48 16 
+                         C -58 6, -56 -10, -42 -14 
+                         C -40 -26, -20 -28, -8 -22 
+                         C 0 -30, 24 -30, 32 -20 
+                         C 46 -24, 58 -8, 52 6 
+                         C 60 16, 48 24, 38 22 
+                         C 20 25, -20 25, -48 16 Z" 
+                      fill="#f59e0b" stroke="#222" stroke-width="3.5" stroke-linejoin="round"/>
+                <!-- 鬃毛浅金焦糖色高光起伏 -->
+                <path d="M -36 10 C -42 0, -32 -10, -18 -8 C -6 -16, 16 -16, 24 -8 C 36 -6, 42 6, 34 14" 
+                      stroke="#fde047" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.85"/>
+                
+                <!-- 端正戴在中央的纯金五峰皇冠 -->
+                <g transform="translate(14, -28) rotate(12)">
+                    <!-- 皇冠主体 (五峰锯齿金冠) -->
+                    <polygon points="-18,12 18,12 18,0 12,-10 6,-3 0,-14 -6,-3 -12,-10 -18,0" 
+                             fill="#facc15" stroke="#222" stroke-width="2.6" stroke-linejoin="round"/>
+                    <!-- 皇冠底带与宝石 -->
+                    <rect x="-18" y="8" width="36" height="5" fill="#eab308" stroke="#222" stroke-width="1.8"/>
+                    <circle cx="0" cy="10" r="1.8" fill="#ef4444"/>
+                    <circle cx="-10" cy="10" r="1.5" fill="#3b82f6"/>
+                    <circle cx="10" cy="10" r="1.5" fill="#3b82f6"/>
+                    <!-- 冠顶五颗红宝圆珠 -->
+                    <circle cx="-18" cy="0" r="1.8" fill="#ef4444"/>
+                    <circle cx="-12" cy="-10" r="1.8" fill="#fde047"/>
+                    <circle cx="0" cy="-14" r="2.4" fill="#ef4444" stroke="#222" stroke-width="1.2"/>
+                    <circle cx="12" cy="-10" r="1.8" fill="#fde047"/>
+                    <circle cx="18" cy="0" r="1.8" fill="#ef4444"/>
+                </g>
+            </g>
+        `,
+        // 🍎 雪顶红苹果与红蝴蝶结 (处女座与白雪公主专属：大红鲜苹果、白色苹果花与鲜红波点大蝴蝶结)
+        apple_flower_bow: () => `
+            <g class="topper-group apple-flower-bow-topper" transform="translate(120, 2)">
+                <!-- 纯白初雪奶油雪顶底衬 -->
+                <path d="M -45 16 C -50 8, -42 0, -32 2 C -24 -6, -6 -6, 0 2 C 10 -6, 28 -4, 34 4 C 44 2, 48 12, 44 18 Z" 
+                      fill="#ffffff" stroke="#222" stroke-width="2.8" stroke-linejoin="round"/>
+                
+                <!-- 中央大红饱满鲜苹果 -->
+                <g transform="translate(6, -14)">
+                    <circle cx="-7" cy="0" r="14" fill="#ef4444"/>
+                    <circle cx="7" cy="0" r="14" fill="#dc2626"/>
+                    <path d="M -16 6 C -18 -8, -6 -14, 0 -8 C 6 -14, 18 -8, 16 6 C 14 16, -14 16, -16 6 Z" 
+                          fill="#ef4444" stroke="#222" stroke-width="2.8" stroke-linejoin="round"/>
+                    <!-- 苹果翠绿小叶片与深棕果梗 -->
+                    <path d="M 0 -8 Q 3 -16 6 -20" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    <path d="M 2 -14 C 8 -18, 14 -16, 12 -12 C 8 -10, 4 -12, 2 -14 Z" fill="#22c55e" stroke="#222" stroke-width="1.5"/>
+                    <!-- 苹果高光弧 -->
+                    <path d="M -9 -4 A 9 9 0 0 1 -3 -9" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" fill="none" opacity="0.85"/>
+                </g>
+                <!-- 左侧纯白苹果小花朵 -->
+                <g transform="translate(-28, 2)">
+                    <circle cx="0" cy="0" r="3" fill="#facc15"/>
+                    ${[0, 72, 144, 216, 288].map(deg => `
+                        <circle cx="${6 * Math.cos(deg * Math.PI / 180)}" cy="${6 * Math.sin(deg * Math.PI / 180)}" r="4" fill="#ffffff" stroke="#222" stroke-width="1.4"/>
+                    `).join("")}
+                    <circle cx="0" cy="0" r="2.5" fill="#fde047" stroke="#222" stroke-width="1.2"/>
+                </g>
+                <!-- 右侧鲜红波点大蝴蝶结 (系在杯沿旁) -->
+                <g transform="translate(32, 2) rotate(10)">
+                    <!-- 左翅 -->
+                    <polygon points="0,0 -12,-8 -10,8" fill="#ef4444" stroke="#222" stroke-width="2"/>
+                    <circle cx="-6" cy="0" r="1.5" fill="#ffffff"/>
+                    <!-- 右翅 -->
+                    <polygon points="0,0 12,-8 10,8" fill="#ef4444" stroke="#222" stroke-width="2"/>
+                    <circle cx="6" cy="0" r="1.5" fill="#ffffff"/>
+                    <!-- 蝴蝶结中心纽扣 -->
+                    <circle cx="0" cy="0" r="3.5" fill="#dc2626" stroke="#222" stroke-width="1.8"/>
+                    <circle cx="0" cy="0" r="1.2" fill="#ffffff"/>
+                </g>
+            </g>
+        `,
+        // 👑 晨曦皇冠与飞舞花瓣 (天秤座与睡美人爱洛专属：悬浮小金冠与漫天纷飞玫瑰花瓣)
+        tiara_and_petals: () => `
+            <g class="topper-group tiara-petals-topper" transform="translate(120, 2)">
+                <!-- 中央悬浮睡美人金色小王冠 -->
+                <g transform="translate(0, -6)">
+                    <polygon points="-16,8 16,8 14,-2 8,-8 0,-2 -8,-8 -14,-2" 
+                             fill="#facc15" stroke="#222" stroke-width="2.5" stroke-linejoin="round"/>
+                    <!-- 王冠底边弧与心形粉钻 -->
+                    <path d="M -16 8 Q 0 12 16 8" stroke="#ca8a04" stroke-width="2" fill="none"/>
+                    <circle cx="0" cy="4" r="2" fill="#f43f5e"/>
+                    <circle cx="-8" cy="-8" r="1.5" fill="#fde047"/>
+                    <circle cx="0" cy="-2" r="1.5" fill="#fde047"/>
+                    <circle cx="8" cy="-8" r="1.5" fill="#fde047"/>
+                </g>
+                <!-- 漫天轻扬飘落的粉色玫瑰花瓣 -->
+                <path d="M -28 -14 C -34 -20, -32 -26, -26 -24 C -20 -22, -22 -16, -28 -14 Z" fill="#fda4af" stroke="#222" stroke-width="1.8"/>
+                <path d="M 26 -16 C 32 -10, 36 -16, 32 -22 C 26 -24, 24 -18, 26 -16 Z" fill="#fb7185" stroke="#222" stroke-width="1.8"/>
+                <path d="M 24 10 C 30 8, 28 14, 22 16 C 18 16, 20 10, 24 10 Z" fill="#f43f5e" stroke="#222" stroke-width="1.6"/>
+                <path d="M -24 8 C -30 6, -28 12, -22 14 C -18 14, -20 8, -24 8 Z" fill="#fda4af" stroke="#222" stroke-width="1.6"/>
+            </g>
+        `,
+        // 🦹‍♀️ 黑魔女双角与绿魔杖 (天蝎座与玛瑟菲森特专属：黑色扭曲恶魔双角与幽绿发光魔杖)
+        horns_and_scepter: () => `
+            <g class="topper-group horns-scepter-topper" transform="translate(120, 6)">
+                <!-- 幽绿魔焰底光云雾 -->
+                <ellipse cx="0" cy="10" rx="38" ry="7" fill="#4ade80" opacity="0.3" class="glow-pulse-circle"/>
+
+                <!-- 黑色恶魔左双角 (向左外弯卷曲尖锐) -->
+                <path d="M -6 10 C -12 2, -18 -12, -28 -22 C -38 -32, -32 -48, -24 -48 C -24 -36, -14 -22, 2 6 Z" 
+                      fill="#1e1328" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+                <!-- 黑色恶魔右双角 (向右外弯卷曲尖锐) -->
+                <path d="M 6 10 C 12 2, 18 -12, 28 -22 C 38 -32, 32 -48, 24 -48 C 24 -36, 14 -22, -2 6 Z" 
+                      fill="#1e1328" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+                <!-- 角身螺纹细线 -->
+                <path d="M -18 -18 C -14 -20, -10 -16, -10 -14 M -26 -30 C -22 -32, -18 -28, -18 -26" stroke="#4c1d95" stroke-width="1.8" fill="none"/>
+                <path d="M 18 -18 C 14 -20, 10 -16, 10 -14 M 26 -30 C 22 -32, 18 -28, 18 -26" stroke="#4c1d95" stroke-width="1.8" fill="none"/>
+
+                <!-- 右侧黑金魔法权杖 (顶端镶嵌幽绿魔球) -->
+                <g transform="translate(34, -14) rotate(16)">
+                    <!-- 权杖黑杖身 -->
+                    <line x1="0" y1="24" x2="0" y2="-12" stroke="#222" stroke-width="3.5" stroke-linecap="round"/>
+                    <line x1="0" y1="24" x2="0" y2="-12" stroke="#ca8a04" stroke-width="1.8" stroke-linecap="round"/>
+                    <!-- 权杖爪形托座 -->
+                    <path d="M -6 -10 C -6 -16, 6 -16, 6 -10" stroke="#ca8a04" stroke-width="2.5" fill="none"/>
+                    <!-- 顶端幽绿发光魔珠 (大光晕 + 发光球) -->
+                    <circle cx="0" cy="-18" r="9" fill="#22c55e" opacity="0.35" class="glow-pulse-circle"/>
+                    <circle cx="0" cy="-18" r="6" fill="#86efac" stroke="#222" stroke-width="2"/>
+                    <circle cx="-1.5" cy="-19.5" r="1.8" fill="#ffffff"/>
+                </g>
+            </g>
+        `,
+        // 🧞 阿拉丁神灯与云月 (射手座与阿拉丁专属：纯金神灯、喷吐蓝烟与金色月牙)
+        genie_lamp_moon: () => `
+            <g class="topper-group genie-lamp-moon-topper" transform="translate(120, 0)">
+                <!-- 天际金色月牙 (左上方) -->
+                <g transform="translate(-10, -28)">
+                    <path d="M -8 14 A 12 12 0 0 0 10 -4 A 14 14 0 0 1 -8 14 Z" fill="#fde047" stroke="#222" stroke-width="2"/>
+                    <circle cx="16" cy="-2" r="1.5" fill="#fde047"/>
+                </g>
+
+                <!-- 纯金阿拉丁神灯 (壶身、长壶嘴与金色把手) -->
+                <g transform="translate(18, -4)">
+                    <!-- 纯金神灯底座与肚身 -->
+                    <ellipse cx="0" cy="14" rx="14" ry="4" fill="#ca8a04" stroke="#222" stroke-width="2.4"/>
+                    <path d="M -16 12 C -22 6, -18 -4, 0 -6 C 18 -4, 22 6, 16 12 Z" fill="#facc15" stroke="#222" stroke-width="2.6"/>
+                    <!-- 弯曲长壶嘴 (向左伸出) -->
+                    <path d="M -16 4 C -28 4, -38 -6, -34 -14 L -30 -12 C -32 -6, -24 -2, -14 0 Z" fill="#facc15" stroke="#222" stroke-width="2.4"/>
+                    <!-- 神灯提手环 (向右大环) -->
+                    <path d="M 14 2 C 28 2, 28 14, 12 12" stroke="#ca8a04" stroke-width="4.5" fill="none"/>
+                    <path d="M 14 2 C 28 2, 28 14, 12 12" stroke="#222" stroke-width="2" fill="none"/>
+                    <!-- 壶盖金小顶珠 -->
+                    <circle cx="0" cy="-9" r="2.5" fill="#fde047" stroke="#222" stroke-width="1.6"/>
+                </g>
+
+                <!-- 壶嘴袅袅喷出的梦幻浅蓝祥云烟雾 -->
+                <g transform="translate(-20, -18)">
+                    <path d="M 0 4 C -6 -2, -14 0, -16 -6 C -18 -12, -10 -18, -4 -16 C -2 -22, 6 -20, 8 -16 C 14 -16, 16 -8, 10 -4 Z" 
+                          fill="#bae6fd" opacity="0.8" stroke="#38bdf8" stroke-width="1.8"/>
+                    <circle cx="-6" cy="-8" r="3" fill="#ffffff" opacity="0.9"/>
+                </g>
+            </g>
+        `,
+        // ❄️ 北山冰冕大晶簇 (摩羯座与艾莎专属：多支高耸错落高透大冰晶王冠与飘雪)
+        ice_spire_crown: () => `
+            <g class="topper-group ice-spire-crown-topper" transform="translate(120, 2)">
+                <!-- 冰雪光晕环 -->
+                <ellipse cx="0" cy="14" rx="44" ry="8" fill="#38bdf8" opacity="0.25" class="glow-pulse-circle"/>
+
+                <!-- 多柱层次分明的高耸冰晶簇 (利用尖锐多边形构建) -->
+                <!-- 最左小冰晶 -->
+                <polygon points="-42,12 -38,-12 -32,-8 -36,12" fill="#bae6fd" stroke="#222" stroke-width="2"/>
+                <!-- 次左中冰晶 -->
+                <polygon points="-30,12 -26,-28 -18,-22 -22,12" fill="#e0f2fe" stroke="#222" stroke-width="2.4"/>
+                <line x1="-24" y1="-26" x2="-22" y2="12" stroke="#ffffff" stroke-width="2"/>
+                <!-- 中央大冰晶尖峰 (最高，挺立至 -48) -->
+                <polygon points="-12,12 0,-48 12,12" fill="#e0f2fe" stroke="#222" stroke-width="3"/>
+                <polygon points="-6,12 0,-46 4,12" fill="#ffffff"/>
+                <!-- 次右中冰晶 -->
+                <polygon points="22,12 18,-28 26,-22 30,12" fill="#e0f2fe" stroke="#222" stroke-width="2.4"/>
+                <line x1="24" y1="-26" x2="22" y2="12" stroke="#ffffff" stroke-width="2"/>
+                <!-- 最右小冰晶 -->
+                <polygon points="36,12 32,-12 38,-8 42,12" fill="#bae6fd" stroke="#222" stroke-width="2"/>
+
+                <!-- 周围飘舞的小六角雪花 -->
+                <text x="-48" y="-12" font-size="12" fill="#38bdf8">❄</text>
+                <text x="40" y="-14" font-size="12" fill="#38bdf8">❄</text>
+                <text x="-18" y="-36" font-size="9" fill="#bae6fd">❄</text>
+                <text x="14" y="-36" font-size="9" fill="#bae6fd">❄</text>
+            </g>
+        `,
+        // 🌊 翻滚海浪与寻航帆船 (水瓶座与莫阿娜专属：翻滚白沫碧浪、红螺旋风帆独木舟与红扶桑花)
+        wave_and_canoe: () => `
+            <g class="topper-group wave-canoe-topper" transform="translate(120, 2)">
+                <!-- 翻滚碧蓝滔天巨浪 (向左卷曲拍击) -->
+                <path d="M -45 16 C -50 4, -42 -12, -28 -18 C -14 -24, 0 -8, -12 -2 C -18 2, -22 -4, -18 -8" 
+                      stroke="#222" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                <path d="M -45 16 C -50 4, -42 -12, -28 -18 C -14 -24, 0 -8, -12 -2 C -18 2, -22 -4, -18 -8 Z" 
+                      fill="#38bdf8" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+                <!-- 浪花雪白泡沫团 -->
+                <circle cx="-28" cy="-18" r="5" fill="#ffffff" stroke="#222" stroke-width="1.8"/>
+                <circle cx="-20" cy="-14" r="4" fill="#ffffff" stroke="#222" stroke-width="1.6"/>
+                <circle cx="-36" cy="-12" r="4" fill="#ffffff" stroke="#222" stroke-width="1.6"/>
+
+                <!-- 寻航独木帆船 (右侧浪头迎风航行) -->
+                <g transform="translate(18, -10)">
+                    <!-- 木舟船体 -->
+                    <path d="M -16 10 Q 0 16 18 8 L 14 5 Q 0 10 -12 7 Z" fill="#78350f" stroke="#222" stroke-width="2"/>
+                    <!-- 独木舟桅杆 -->
+                    <line x1="0" y1="8" x2="0" y2="-24" stroke="#451a03" stroke-width="2.5" stroke-linecap="round"/>
+                    <!-- 三角草织风帆 (带红螺旋图腾) -->
+                    <polygon points="0,-22 16,-4 0,-4" fill="#fef3c7" stroke="#222" stroke-width="2"/>
+                    <!-- 塔菲缇之心红色螺旋纹 -->
+                    <path d="M 6 -12 C 4 -15, 8 -16, 9 -14 C 10 -12, 7 -10, 6 -12 Z" stroke="#dc2626" stroke-width="1.8" fill="none"/>
+                </g>
+
+                <!-- 一朵盛开的热带红扶桑花 (木槿花) -->
+                <g transform="translate(-2, 10)">
+                    <circle cx="0" cy="0" r="4" fill="#facc15"/>
+                    ${[0, 72, 144, 216, 288].map(deg => `
+                        <circle cx="${7 * Math.cos(deg * Math.PI / 180)}" cy="${7 * Math.sin(deg * Math.PI / 180)}" r="4.5" fill="#ef4444" stroke="#222" stroke-width="1.6"/>
+                    `).join("")}
+                    <circle cx="0" cy="0" r="2.5" fill="#fef08a" stroke="#222" stroke-width="1.2"/>
+                </g>
+            </g>
+        `,
+        // 🏮 金发长辫与飞天天灯 (双鱼座与长发公主专属：金色长发发辫环绕杯沿点缀小花、冉冉升空发光天灯)
+        rapunzel_hair_lanterns: () => `
+            <g class="topper-group rapunzel-lanterns-topper" transform="translate(120, 0)">
+                <!-- 金色长发发辫 (环绕杯沿波浪编织) -->
+                <path d="M -48 12 C -32 4, -16 18, 0 10 C 16 4, 32 16, 48 10" stroke="#ca8a04" stroke-width="8" stroke-linecap="round" fill="none"/>
+                <path d="M -48 12 C -32 4, -16 18, 0 10 C 16 4, 32 16, 48 10" stroke="#facc15" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+                <path d="M -48 12 C -32 4, -16 18, 0 10 C 16 4, 32 16, 48 10" stroke="#222" stroke-width="2" stroke-linecap="round" fill="none"/>
+                
+                <!-- 发辫间点缀的小花朵 (粉红与小白花) -->
+                <circle cx="-28" cy="8" r="3" fill="#f43f5e" stroke="#222" stroke-width="1.2"/>
+                <circle cx="-10" cy="14" r="2.5" fill="#ffffff" stroke="#222" stroke-width="1.2"/>
+                <circle cx="14" cy="8" r="3" fill="#c084fc" stroke="#222" stroke-width="1.2"/>
+                <circle cx="32" cy="14" r="2.5" fill="#f43f5e" stroke="#222" stroke-width="1.2"/>
+
+                <!-- 冉冉升腾的多盏发光孔明灯 (天灯) -->
+                <!-- 天灯 1 (最高，中央偏左) -->
+                <g transform="translate(-12, -26) scale(0.9)">
+                    <rect x="-8" y="-12" width="16" height="20" rx="3" fill="#fef08a" stroke="#222" stroke-width="2"/>
+                    <circle cx="0" cy="0" r="5" fill="#f59e0b" opacity="0.85"/>
+                    <line x1="-8" y1="8" x2="8" y2="8" stroke="#ca8a04" stroke-width="1.6"/>
+                    <circle cx="0" cy="0" r="10" fill="#fde047" opacity="0.3" class="glow-pulse-circle"/>
+                </g>
+                <!-- 天灯 2 (右上) -->
+                <g transform="translate(24, -32) scale(0.75)">
+                    <rect x="-8" y="-12" width="16" height="20" rx="3" fill="#fef08a" stroke="#222" stroke-width="2"/>
+                    <circle cx="0" cy="0" r="5" fill="#f59e0b" opacity="0.85"/>
+                    <circle cx="0" cy="0" r="9" fill="#fde047" opacity="0.3" class="glow-pulse-circle"/>
+                </g>
+                <!-- 天灯 3 (左下) -->
+                <g transform="translate(-36, -14) scale(0.65)">
+                    <rect x="-8" y="-12" width="16" height="20" rx="3" fill="#fde047" stroke="#222" stroke-width="2.2"/>
+                    <circle cx="0" cy="0" r="4.5" fill="#ea580c"/>
+                </g>
+                <!-- 天灯 4 (最右下) -->
+                <g transform="translate(42, -18) scale(0.6)">
+                    <rect x="-8" y="-12" width="16" height="20" rx="3" fill="#fde047" stroke="#222" stroke-width="2.2"/>
+                    <circle cx="0" cy="0" r="4.5" fill="#ea580c"/>
                 </g>
             </g>
         `

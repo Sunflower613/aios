@@ -1166,11 +1166,27 @@ body {
     transform: translateX(-50%) translateY(0);
 }
 
-/* 关卡选择网格 */
+/* 关卡选择弹窗与网格 */
+.level-modal-box {
+    max-width: 500px;
+}
+
 .level-grid-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
+}
+
+.level-card-book-btn.zodiac-book-btn {
+    background: #fdf4ff;
+    border-color: #d8b4fe;
+    color: #6b21a8;
+}
+
+.level-card-book-btn.zodiac-book-btn:hover {
+    background: #f3e8ff;
+    border-color: #a855f7;
+    color: #581c87;
 }
 
 .level-card {
@@ -1224,18 +1240,22 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 1px;
+    margin: 2px 0 1px;
+}
+
+.level-high-score {
+    font-size: 0.65rem;
+    color: #10b981;
+    font-weight: bold;
+    line-height: 1.1;
 }
 
 .level-stars {
     color: #f59e0b;
     font-size: 0.72rem;
     letter-spacing: 1px;
-}
-
-.level-high-score {
-    font-size: 0.62rem;
-    color: #10b981;
-    font-weight: bold;
+    line-height: 1.1;
 }
 
 /* 配方小本本 */

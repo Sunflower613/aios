@@ -100,7 +100,7 @@ class BartenderApp {
         if (lastLevel && window.StorageManager && window.StorageManager.isLevelUnlocked && window.StorageManager.isLevelUnlocked(lastLevel)) {
             this.currentLevel = lastLevel;
             const recipe = this.getCurrentTargetRecipe();
-            this.selectedChapter = recipe ? (recipe.chapter || 1) : (lastLevel >= 19 ? 3 : (lastLevel >= 10 ? 2 : 1));
+            this.selectedChapter = recipe ? (recipe.chapter || 1) : 1;
         } else {
             this.currentLevel = 1;
             this.selectedChapter = 1;
@@ -306,7 +306,8 @@ class BartenderApp {
     updateLevelStarsRatio() {
         if (this.dom.levelStarsRatioText) {
             const total = window.StorageManager.getTotalStars();
-            this.dom.levelStarsRatioText.textContent = `${total}/81`;
+            const maxStars = (window.DRINK_RECIPES ? window.DRINK_RECIPES.length : 30) * 3;
+            this.dom.levelStarsRatioText.textContent = `${total}/${maxStars}`;
         }
     }
 
@@ -587,7 +588,8 @@ class BartenderApp {
                     btnText: "前往 3-1 迎客 👨‍🍳",
                     btnClass: "btn-orange",
                     onConfirm: () => {
-                        this.currentLevel = 19;
+                        const c3First = (window.DRINK_RECIPES || []).find(r => r.chapter === 3)?.level || 22;
+                        this.currentLevel = c3First;
                         this.selectedChapter = 3;
                         if (this.dom.levelSelectModal) this.dom.levelSelectModal.classList.remove("active");
                         this.initModeView();
@@ -938,7 +940,7 @@ class BartenderApp {
 
         this.dom.btnAutoBrew.style.display = "inline-flex";
         const recipe = this.getCurrentTargetRecipe();
-        const chap = recipe ? (recipe.chapter || 1) : (this.currentLevel >= 19 ? 3 : (this.currentLevel >= 10 ? 2 : 1));
+        const chap = recipe ? (recipe.chapter || 1) : 1;
         const isChapter3 = chap === 3 || (this.c3State && this.c3State.active);
         this.loadSaveData();
         const record = this.saveData.levelRecords[this.currentLevel];
@@ -1061,9 +1063,17 @@ class BartenderApp {
                 if (this.dom.c3DashboardSection) this.dom.c3DashboardSection.style.display = "none";
                 if (this.dom.targetSection) this.dom.targetSection.style.display = "flex";
 
-                const chapIcon = recipe.chapter === 2 ? "🔮" : "🚩";
+                const chapIcon = recipe.chapter === 3 ? "🏪" : (recipe.chapter === 2 ? "🍸" : "🔮");
                 const levelCode = window.formatLevelCode ? window.formatLevelCode(this.currentLevel) : this.currentLevel;
-                this.dom.navLevelBadge.textContent = `${chapIcon} 第 ${levelCode} 关 · ${recipe.name}`;
+                let levelTitle = `第 ${levelCode} 关`;
+                if ((recipe.chapter || 1) === 1 && this.currentLevel >= 1 && this.currentLevel <= 12) {
+                    const zodiacList = window.ZODIAC_SIGNS || [];
+                    const z = zodiacList[this.currentLevel - 1];
+                    const zName = z ? z.name : "白羊座";
+                    this.dom.navLevelBadge.textContent = `🔮${zName} · ${recipe.name}`;
+                } else {
+                    this.dom.navLevelBadge.textContent = `${chapIcon} ${levelTitle} · ${recipe.name}`;
+                }
 
                 this.dom.targetInfo.innerHTML = `
                     <div class="customer-bubble">
@@ -1112,7 +1122,7 @@ class BartenderApp {
         recipes.forEach(r => {
             const count = (r.availableDrinks && r.availableDrinks.length > 0) ? r.availableDrinks.length : 1;
             total += count;
-            const isC3 = (r.chapter === 3 || r.level >= 19);
+            const isC3 = (r.chapter === 3);
             if (isC3) {
                 // 第三章：关卡一旦解锁即收录该关全部特调秘方
                 const isUnlocked = window.StorageManager.isLevelUnlocked 
@@ -1357,7 +1367,7 @@ class BartenderApp {
     // 渲染阶梯式成就列表与进度
     renderAchievements() {
         const totalStars = window.StorageManager.getTotalStars();
-        const maxStars = 81; // 81 颗星全满级神祇
+        const maxStars = (window.DRINK_RECIPES ? window.DRINK_RECIPES.length : 30) * 3; // 90 颗星全满级神祇
         const percent = Math.min(100, Math.round((totalStars / maxStars) * 100));
 
         this.dom.achTotalStarsDisplay.textContent = `${totalStars} / ${maxStars}`;
@@ -1486,7 +1496,7 @@ class BartenderApp {
         if (!recipe) return;
 
         const isChapter3 = recipe.chapter === 3;
-        const chapLabel = isChapter3 ? "🏪 烟火与茶香" : (recipe.chapter === 2 ? "🔮 微醺与星芒" : "🚩 晨曦与晚风");
+        const chapLabel = isChapter3 ? "🏪 烟火与茶香" : (recipe.chapter === 2 ? "🍸 微醺与星芒" : "🔮 十二星座篇");
         const pageCode = window.formatLevelCode ? window.formatLevelCode(this.recipeBookPage) : this.recipeBookPage;
         this.dom.btnBookPrevPage.disabled = this.recipeBookPage <= 1;
         this.dom.btnBookNextPage.disabled = this.recipeBookPage >= totalPages;
@@ -1723,22 +1733,12 @@ class BartenderApp {
         this.updateLevelStarsRatio();
 
         // 默认定位当前关卡所在章节
-        if (this.currentLevel >= 19) {
-            this.selectedChapter = 3;
-            if (this.dom.btnTabChapter3) this.dom.btnTabChapter3.classList.add("active");
-            if (this.dom.btnTabChapter2) this.dom.btnTabChapter2.classList.remove("active");
-            if (this.dom.btnTabChapter1) this.dom.btnTabChapter1.classList.remove("active");
-        } else if (this.currentLevel >= 10) {
-            this.selectedChapter = 2;
-            if (this.dom.btnTabChapter2) this.dom.btnTabChapter2.classList.add("active");
-            if (this.dom.btnTabChapter1) this.dom.btnTabChapter1.classList.remove("active");
-            if (this.dom.btnTabChapter3) this.dom.btnTabChapter3.classList.remove("active");
-        } else {
-            this.selectedChapter = 1;
-            if (this.dom.btnTabChapter1) this.dom.btnTabChapter1.classList.add("active");
-            if (this.dom.btnTabChapter2) this.dom.btnTabChapter2.classList.remove("active");
-            if (this.dom.btnTabChapter3) this.dom.btnTabChapter3.classList.remove("active");
-        }
+        const curRecipe = (window.DRINK_RECIPES || [])[this.currentLevel - 1];
+        const curChap = curRecipe ? (curRecipe.chapter || 1) : 1;
+        this.selectedChapter = curChap;
+        if (this.dom.btnTabChapter1) this.dom.btnTabChapter1.classList.toggle("active", curChap === 1);
+        if (this.dom.btnTabChapter2) this.dom.btnTabChapter2.classList.toggle("active", curChap === 2);
+        if (this.dom.btnTabChapter3) this.dom.btnTabChapter3.classList.toggle("active", curChap === 3);
 
         this.renderLevelGrid();
         this.dom.levelSelectModal.classList.add("active");
@@ -1782,6 +1782,23 @@ class BartenderApp {
         this.dom.chapterLockPanel.style.display = "none";
         if (this.dom.chapter3LockPanel) this.dom.chapter3LockPanel.style.display = "none";
         this.dom.levelGrid.style.display = "grid";
+        this.dom.levelGrid.className = "level-grid-container";
+
+        // 十二星座元数据配置 (第一章关卡对应 1-1 ~ 1-12)
+        const ZODIAC_SIGNS = [
+            { icon: "♈", name: "白羊座" },
+            { icon: "♉", name: "金牛座" },
+            { icon: "♊", name: "双子座" },
+            { icon: "♋", name: "巨蟹座" },
+            { icon: "♌", name: "狮子座" },
+            { icon: "♍", name: "处女座" },
+            { icon: "♎", name: "天秤座" },
+            { icon: "♏", name: "天蝎座" },
+            { icon: "♐", name: "射手座" },
+            { icon: "♑", name: "摩羯座" },
+            { icon: "♒", name: "水瓶座" },
+            { icon: "♓", name: "双鱼座" }
+        ];
 
         // 过滤当前章节关卡
         const chapterRecipes = window.DRINK_RECIPES.filter(r => (r.chapter || 1) === this.selectedChapter);
@@ -1796,25 +1813,43 @@ class BartenderApp {
                 starsText += i <= record.stars ? "★" : "☆";
             }
 
+            const isChapter1 = (r.chapter || 1) === 1;
             const isChapter3 = (r.chapter || 1) === 3;
             const levelCode = window.formatLevelCode ? window.formatLevelCode(r.level) : r.level;
             const minOrders = r.minOrders || r.customerCount || 5;
 
+            // 关卡角标定制：第1-1关改为白羊座，后续同理对应十二星座
+            let badgeText = `第 ${levelCode} 关`;
+            if (isChapter3) {
+                badgeText = `${r.brandLogo || '🏪'} 第 ${levelCode} 关`;
+            } else if (isChapter1 && r.level >= 1 && r.level <= 12) {
+                const z = (window.ZODIAC_SIGNS || ZODIAC_SIGNS)[r.level - 1];
+                if (z) {
+                    badgeText = `${z.icon} ${z.name}`;
+                }
+            }
+
+            // 配方按钮改回：统一为 📖 配方（第三章为 📖 公开配方）
+            const btnBookText = `📖 ${isChapter3 ? '公开配方' : '配方'}`;
+
+            // 副标题：去掉英文名，第三章保留目标，未解锁关卡保留提示
+            const subText = isUnlocked ? (isChapter3 ? `最少${minOrders}单 · ${r.targetProfit}💰` : '') : '通关上一关解锁';
+
             return `
                 <div class="level-card ${isUnlocked ? 'unlocked' : 'locked'} ${isCurrent ? 'current' : ''} ${isChapter3 ? 'c3-level-card' : ''}" data-level="${r.level}">
                     <div class="level-badge" style="background: ${isUnlocked ? r.colorBadge : '#888'}">
-                        ${isUnlocked ? (isChapter3 ? `${r.brandLogo || '🏪'} 第 ${levelCode} 关` : `第 ${levelCode} 关`) : '🔒 待解锁'}
+                        ${isUnlocked ? badgeText : '🔒 待解锁'}
                     </div>
                     <div class="level-name">${isUnlocked ? r.name : '???'}</div>
-                    <div class="level-sub">${isUnlocked ? (isChapter3 ? `最少${minOrders}单 · ${r.targetProfit}💰` : r.subtitle) : '通关上一关解锁'}</div>
+                    ${subText ? `<div class="level-sub">${subText}</div>` : ''}
                     ${isUnlocked ? `
                         <div class="level-score-info">
-                            <span class="level-stars">${starsText}</span>
                             <span class="level-high-score">${isChapter3 ? (record.profit ? `利+${record.profit}💰` : '未营业') : (record.score > 0 ? record.score + '分' : '未挑战')}</span>
+                            <span class="level-stars">${starsText}</span>
                         </div>
                     ` : ''}
                     <button class="level-card-book-btn" data-level="${r.level}" title="翻阅此关配方">
-                        <span>📖 ${isChapter3 ? '公开配方' : '配方'}</span>
+                        <span>${btnBookText}</span>
                     </button>
                 </div>
             `;
@@ -2788,8 +2823,19 @@ class BartenderApp {
                         return;
                     }
 
-                    // 1. 处于 1-9 (第 9 关)：通关后尝试进入第二章
-                    if (this.currentLevel === 9) {
+                    // 获取各章节首尾关卡 (完全动态支持第一章12关及未来第二章16关)
+                    const recipes = window.DRINK_RECIPES || [];
+                    const c1Recipes = recipes.filter(r => (r.chapter || 1) === 1);
+                    const c2Recipes = recipes.filter(r => (r.chapter || 1) === 2);
+                    const c3Recipes = recipes.filter(r => (r.chapter || 1) === 3);
+
+                    const c1LastLevel = c1Recipes.length > 0 ? c1Recipes[c1Recipes.length - 1].level : 12;
+                    const c2FirstLevel = c2Recipes.length > 0 ? c2Recipes[0].level : 13;
+                    const c2LastLevel = c2Recipes.length > 0 ? c2Recipes[c2Recipes.length - 1].level : 21;
+                    const c3FirstLevel = c3Recipes.length > 0 ? c3Recipes[0].level : 22;
+
+                    // 1. 处于第一章最后一关：通关后尝试进入第二章
+                    if (this.currentLevel === c1LastLevel) {
                         this.loadSaveData();
                         const isC2Unlocked = window.StorageManager.isChapterUnlocked(2);
                         if (!isC2Unlocked) {
@@ -2797,7 +2843,7 @@ class BartenderApp {
                             if (currentDiamonds >= 300) {
                                 this.showNotice({
                                     title: "🎉 第一章全满通关！",
-                                    message: `恭喜通关第一章全部 9 款经典特调！\n\n开启【第二章：微醺与星芒】需要消耗 300 💎 钻石。\n当前拥有：${currentDiamonds} 💎\n\n是否立即解锁第二章（开放全新量杯分层渐变系统与 9 款网红渐变特调）？`,
+                                    message: `恭喜通关第一章全部 ${c1Recipes.length} 款十二星座童话特调！\n\n开启【第二章：微醺与星芒】需要消耗 300 💎 钻石。\n当前拥有：${currentDiamonds} 💎\n\n是否立即解锁第二章（开放全新量杯分层渐变系统与网红渐变特调）？`,
                                     icon: "🔮",
                                     btnText: "消耗 300 💎 解锁开启 🚀",
                                     btnClass: "btn-orange",
@@ -2808,7 +2854,7 @@ class BartenderApp {
                                             window.soundEngine.playCoin();
                                             this.triggerEffect("star_shower");
                                             this.updateCurrencyDisplay();
-                                            this.currentLevel = 10;
+                                            this.currentLevel = c2FirstLevel;
                                             this.initModeView();
                                             this.resetCup();
                                         }
@@ -2832,14 +2878,14 @@ class BartenderApp {
                         }
 
                         // 已解锁第二章，顺利进入 2-1
-                        this.currentLevel = 10;
+                        this.currentLevel = c2FirstLevel;
                         this.initModeView();
                         this.resetCup();
                         return;
                     }
 
-                    // 2. 处于 2-9 (第 18 关)：通关后尝试进入第三章
-                    if (this.currentLevel === 18) {
+                    // 2. 处于第二章最后一关：通关后尝试进入第三章
+                    if (this.currentLevel === c2LastLevel) {
                         this.loadSaveData();
                         const isC3Unlocked = window.StorageManager.isChapterUnlocked(3);
                         if (!isC3Unlocked) {
@@ -2880,17 +2926,17 @@ class BartenderApp {
                         }
 
                         // 已解锁第三章，顺利进入 3-1
-                        this.currentLevel = 19;
+                        this.currentLevel = c3FirstLevel;
                         this.initModeView();
                         this.resetCup();
                         return;
                     }
 
-                    // 3. 处于 3-9 (第 27 关，全游戏最终关卡)
+                    // 3. 处于全游戏最终关卡
                     if (this.currentLevel >= window.DRINK_RECIPES.length) {
                         this.showNotice({
                             title: "🏆 震撼圆满大通关！",
-                            message: "恭喜店长通关全游戏全部 27 款神作特调与连锁茶饮大关！\n\n您已成为名震三界的终极特调神祇！可随时在自由工坊随心创造专属奇迹特调~ 🍹",
+                            message: `恭喜店长通关全游戏全部 ${window.DRINK_RECIPES ? window.DRINK_RECIPES.length : 30} 款神作特调与连锁茶饮大关！\n\n您已成为名震三界的终极特调神祇！可随时在自由工坊随心创造专属奇迹特调~ 🍹`,
                             icon: "👑",
                             btnText: "重温选关 📋",
                             onConfirm: () => {
@@ -3212,7 +3258,9 @@ class BartenderApp {
         const custName = `客人：${randName}`;
 
         // 耐心时长递减机制：关卡越靠后客人越急促 (从 38s 逐步降至 22s)
-        const basePatience = Math.max(22, 38 - Math.floor((this.currentLevel - 19) * 1.8));
+        const c3StartLevel = (window.DRINK_RECIPES || []).find(r => r.chapter === 3)?.level || 22;
+        const c3Index = Math.max(0, this.currentLevel - c3StartLevel);
+        const basePatience = Math.max(22, 38 - Math.floor(c3Index * 1.8));
         this.c3State.currentCustomer = {
             index,
             avatar: custAvatar,
