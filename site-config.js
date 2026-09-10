@@ -130,6 +130,14 @@ export const siteConfig = {
       icon: "./games/bartender/bartender.png",
       color: "#ff5722",
       emoji: "🍹"
+    },
+    { 
+      id: "lotus",
+      name: "荷塘月色",
+      path: "./games/lotus/index.html",
+      icon: "./games/lotus/lotus.png",
+      color: "#1b3833",
+      emoji: "🪷"
     }
   ],
 

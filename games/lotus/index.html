@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#031217">
+  <title>荷塘月色 - 视触觉治愈小游戏</title>
+  <link rel="icon" href="./lotus.png" type="image/png">
+  <!-- 引入 Iconify Web Component 统一矢量图标框架 (严禁原生Emoji) -->
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/lxgwwenkai-regular.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="pond-container">
+    <!-- 交互与动画主画布 -->
+    <canvas id="pondCanvas"></canvas>
+
+    <!-- 顶部极简状态栏 -->
+    <header class="top-nav">
+      <a href="../../index.html" class="top-action-btn" title="返回主页" aria-label="返回主页" id="btnBackHome">
+        <iconify-icon icon="lucide:house" class="ui-icon"></iconify-icon>
+      </a>
+      <div class="pond-title-badge">
+        <iconify-icon icon="ph:flower-lotus-bold" class="lotus-icon"></iconify-icon>
+        <span>荷塘月色</span>
+      </div>
+      <button class="top-action-btn theme-cycle-btn" data-theme="moonlight" id="btnCycleTheme" title="切换场景：当前月夜" aria-label="切换场景，当前月夜">
+        <iconify-icon id="themeIcon" icon="lucide:moon" class="ui-icon"></iconify-icon>
+      </button>
+      <button class="top-action-btn" id="btnFeedFish" title="投喂鱼食" aria-label="投喂鱼食">
+        <iconify-icon icon="lucide:wheat" class="ui-icon"></iconify-icon>
+      </button>
+      <button class="top-action-btn" id="btnToggleAudio" title="开启或关闭声音" aria-label="开启或关闭声音">
+        <iconify-icon id="audioIcon" icon="lucide:volume-2" class="ui-icon"></iconify-icon>
+      </button>
+      <button class="top-action-btn" id="btnResetPond" title="重置荷塘" aria-label="重置荷塘">
+        <iconify-icon icon="lucide:rotate-ccw" class="ui-icon"></iconify-icon>
+      </button>
+    </header>
+
+    <!-- 浮动诗意微气泡文字 -->
+    <div id="pondPoemTip" class="poem-floating-tip">
+      轻拨青荷激清漪，游鱼惊散月华移
+    </div>
+
+    <!-- PC端操作提示浮层（移动端自适应隐藏） -->
+    <div class="desktop-guide">
+      <div>✦ <span>拖拽荷叶</span>：蓄力撞击，感受水流阻力与刚体碰撞</div>
+      <div>✦ <span>轻点水面</span>：激荡涟漪，清脆水滴声，惊散锦鲤游鱼</div>
+      <div>✦ <span>双击水面</span>：投放素饵，吸引附近小鱼争食</div>
+    </div>
+
+  </div>
+
+  <!-- 引入主游戏模块 -->
+  <script type="module">
+    import { MoonlitLotusGame } from './game.js';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const game = new MoonlitLotusGame();
+
+      // 绑定声音切换
+      const btnAudio = document.getElementById('btnToggleAudio');
+      const audioIcon = document.getElementById('audioIcon');
+
+      btnAudio.addEventListener('click', () => {
+        const isEnabled = game.toggleAudio();
+        audioIcon.setAttribute('icon', isEnabled ? 'lucide:volume-2' : 'lucide:volume-x');
+        btnAudio.classList.toggle('muted', !isEnabled);
+        btnAudio.setAttribute('aria-label', isEnabled ? '关闭声音' : '开启声音');
+        btnAudio.title = isEnabled ? '关闭声音' : '开启声音';
+      });
+
+      // 投喂与重置
+      const btnFeed = document.getElementById('btnFeedFish');
+      btnFeed.addEventListener('click', () => {
+        game.feedFish();
+      });
+
+      const btnReset = document.getElementById('btnResetPond');
+      btnReset.addEventListener('click', () => {
+        game.resetPond();
+      });
+
+      // 单按钮循环切换月夜、晨曦与水墨场景
+      const themeButton = document.getElementById('btnCycleTheme');
+      const themeIcon = document.getElementById('themeIcon');
+      const pondContainer = document.querySelector('.pond-container');
+      const themes = [
+        { id: 'moonlight', name: '月夜', icon: 'lucide:moon' },
+        { id: 'dawn', name: '晨曦', icon: 'lucide:sun' },
+        { id: 'ink', name: '墨韵', icon: 'lucide:brush' }
+      ];
+      let themeIndex = 0;
+
+      themeButton.addEventListener('click', () => {
+        themeIndex = (themeIndex + 1) % themes.length;
+        const theme = themes[themeIndex];
+        themeButton.dataset.theme = theme.id;
+        themeButton.title = `切换场景：当前${theme.name}`;
+        themeButton.setAttribute('aria-label', `切换场景，当前${theme.name}`);
+        themeIcon.setAttribute('icon', theme.icon);
+        pondContainer.dataset.theme = theme.id;
+        game.switchTheme(theme.id);
+      });
+    });
+  </script>
+</body>
+</html>

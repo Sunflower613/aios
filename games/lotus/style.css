@@ -1,0 +1,246 @@
+/* style.css - 「荷塘月色」视触觉小游戏样式规范 */
+
+:root {
+  --color-bg-deep: #031217;
+  --color-cyan-glow: #38bdf8;
+  --color-jade: #10b981;
+  --color-gold: #fef08a;
+  --glass-bg: rgba(6, 32, 38, 0.65);
+  --glass-border: rgba(125, 211, 252, 0.22);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --toast-color: #fffdfa;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--color-bg-deep);
+  font-family: "STKaiti", "KaiTi", "Songti SC", "Source Han Serif SC", "SimSun", "Microsoft YaHei", serif;
+  color: #f1f5f9;
+}
+
+/* 游戏最外层容器 */
+.pond-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at 80% 20%, #0d2833 0%, #041419 60%, #020b0e 100%);
+}
+
+/* Canvas 画布全视口铺满 */
+#pondCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: grab;
+}
+
+#pondCanvas:active {
+  cursor: grabbing;
+}
+
+/* 顶部悬浮导航与操作栏 */
+.top-nav {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 28px;
+  box-shadow: var(--glass-shadow);
+  pointer-events: auto;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+/* 顶栏纯图标按钮 */
+.top-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  width: 38px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+
+.top-action-btn:hover,
+.top-action-btn:focus-visible {
+  background: rgba(14, 52, 60, 0.85);
+  border-color: rgba(186, 230, 253, 0.45);
+  color: #ffffff;
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.top-action-btn:active {
+  transform: scale(0.95);
+  background: rgba(8, 40, 47, 0.95);
+}
+
+.theme-cycle-btn {
+  margin: 0 4px;
+  color: #a7f3d0;
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.38);
+}
+
+.top-action-btn.muted {
+  color: #94a3b8;
+}
+
+/* 游戏标题徽章 */
+.pond-title-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 0 4px;
+  color: #d1fae5;
+  font-size: 15px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(52, 211, 153, 0.4);
+}
+
+.pond-title-badge .lotus-icon {
+  font-size: 17px;
+}
+
+.ui-icon {
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 左下角竖排诗意 Toast */
+.poem-floating-tip {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  transform: translateX(-8px);
+  background: transparent;
+  border: 0;
+  color: var(--toast-color);
+  padding: 0;
+  font-family: "LXGW WenKai", "Kaiti SC", "STKaiti", "KaiTi", "KaiTi_GB2312", cursive;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: 0.14em;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.35s ease;
+  z-index: 12;
+  white-space: nowrap;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.28);
+}
+
+.poem-floating-tip.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.pond-container[data-theme="dawn"] {
+  --toast-color: #043927;
+}
+
+.pond-container[data-theme="ink"] {
+  --toast-color: #09090b;
+}
+
+/* PC 端桌面操作指南卡片 */
+.desktop-guide {
+  position: absolute;
+  left: 72px;
+  bottom: 24px;
+  background: rgba(4, 20, 26, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.6;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.desktop-guide span {
+  color: #6ee7b7;
+  font-weight: 500;
+}
+
+/* ================= 移动端适配 (≤ 600px) ================= */
+@media (max-width: 600px) {
+  .top-nav {
+    top: 10px;
+    gap: 2px;
+    padding: 4px;
+    max-width: calc(100vw - 12px);
+  }
+
+  .pond-title-badge {
+    padding: 0 5px 0 2px;
+    gap: 4px;
+    font-size: 12px;
+    letter-spacing: 0;
+  }
+
+  .pond-title-badge .lotus-icon {
+    display: none;
+  }
+
+  .top-action-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .theme-cycle-btn {
+    margin: 0 2px;
+  }
+
+  /* 移动端隐藏冗余解释文字，仅显示图标与核心词 */
+  .desktop-guide {
+    display: none !important;
+  }
+
+  .poem-floating-tip {
+    left: 14px;
+    bottom: 14px;
+    font-size: 14px;
+  }
+}
