@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f2eb">
+  <meta name="description" content="指尖转动魔方，看看色块如何沿交错的环线移动。">
+  <title>魔方实验室 · 韭菜盒子</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar"><a href="../../index.html" class="back">← 韭菜盒子</a><span class="brand">LEEK BOX <i>/</i> PLAY LAB</span><span class="edition">实验 No. 017</span></header>
+  <main>
+    <section class="intro"><div><p class="eyebrow"><span></span> A LITTLE PLAY, A LITTLE MATH</p><h1>魔方<span>实验室</span><sup>3 × 3</sup></h1><p class="lead">指尖转动，让颜色找到回家的路。</p></div><div class="intro-note">在魔方上滑动，转动色块。<br>从空白处拖动，换个角度。</div></section>
+    <div class="workspace">
+      <section class="cube-panel" aria-label="魔方操作区">
+        <div class="panel-heading"><span><b class="section-number">01</b> 来玩魔方</span><span class="pill" id="state-label">已还原</span></div>
+        <div class="stage"><canvas id="cube" tabindex="0" aria-label="三阶魔方。在色块上滑动转动魔方，从空白处拖动调整视角。也可用 U R F D L B 键转动，Shift 加字母反转。"></canvas><div class="stage-watermark" aria-hidden="true">RUBIK’S<br>PLAYGROUND</div><span class="drag-tip">滑动色块转动 · 拖动空白旋转视角</span></div>
+        <div class="stats"><div><span>你的步数</span><strong id="move-count">00</strong></div><div><span>探索时间</span><strong id="timer">00:00</strong></div><div><span>同色归位</span><strong id="matched">54<span> / 54</span></strong></div></div>
+        <div class="actions"><label class="difficulty"><span class="sr-only">打乱难度</span><select id="difficulty"><option value="3">轻松 · 3 步</option><option value="6" selected>挑战 · 6 步</option><option value="20">自由 · 20 步</option></select></label><button id="scramble" class="primary">⤨ 打乱</button><button id="undo" class="secondary" disabled>↶ 撤销</button><button id="solve" class="dark" disabled>自动还原</button></div>
+        <p id="status" role="status" aria-live="polite">打乱魔方，开始挑战吧。</p>
+      </section>
+      <section class="graph-panel" aria-label="魔方色块环形图">
+        <div class="panel-heading"><span><b class="section-number">02</b> 色块环形图</span><span class="live"><i></i> LIVE</span></div>
+        <div class="graph-description">每个圆点是一块颜色，每次转动都是一次环上的轮换。</div>
+        <svg id="graph" viewBox="0 0 540 520" role="img" aria-label="48 个活动色块及其旋转轨道，与左侧魔方同步"></svg>
+        <div class="graph-footer"><span id="graph-count">48 个色块节点 · 中心块省略</span><span>与魔方实时同步</span></div>
+        <div class="solution" id="solution" aria-label="还原路线"></div><p id="solve-description" class="route-note"></p>
+      </section>
+    </div>
+    <footer><span>MADE FOR CURIOUS HANDS & MINDS.</span><span>灵感：TheMathFlow · 图论解魔方 <a href="https://xhslink.cn/o/2jwS86OBiRF" target="_blank" rel="noopener noreferrer">参考 ↗</a></span></footer>
+  </main>
+  <script type="module" src="game.mjs"></script>
+</body>
+</html>

@@ -19,6 +19,14 @@ export const siteConfig = {
 
   // Games listed in the "韭菜盒子" (Leek Box) board and interactive arcade machines
   games: [
+    {
+      id: "rubik",
+      name: "魔方实验室",
+      path: "./games/rubik/index.html",
+      icon: "./games/rubik/icon.svg",
+      color: "#eee8dc",
+      emoji: "🧩"
+    },
     { 
       id: "paint",
       name: "调色盘", 
