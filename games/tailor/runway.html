@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>高定走秀台 - 一起做裙子</title>
+    <link rel="stylesheet" href="css/tailor.css">
+    <!-- Iconify 矢量图标库 -->
+    <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+    <!-- Three.js 核心库 -->
+    <script src="../../3d-home/node_modules/three/build/three.min.js" onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'"></script>
+    <script src="js/pattern-engine.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/audio-synth.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #121013;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            color: #fff;
+        }
+
+        .runway-fullscreen-page {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        #canvasRunwayFull {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* 顶部通透悬浮信息栏 (移动端紧凑不挤占) */
+        .runway-top-nav {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: linear-gradient(180deg, rgba(18, 16, 19, 0.9) 0%, rgba(18, 16, 19, 0) 100%);
+            pointer-events: none;
+            gap: 8px;
+        }
+
+        .runway-top-nav > * {
+            pointer-events: auto;
+        }
+
+        .btn-glass-back {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .btn-glass-back:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .runway-title-card {
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .runway-title-card h1 {
+            margin: 0;
+            font-size: 15px;
+            font-family: var(--font-serif);
+            letter-spacing: 1px;
+            color: #fff0f3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .runway-title-card span {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            display: block;
+        }
+
+        /* 闪光灯滤镜 */
+        .flash-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+            transition: opacity 0.08s ease;
+        }
+
+        .flash-overlay.active {
+            opacity: 0.85;
+        }
+
+        /* 移动端视口自适应 (100dvh) */
+        .runway-fullscreen-page {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        #canvasRunwayFull {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* 顶部通透悬浮信息栏 (移动端紧凑不挤占) */
+        .runway-top-nav {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: linear-gradient(180deg, rgba(18, 16, 19, 0.9) 0%, rgba(18, 16, 19, 0) 100%);
+            pointer-events: none;
+            gap: 6px;
+        }
+
+        .runway-top-nav > * {
+            pointer-events: auto;
+        }
+
+        .btn-glass-back {
+            background: rgba(255, 255, 255, 0.16);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .btn-glass-back:hover {
+            background: rgba(255, 255, 255, 0.28);
+        }
+
+        .runway-title-card {
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            padding: 0 4px;
+        }
+
+        .runway-title-card h1 {
+            margin: 0;
+            font-size: 13px;
+            font-family: var(--font-serif);
+            letter-spacing: 1px;
+            color: #fff0f3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .runway-title-card span {
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.65);
+            display: block;
+            letter-spacing: 0.5px;
+        }
+
+        /* 闪光灯滤镜 */
+        .flash-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+            transition: opacity 0.08s ease;
+        }
+
+        .flash-overlay.active {
+            opacity: 0.36;
+        }
+
+        /* 底部高定摄影与操作坞 (移动端防溢出，兼顾全面屏安全区) */
+        .runway-bottom-dock {
+            position: relative;
+            z-index: 10;
+            padding: 10px 14px max(14px, env(safe-area-inset-bottom));
+            background: linear-gradient(0deg, rgba(18, 16, 19, 0.95) 0%, rgba(18, 16, 19, 0) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .runway-controls-capsule {
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 24px;
+            align-items: center;
+            font-size: 11px;
+            max-width: 96vw;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .runway-controls-capsule select, .runway-controls-capsule input {
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+
+        .runway-actions-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            width: 100%;
+            max-width: 360px;
+            justify-content: center;
+        }
+
+        .btn-snap-polaroid {
+            flex: 1;
+            background: linear-gradient(135deg, #e0637c, #c03d58);
+            border: none;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            box-shadow: 0 4px 15px rgba(224, 99, 124, 0.4);
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .btn-snap-polaroid:hover {
+            transform: scale(1.02);
+        }
+
+        .btn-go-auction {
+            flex: 1;
+            background: linear-gradient(135deg, #d4af37, #b88d22);
+            border: none;
+            color: #2a1f24;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .btn-go-auction:hover {
+            transform: scale(1.02);
+        }
+
+        .polaroid-float-toast {
+            position: absolute;
+            bottom: 95px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #2a1f24;
+            padding: 6px 14px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transform: translateY(12px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            z-index: 30;
+        }
+
+        .polaroid-float-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="runway-fullscreen-page">
+        <!-- 顶部通透导航 -->
+        <header class="runway-top-nav">
+            <button class="btn-glass-back" id="btnBackToTailor">
+                <span class="iconify" data-icon="lucide:arrow-left"></span>
+                <span>回工坊</span>
+            </button>
+            <div class="runway-title-card">
+                <h1 id="textDressName">古希腊基同裙 #1</h1>
+                <span>HAUTE COUTURE RUNWAY</span>
+            </div>
+            <div class="runway-music-dock" style="display: flex; align-items: center; gap: 6px;">
+                <button class="btn-glass-back" id="btnRunwayToggleMusic" style="padding: 5px 10px; font-size: 11px;">
+                    <span class="iconify" id="runwayMusicIcon" data-icon="lucide:disc-3"></span>
+                    <span id="runwayMusicStatusText">走秀音</span>
+                </button>
+                <button class="btn-glass-back" id="btnRunwayNextMusic" style="padding: 5px 8px; font-size: 11px;">
+                    <span class="iconify" data-icon="lucide:skip-forward"></span>
+                    <span>切曲</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 3D 全屏舞台 Canvas -->
+        <canvas id="canvasRunwayFull"></canvas>
+
+        <!-- 闪光灯滤镜 -->
+        <div class="flash-overlay" id="flashOverlay"></div>
+
+        <!-- 拍立得保存气泡 -->
+        <div class="polaroid-float-toast" id="polaroidToast">
+            <span class="iconify" data-icon="lucide:check-circle" style="color: #27ae60;"></span>
+            <span id="polaroidToastText">抓拍成功！已收录画册</span>
+        </div>
+
+        <!-- 底部高定摄影坞 (文字均≤4字，移动端友好) -->
+        <footer class="runway-bottom-dock">
+            <div class="runway-controls-capsule">
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <span class="iconify" data-icon="lucide:sun" style="color: var(--gold-primary);"></span>
+                    <span>灯效：</span>
+                    <select id="selectLightMode">
+                        <option value="spotlight">高定聚光</option>
+                        <option value="warm">巴黎暖调</option>
+                        <option value="neon">冷月霓虹</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <span class="iconify" data-icon="lucide:wind" style="color: var(--pink-primary);"></span>
+                    <span>风速：</span>
+                    <input type="range" id="sliderWind" min="0" max="2.5" step="0.1" value="1.0" style="width: 65px;">
+                </div>
+            </div>
+
+            <div class="runway-actions-row">
+                <button class="btn-snap-polaroid" id="btnSnap">
+                    <span class="iconify" data-icon="lucide:camera"></span>
+                    <span>拍大片</span>
+                </button>
+                <button class="btn-go-auction" id="btnAuction">
+                    <span class="iconify" data-icon="lucide:gavel"></span>
+                    <span>去拍卖</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        (function() {
+            const store = window.tailorStore;
+            const dress = store.getActiveDraft();
+            store.currentDress = dress;
+            if (!dress.cutting.completed || !dress.sewing.completed) {
+                window.location.replace('tailor.html');
+                return;
+            }
+            const dressTitle = document.getElementById('textDressName');
+            if (dressTitle && dress.name) dressTitle.innerText = dress.name;
+
+            const canvas = document.getElementById('canvasRunwayFull');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            const scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x181216, 0.035);
+
+            const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
+            camera.position.set(0, 1.32, 4.2);
+            camera.lookAt(0, 0.82, 0);
+
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, preserveDrawingBuffer: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // 开启 sRGB 空间，彻底告别线性暗沉！
+            if ('outputColorSpace' in renderer) {
+                renderer.outputColorSpace = THREE.SRGBColorSpace;
+            } else if ('outputEncoding' in renderer) {
+                renderer.outputEncoding = THREE.sRGBEncoding;
+            }
+
+            // =========================================================================
+            // 核心修复：高定秀场级清透柔光系统 (平衡总照度，杜绝惨白过曝，真实还原选布色彩)
+            // =========================================================================
+            // 1. 全向环境柔和基础光 (0.75，提供均匀底光，绝不发黑，但也绝不洗白)
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+            scene.add(ambientLight);
+
+            // 2. 半球漫射光 (0.65，天顶白光 + 地面微弱暖金漫射)
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0xfce8ec, 0.65);
+            hemiLight.position.set(0, 10, 0);
+            scene.add(hemiLight);
+
+            // 3. 正面柔和照面光 (0.6，照亮胸前与垂褶正面)
+            const frontDir = new THREE.DirectionalLight(0xfffaf5, 0.6);
+            frontDir.position.set(0, 1.6, 4.6);
+            scene.add(frontDir);
+
+            // 4. 前上方 45° 主聚光灯 (1.35，高定走秀台立体高光与地面阴影)
+            const spotLight = new THREE.SpotLight(0xfffaf0, 1.35);
+            spotLight.position.set(1.5, 6.0, 3.8);
+            spotLight.angle = Math.PI / 4.0;
+            spotLight.penumbra = 0.8;
+            spotLight.castShadow = true;
+            spotLight.shadow.bias = -0.001;
+            scene.add(spotLight);
+
+            // 5. 侧向柔和补光与轮廓光
+            const fillLight = new THREE.DirectionalLight(0xfce8ec, 0.45);
+            fillLight.position.set(-3.2, 2.5, 2.8);
+            scene.add(fillLight);
+
+            const rimLight = new THREE.DirectionalLight(0xfff2e0, 0.55);
+            rimLight.position.set(0, 3.5, -4.0);
+            scene.add(rimLight);
+
+            // T台镜面地板
+            const stageGeo = new THREE.BoxGeometry(2.6, 0.2, 14);
+            const stageMat = new THREE.MeshStandardMaterial({ color: 0x1e1922, roughness: 0.25, metalness: 0.5 });
+            const stage = new THREE.Mesh(stageGeo, stageMat);
+            stage.position.set(0, -0.6, 0);
+            stage.receiveShadow = true; // 仅地面承接柔和阴影
+            scene.add(stage);
+
+            // 两侧发光金边
+            const stripMat = new THREE.MeshBasicMaterial({ color: 0xd4af37 });
+            const leftStrip = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.02, 14), stripMat);
+            leftStrip.position.set(-1.28, -0.49, 0);
+            const rightStrip = leftStrip.clone();
+            rightStrip.position.x = 1.28;
+            scene.add(leftStrip, rightStrip);
+
+            // 模特与裙身组
+            const modelGroup = new THREE.Group();
+            scene.add(modelGroup);
+
+            // 构建裙身网格 (优先读取玩家亲手裁剪的 customProfile 真实轮廓点集)
+            const m = dress.mannequin || { shoulder: 1.05, bust: 1.0, waist: 0.95, hips: 1.12, hemWidth: 1.45, length: 1.35 };
+            const f = dress.fabric || { color: '#dfb4aa', textureUrl: 'assets/textures/fabric_knit_chevron_cream.jpg' };
+            const hemY = -0.36 * (m.length || 1.3);
+
+            const profilePoints = store.smoothProfile(store.getDressProfile(dress)).map(p => new THREE.Vector2(p.radius, p.y));
+            const geometry = new THREE.LatheGeometry(profilePoints, 64);
+            const posAttr = geometry.attributes.position;
+            const vertex = new THREE.Vector3();
+
+            // 古希腊基同自然重力垂直垂褶
+            for (let i = 0; i < posAttr.count; i++) {
+                vertex.fromBufferAttribute(posAttr, i);
+                const angle = Math.atan2(vertex.z, vertex.x);
+                const heightRatio = Math.max(0, (1.1 - vertex.y) / (1.1 - hemY));
+                const pleatWave = Math.sin(angle * 22) * 0.028 * heightRatio;
+                const radius = Math.sqrt(vertex.x * vertex.x + vertex.z * vertex.z);
+                const newRadius = radius + pleatWave;
+                vertex.x = Math.cos(angle) * newRadius;
+                vertex.z = Math.sin(angle) * newRadius;
+                posAttr.setXYZ(i, vertex.x, vertex.y, vertex.z);
+            }
+            geometry.computeVertexNormals();
+
+            // 缓存垂褶后的原始顶点位置供微风物理使用
+            geometry.userData = { originalPositions: new Float32Array(posAttr.array), hemY: hemY };
+
+            // 真实反映玩家在工坊选料中挑中的面料颜色与物理参数，彻底告别假纯白！
+            const clothColorHex = f.color || '#f6f3eb';
+            const mat = new THREE.MeshStandardMaterial({
+                color: new THREE.Color(clothColorHex),
+                roughness: f.roughness !== undefined ? f.roughness : 0.6,
+                metalness: 0.02,
+                side: THREE.DoubleSide
+            });
+
+            if (f.textureUrl) {
+                new THREE.TextureLoader().load(f.textureUrl, (tex) => {
+                    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+                    tex.repeat.set(3.5, 3.5);
+                    mat.map = tex;
+                    mat.needsUpdate = true;
+                }, undefined, () => {
+                    console.log('使用高定纯色丝光质感');
+                });
+            }
+
+            const dressMesh = new THREE.Mesh(geometry, mat);
+            dressMesh.castShadow = true;
+            // 关键突破：彻底关闭 receiveShadow！杜绝旋转体自阴影死黑！
+            dressMesh.receiveShadow = false;
+            modelGroup.add(dressMesh);
+
+            // 模特头部高雅米白素体
+            const head = new THREE.Mesh(
+                new THREE.SphereGeometry(0.12, 24, 24),
+                new THREE.MeshStandardMaterial({ color: 0xf6e8da, roughness: 0.45, metalness: 0.0 })
+            );
+            head.position.y = 1.74;
+            head.castShadow = true;
+            modelGroup.add(head);
+
+            // 配件渲染
+            (dress.accessories || []).forEach(acc => {
+                if (acc.type === 'fibula') {
+                    const boss = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.045, 0.045, 0.012, 24),
+                        new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.88, roughness: 0.22 })
+                    );
+                    boss.rotation.x = Math.PI / 2;
+                    const posPct = acc.posPercent || acc.defaultPos || { x: 34, y: 22 };
+                    boss.position.set(((posPct.x - 50) / 50) * 0.38, 1.62 - (posPct.y / 100) * 1.50, 0.22);
+                    modelGroup.add(boss);
+                } else if (acc.type === 'belt') {
+                    const belt = new THREE.Mesh(
+                        new THREE.TorusGeometry(0.19, 0.015, 12, 48),
+                        new THREE.MeshStandardMaterial({ color: 0xd4c2a5, roughness: 0.85, metalness: 0.05 })
+                    );
+                    belt.rotation.x = Math.PI / 2;
+                    belt.position.y = 0.95;
+                    modelGroup.add(belt);
+                }
+            });
+
+            // 动画与微风
+            let windStrength = 1.0;
+            const clock = new THREE.Clock();
+
+            function animate() {
+                requestAnimationFrame(animate);
+                const delta = clock.getDelta();
+                const time = clock.getElapsedTime();
+
+                // 模特步态与转体
+                modelGroup.rotation.y = Math.sin(time * 0.5) * 0.32;
+                modelGroup.position.y = Math.sin(time * 2.5) * 0.012;
+
+                // 裙摆微风物理流淌并实时更新法线
+                if (dressMesh && dressMesh.geometry) {
+                    const geom = dressMesh.geometry;
+                    const pos = geom.attributes.position;
+                    const orig = geom.userData.originalPositions;
+                    if (orig) {
+                        for (let i = 0; i < pos.count; i++) {
+                            const ox = orig[i * 3];
+                            const oy = orig[i * 3 + 1];
+                            const oz = orig[i * 3 + 2];
+                            const dist = Math.max(0, (1.0 - oy) / (1.0 - hemY));
+                            const wave = Math.sin(time * 4.5 + oy * 6 + ox * 4) * 0.025 * dist * windStrength;
+                            pos.setXYZ(i, ox + wave * 0.5, oy, oz + wave);
+                        }
+                        pos.needsUpdate = true;
+                        geom.computeVertexNormals(); // 实时平滑法线重算，避免法线斑块！
+                    }
+                }
+
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // 拍立得抓拍柔和快门光效 (仅在玩家主动点击【拍大片】时触发一次)
+            const flashEl = document.getElementById('flashOverlay');
+            function triggerFlash() {
+                if (!flashEl) return;
+                flashEl.classList.add('active');
+                setTimeout(() => flashEl.classList.remove('active'), 75);
+            }
+
+            // 事件绑定
+            document.getElementById('sliderWind').addEventListener('input', (e) => {
+                windStrength = parseFloat(e.target.value);
+            });
+
+            document.getElementById('selectLightMode').addEventListener('change', (e) => {
+                const val = e.target.value;
+                if (val === 'spotlight') {
+                    spotLight.color.setHex(0xfffaf0);
+                    hemiLight.color.setHex(0xffffff);
+                    ambientLight.color.setHex(0xffffff);
+                } else if (val === 'warm') {
+                    spotLight.color.setHex(0xffcb9e);
+                    hemiLight.color.setHex(0xffecd6);
+                    ambientLight.color.setHex(0xfff0e4);
+                } else if (val === 'neon') {
+                    spotLight.color.setHex(0x88e0ff);
+                    hemiLight.color.setHex(0xd0f0ff);
+                    ambientLight.color.setHex(0xe4f4ff);
+                }
+            });
+
+            document.getElementById('btnBackToTailor').addEventListener('click', () => {
+                window.location.href = 'tailor.html';
+            });
+
+            document.getElementById('btnAuction').addEventListener('click', () => {
+                store.persistCurrentDraft();
+                window.location.href = 'auction.html';
+            });
+
+            // 抓拍大片
+            const toast = document.getElementById('polaroidToast');
+            document.getElementById('btnSnap').addEventListener('click', () => {
+                triggerFlash();
+                window.tailorAudio.playTapeSnap();
+
+                renderer.render(scene, camera);
+                const photoUrl = canvas.toDataURL('image/png');
+                store.savePhotoToAlbum(photoUrl, dress.name);
+
+                if (toast) {
+                    toast.classList.add('show');
+                    setTimeout(() => toast.classList.remove('show'), 2200);
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                const nw = window.innerWidth;
+                const nh = window.innerHeight;
+                camera.aspect = nw / nh;
+                camera.updateProjectionMatrix();
+                renderer.setSize(nw, nh);
+            });
+
+            // =========================================================================
+            // 走秀台专属听觉系统：维瓦尔第秀场新古典 / 现代室内乐 / 50年代圆舞曲
+            // =========================================================================
+            const audio = window.tailorAudio;
+            const btnToggleMusic = document.getElementById('btnRunwayToggleMusic');
+            const btnNextMusic = document.getElementById('btnRunwayNextMusic');
+            const iconMusic = document.getElementById('runwayMusicIcon');
+            const textMusic = document.getElementById('runwayMusicStatusText');
+
+            if (audio && btnToggleMusic && btnNextMusic) {
+                // 自动载入走秀台精选清单并开启播放
+                audio.setScene('runway', true);
+                updateMusicUI();
+
+                btnToggleMusic.addEventListener('click', () => {
+                    audio.toggleBgm();
+                    updateMusicUI();
+                });
+
+                btnNextMusic.addEventListener('click', () => {
+                    const next = audio.nextTrack();
+                    updateMusicUI();
+                    showMusicToast(next);
+                });
+
+                // 首次进入 1.5 秒后轻浮提示当前走秀曲目
+                setTimeout(() => {
+                    showMusicToast(audio.getCurrentTrack());
+                }, 1200);
+            }
+
+            function updateMusicUI() {
+                if (!audio || !textMusic || !iconMusic) return;
+                if (audio.bgmPlaying && !audio.isMuted) {
+                    textMusic.innerText = '暂停';
+                    iconMusic.style.animation = 'spin 3.2s linear infinite';
+                    btnToggleMusic.style.background = 'rgba(224, 99, 124, 0.4)';
+                    btnToggleMusic.style.borderColor = 'rgba(224, 99, 124, 0.7)';
+                } else {
+                    textMusic.innerText = '走秀音';
+                    iconMusic.style.animation = 'none';
+                    btnToggleMusic.style.background = 'rgba(255, 255, 255, 0.15)';
+                    btnToggleMusic.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                }
+            }
+
+            function showMusicToast(track) {
+                if (!track) return;
+                const toastEl = document.getElementById('polaroidToast');
+                const textEl = document.getElementById('polaroidToastText');
+                if (toastEl && textEl) {
+                    textEl.innerText = `${track.title} · ${track.era}`;
+                    toastEl.classList.add('show');
+                    setTimeout(() => toastEl.classList.remove('show'), 2800);
+                }
+            }
+        })();
+    </script>
+</body>
+</html>

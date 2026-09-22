@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>一起做裙子 - Let's Tailor! 沉浸式高定工坊</title>
+    <link rel="stylesheet" href="css/tailor.css">
+    <!-- Iconify 矢量图标框架 -->
+    <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+    <!-- Three.js 核心库 -->
+    <script src="../../3d-home/node_modules/three/build/three.min.js" onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'"></script>
+</head>
+<body>
+    <div class="app-viewport">
+        <!-- 顶部极简收纳导航栏 (移动端单行不折行) -->
+        <header class="top-header">
+            <div class="brand-section">
+                <div class="brand-logo-scissors" title="标志物：金色剪刀">
+                    <span class="iconify gold-scissors-icon" data-icon="lucide:scissors"></span>
+                </div>
+                <div class="brand-titles">
+                    <span class="brand-name">一起做裙子</span>
+                </div>
+            </div>
+
+            <!-- 中间当前时代极简胶囊 -->
+            <div class="brand-stage-capsule" id="badgeStageCurrent" title="点击查看服饰文明手账">
+                <span id="badgeStageEraText">古典与质朴</span>
+                <span class="iconify" data-icon="lucide:chevron-down" style="font-size: 10px;"></span>
+            </div>
+
+            <!-- 右侧资产与统一菜单抽屉按钮 -->
+            <div class="header-actions">
+                <div class="currency-badge" title="金币">
+                    <span class="iconify" data-icon="lucide:coins" style="color: var(--gold-primary);"></span>
+                    <span id="textCoins">180</span>
+                </div>
+                <div class="currency-badge" title="声望">
+                    <span class="iconify" data-icon="lucide:award" style="color: var(--pink-primary);"></span>
+                    <span id="textInfluence">10</span>
+                </div>
+                <!-- 核心收纳：工坊百宝箱与设置抽屉 -->
+                <button class="nav-icon-btn" id="btnOpenDrawer" title="工坊百宝箱/设置菜单">
+                    <span class="iconify" data-icon="lucide:menu"></span>
+                </button>
+            </div>
+        </header>
+
+                <div class="crafting-step-indicator-bar">
+                    <div class="step-indicator-dot active" data-step="0">
+                        <span class="step-dot-circle">1</span>
+                        <span>量体</span>
+                    </div>
+                    <div class="step-indicator-divider"></div>
+                    <div class="step-indicator-dot" data-step="1">
+                        <span class="step-dot-circle">2</span>
+                        <span>面料</span>
+                    </div>
+                    <div class="step-indicator-divider"></div>
+                    <div class="step-indicator-dot" data-step="2">
+                        <span class="step-dot-circle">3</span>
+                        <span>裁剪</span>
+                    </div>
+                    <div class="step-indicator-divider"></div>
+                    <div class="step-indicator-dot" data-step="3">
+                        <span class="step-dot-circle">4</span>
+                        <span>缝纫</span>
+                    </div>
+                    <div class="step-indicator-divider"></div>
+                    <div class="step-indicator-dot" data-step="4">
+                        <span class="step-dot-circle">5</span>
+                        <span>试穿</span>
+                    </div>
+                </div>
+
+
+        <!-- 主操作舞台：3D 视窗、全屏裁剪裁床与全屏缝纫机 -->
+        <main class="main-stage">
+            <!-- 视窗 A：3D 人台视窗 (塑形、面料、配饰阶段展示) -->
+            <div class="viewport-3d-container" id="container3d">
+                <canvas id="canvas3d"></canvas>
+
+                <!-- 顶部步进指示 (微型紧凑，不遮挡人台) -->
+                <!-- 右上角快捷辅助小工具 (半透明) -->
+                <div class="floating-action-tools">
+                    <button class="tool-chip-btn" id="btnResetView" title="复位正面视角">
+                        <span class="iconify" data-icon="lucide:rotate-ccw"></span>
+                        <span>复位</span>
+                    </button>
+                    <button class="tool-chip-btn" id="btnToggleWind" title="微风物理">
+                        <span class="iconify" data-icon="lucide:wind"></span>
+                        <span id="textWindStatus">自然风</span>
+                    </button>
+                </div>
+
+                <!-- 底部交互与工序轻薄贴地 HUD 胶囊 (移至底部上方，彻底避开人台头部) -->
+                <div class="stage-bottom-floating-hud">
+                    <div class="hud-capsule-badge">
+                        <span class="hud-capsule-step" id="hudStepTitle">工序 1 / 调整人台尺寸</span>
+                        <span class="hud-capsule-desc" id="hudStepDesc">拖动胸、腰、臀部对齐客人尺寸</span>
+                    </div>
+                    <div class="rotation-hint-subtle">
+                        <span class="iconify" data-icon="lucide:move"></span>
+                        <span>边缘滑动旋转</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 视窗 B：全屏大案板纸样裁床 (裁剪步骤铺满全屏，视野全开) -->
+            <div class="stage-fullscreen-container" id="containerCuttingFull">
+                <div class="stage-fullscreen-canvas-wrapper">
+                    <canvas id="canvasCutting" aria-label="纸样裁床，沿红色裁剪线剪裁"></canvas>
+                    <div class="pattern-zoom-controls"><button id="btnZoomOut" title="缩小">−</button><span id="patternZoom">100%</span><button id="btnZoomIn" title="放大">＋</button><button id="btnFitPattern">适合屏幕</button></div>
+                </div>
+            </div>
+
+            <!-- 视窗 C：全屏简约缝纫机工作台 (从上到下推进送布，视野全开) -->
+            <div class="stage-fullscreen-container" id="containerSewingFull">
+                <div class="stage-fullscreen-canvas-wrapper">
+                    <canvas id="canvasSewing"></canvas>
+                </div>
+            </div>
+        </main>
+
+        <!-- 底部单步渐进工序操作台 -->
+        <section class="crafting-dock-container">
+            <div class="crafting-panel-body" id="panelStep0">
+                <div class="size-primary" id="sizePrimary"></div>
+                <details class="size-details"><summary>补充量体表 · 肩宽 / 前后长 / 胸高等</summary><p>已填入这位客人的补充量体值。三围不能唯一决定人体形状；修改尺寸会重新生成纸样。</p><div id="sizeAdvanced" class="size-advanced"></div></details>
+            </div>
+
+            <!-- 步骤 2：选料与质感交互面板 -->
+            <div class="crafting-panel-body" id="panelStep1" style="display: none;">
+                <div class="section-label">
+                    <span class="iconify" data-icon="lucide:layers"></span>
+                    <span>选择面料 · 再挑选委托所需的颜色</span>
+                </div>
+                <div class="fabric-shelf-row" id="fabricShelfContainer">
+                    <!-- 动态注入面料卡片 -->
+                </div>
+                <div class="color-picker-dock">
+                    <span class="section-label" style="margin-bottom:0">色盘：</span>
+                    <div class="color-dots-row" id="colorDotsContainer">
+                        <!-- 动态注入色盘 -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="crafting-panel-body cutting-panel" id="panelStep2" style="display:none">
+                <div class="pattern-legend"><span class="cut">━ 裁剪线</span><span class="seam">┄ 缝合线</span><span class="opening">··· 开口边</span><span class="dart">┄ 省道</span><span class="fold">┄ 对折边不剪</span></div>
+                <div id="patternPieces" class="pattern-pieces"></div>
+                <div class="cut-actions"><span id="cutProgressText" role="status">正在生成纸样</span><div><button id="btnUndoCut" class="btn-secondary">撤回一刀</button><button id="btnResetCut" class="btn-secondary">重裁本片</button><button id="btnActionUnfold" class="btn-primary" disabled>取下裁片</button></div></div>
+                <p class="craft-note">单指沿红线剪 · 双指缩放 / 移动 · 鼠标滚轮缩放，Shift 拖动平移；省道不剪开，开口边沿边缝里布。</p>
+            </div>
+            <div class="crafting-panel-body" id="panelStep3" style="display:none">
+                <div id="seamOperations" class="seam-operations"></div>
+                <p id="seamHint" class="craft-note"></p><div class="seam-controls"><button class="btn-secondary" id="btnAlignSeam">对齐裁片</button><button class="pedal-button" id="btnSewingPedal">按住车线</button><button class="btn-secondary" id="btnResetSewing">重做工序</button><button class="btn-primary" id="btnNextSeam" disabled>下道缝制</button></div>
+                <div id="sewingStatusText" role="status"></div>
+            </div>
+            <div class="crafting-panel-body" id="panelStep4" style="display:none">
+                <h3>试穿检查</h3><p class="craft-note">胸省与腰省已收合；肩缝、侧缝、腰节已连接；领口与袖窿保持开放，后中用拉链开合，下摆已折边。</p>
+                <div id="inspectionResult"></div><p class="craft-note">当前三维展示为结构示意，纸样与缝合关系以裁床数据为准。</p>
+            </div>
+
+            <!-- 底部操作行 (文案精简 ≤4字，移动端防溢出) -->
+            <div class="crafting-footer-actions">
+                <button class="btn-secondary" id="btnPrevStep" style="visibility: hidden;">
+                    <span class="iconify" data-icon="lucide:chevron-left"></span>
+                    <span>上一步</span>
+                </button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-primary" id="btnNextStep">
+                        <span id="nextStepLabel">下一步</span>
+                        <span class="iconify" data-icon="lucide:chevron-right"></span>
+                    </button>
+                    <button class="btn-primary btn-gold" id="btnFinishDress" style="display: none;">
+                        <span class="iconify" data-icon="lucide:scissors"></span>
+                        <span>展示成衣</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             收纳抽屉：工坊百宝箱与设置 (Workshop Drawer)
+             ========================================================================== -->
+        <div class="workshop-drawer-backdrop" id="drawerBackdrop">
+            <div class="workshop-drawer-panel" id="drawerPanel">
+                <div class="drawer-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="iconify gold-scissors-icon" data-icon="lucide:package"></span>
+                        <span style="font-family: var(--font-serif); font-size: 16px; font-weight: 700;">工坊百宝箱</span>
+                    </div>
+                    <button class="modal-close-btn" id="btnCloseDrawer">
+                        <span class="iconify" data-icon="lucide:x"></span>
+                    </button>
+                </div>
+
+                <div class="drawer-body">
+                    <!-- 音乐与留声机控制卡片 -->
+                    <div class="drawer-card-box">
+                        <div class="drawer-card-header">
+                            <span class="iconify" data-icon="lucide:disc-3" style="color: var(--pink-primary);"></span>
+                            <span style="font-size: 13px; font-weight: 700;">古典留声机 BGM</span>
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-secondary); margin: 6px 0;" id="textCurrentTrackName">
+                            正在播放：萨蒂 - 裸体歌舞第一号
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button class="btn-secondary" id="btnToggleBgm" style="padding: 4px 10px; font-size: 11px; min-height: 32px;">
+                                <span class="iconify" id="iconBgmPlay" data-icon="lucide:pause"></span>
+                                <span id="textBgmPlay">暂停</span>
+                            </button>
+                            <button class="btn-secondary" id="btnNextBgm" style="padding: 4px 10px; font-size: 11px; min-height: 32px;">
+                                <span class="iconify" data-icon="lucide:skip-forward"></span>
+                                <span>切歌</span>
+                            </button>
+                            <button class="nav-icon-btn" id="btnToggleAudioInDrawer" title="音效开关" style="width: 32px; height: 32px;">
+                                <span class="iconify" id="iconAudioInDrawer" data-icon="lucide:volume-2"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 核心功能导航入口菜单 -->
+                    <div class="drawer-nav-list">
+                        <button class="drawer-nav-item" id="btnDrawerOpenRunway">
+                            <span class="iconify" data-icon="lucide:clapperboard"></span>
+                            <span>走秀台</span>
+                        </button>
+                        <button class="drawer-nav-item" id="btnDrawerOpenAuction">
+                            <span class="iconify" data-icon="lucide:gavel"></span>
+                            <span>拍卖行</span>
+                        </button>
+                        <button class="drawer-nav-item" id="btnDrawerOpenLore">
+                            <span class="iconify" data-icon="lucide:book-open"></span>
+                            <span>裁缝手账</span>
+                        </button>
+                        <button class="drawer-nav-item" id="btnDrawerOpenSalon">
+                            <span class="iconify" data-icon="lucide:landmark"></span>
+                            <span>沙龙展厅</span>
+                        </button>
+                        <button class="drawer-nav-item" id="btnDrawerOpenAlbum">
+                            <span class="iconify" data-icon="lucide:camera"></span>
+                            <span>摄影画册</span>
+                        </button>
+                        <button class="drawer-nav-item" id="btnDrawerOpenPrologue">
+                            <span class="iconify" data-icon="lucide:scroll"></span>
+                            <span>外婆手记</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================================================
+             模态框 0：外婆的乡间工坊开篇信笺 (Prologue Story)
+             ========================================================================== -->
+        <div class="modal-backdrop" id="modalPrologue">
+            <div class="modal-window" style="max-width: 580px;">
+                <div class="modal-header">
+                    <div class="modal-title-group">
+                        <span class="iconify gold-scissors-icon" data-icon="lucide:scroll"></span>
+                        <span class="modal-title">外婆的裁缝手记 · 卷一：希腊拂风</span>
+                    </div>
+                    <button class="modal-close-btn" id="btnClosePrologue">
+                        <span class="iconify" data-icon="lucide:x"></span>
+                    </button>
+                </div>
+                <div class="modal-content-scroll" style="background: #faf5eb;">
+                    <div class="parchment-letter-body">
+                        <h4 style="font-family: var(--font-serif); font-size: 15px; color: #4a382c; margin-bottom: 10px;">翻开手记第一页：古希腊基同 (Chiton)</h4>
+                        <p style="font-size: 13px; color: #5a4b40; line-height: 1.7; margin-bottom: 10px;">
+                            “亲爱的孩子，最早的人类衣裳从不强行切割肢体。古希腊人懂得用两幅最质朴的<b>长方形矩形亚麻布</b>，仅凭双肩的<b>纤布拉别针</b>与一根<b>细腰绳</b>，顺应重力让布料自然下坠。”
+                        </p>
+                        <div style="background: rgba(255,255,255,0.7); border: 1px dashed #d4af37; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 12px; color: #503f34; line-height: 1.6;">
+                            • <b>纸样以矩形布片为主</b>：裁剪极少，保持整匹织物的完整流动<br>
+                            • <b>几乎不依赖省道</b>：不作繁复分割，纯靠别针与系带塑形<br>
+                            • <b>肩部以别针固定</b>：双肩各一枚青铜纤布拉 (Fibula)<br>
+                            • <b>以腰带系束形成浪褶</b>：提拉向上形成自然波浪褶裙 (Kolpos)<br>
+                            • <b>重重褶皱来自自然下坠</b>：展现宛如多立克神庙石柱般的古典韵律
+                        </div>
+                        <p style="font-size: 12px; color: #6b5a50; line-height: 1.6; font-style: italic;">
+                            “做这条裙子，心要静。用剪刀规整裁开布匹，用针线锁住侧缝，让纤布拉在肩头闪光。”
+                        </p>
+                        <div style="text-align: right; margin-top: 14px; font-family: var(--font-serif); font-weight: 700; color: #78263e;">
+                            —— 外婆的立裁手记
+                        </div>
+                    </div>
+                    <div style="margin-top: 16px; display: flex; justify-content: center;">
+                        <button class="btn-primary btn-gold" id="btnEnterWorkshopFromStory" style="padding: 10px 28px;">
+                            <span class="iconify" data-icon="lucide:scissors"></span>
+                            <span>开启制作</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================================================
+             模态框 1：走秀摄影棚 (Runway)
+             ========================================================================== -->
+        <div class="modal-backdrop" id="modalRunway">
+            <div class="modal-window">
+                <div class="modal-header">
+                    <div class="modal-title-group">
+                        <span class="iconify gold-scissors-icon" data-icon="lucide:clapperboard"></span>
+                        <span class="modal-title">高定走秀台</span>
+                    </div>
+                    <button class="modal-close-btn" id="btnCloseRunway">
+                        <span class="iconify" data-icon="lucide:x"></span>
+                    </button>
+                </div>
+                <div class="modal-content-scroll">
+                    <div class="runway-viewport-box">
+                        <canvas id="canvasRunway"></canvas>
+                    </div>
+                    <div class="runway-controls-row">
+                        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <label style="font-size: 12px; font-weight: 500;">
+                                灯效：
+                                <select id="selectRunwayLight" style="padding: 3px 6px; border-radius: 6px; border:1px solid var(--border-light);">
+                                    <option value="spotlight">聚光灯</option>
+                                    <option value="warm">巴黎暖光</option>
+                                    <option value="neon">冷月霓虹</option>
+                                </select>
+                            </label>
+                            <label style="font-size: 12px; font-weight: 500;">
+                                风力：
+                                <input type="range" id="sliderRunwayWind" min="0" max="2" step="0.1" value="0.8" style="vertical-align: middle; width: 75px;">
+                            </label>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-secondary" id="btnSnapPhoto">
+                                <span class="iconify" data-icon="lucide:camera"></span>
+                                <span>抓拍</span>
+                            </button>
+                            <button class="btn-primary btn-gold" id="btnEnterAuction">
+                                <span class="iconify" data-icon="lucide:gavel"></span>
+                                <span>去拍卖</span>
+                            </button>
+                            <button class="btn-primary" id="btnKeepToSalon">
+                                <span class="iconify" data-icon="lucide:heart"></span>
+                                <span>珍藏</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================================================
+             模态框 2：苏富比拍卖行现场竞价 (Auction)
+             ========================================================================== -->
+        <div class="modal-backdrop" id="modalAuction">
+            <div class="modal-window">
+                <div class="modal-header">
+                    <div class="modal-title-group">
+                        <span class="iconify gold-scissors-icon" data-icon="lucide:gavel"></span>
+                        <span class="modal-title">苏富比拍卖行</span>
+                    </div>
+                    <button class="modal-close-btn" id="btnCloseAuction">
+                        <span class="iconify" data-icon="lucide:x"></span>
+                    </button>
+                </div>
+                <div class="modal-content-scroll">
+                    <div class="auction-stage-layout">
+                        <div class="auction-preview-column">
+                            <h3 id="auctionDressTitle" style="font-family: var(--font-serif); font-size: 14px; font-weight: 700;">作品估值</h3>
+                            <div id="auctionScoresInfo" style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;"></div>
+                            <div style="margin-top: 8px; font-size: 13px; font-weight: 700;">
+                                当前叫价：<span id="auctionCurrentBid" style="color: var(--pink-primary); font-size: 20px;">120</span>
+                                <span class="iconify" data-icon="lucide:coins" style="color: var(--gold-primary);"></span>
+                            </div>
+                        </div>
+                        <div class="auction-bidders-area">
+                            <div class="section-label">现场贵宾竞夺</div>
+                            <div id="biddersListContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+                            <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
+                                <button class="btn-primary btn-gold" id="btnAcceptBid">
+                                    <span class="iconify" data-icon="lucide:gavel"></span>
+                                    <span>落槌成交</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================================================
+             模态框 2.5：统一高定成交结算弹窗 (拒绝丑陋原生 alert)
+             ========================================================================== -->
+        <div class="modal-backdrop" id="modalDealResult">
+            <div class="modal-window" style="max-width: 520px;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #fce8eb, #fbf5e6);">
+                    <div class="modal-title-group">
+                        <span class="iconify gold-scissors-icon" data-icon="lucide:award"></span>
+                        <span class="modal-title">拍卖成交 · 盛典落槌</span>
+                    </div>
+                    <button class="modal-close-btn" id="btnCloseDealResult">
+                        <span class="iconify" data-icon="lucide:x"></span>
+                    </button>
+                </div>
+                <div class="modal-content-scroll" style="text-align: center; padding: 22px;">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--gold-light); border: 2px solid var(--gold-primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                        <span class="iconify" data-icon="lucide:gavel" style="font-size: 28px; color: var(--gold-primary);"></span>
+                    </div>
+                    <h3 id="dealDressName" style="font-family: var(--font-serif); font-size: 17px; margin-bottom: 6px;">作品名称</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;" id="dealBuyerSpeech">
+                        由【玛格丽特公爵夫人】以高价成功竞得！
+                    </p>
+
+                    <div style="display: flex; justify-content: center; gap: 20px; background: var(--pink-subtle); padding: 12px; border-radius: var(--radius-md); margin-bottom: 16px;">
+                        <div>
+                            <div style="font-size: 11px; color: var(--text-muted);">获得金币</div>
+                            <div style="font-size: 20px; font-weight: 700; color: var(--gold-primary); display: flex; align-items: center; gap: 4px; justify-content: center;">
+                                <span class="iconify" data-icon="lucide:coins"></span>
+                                <span id="dealCoinsEarned">+240</span>
+                            </div>
+                        </div>
+                        <div style="width: 1px; background: var(--border-light);"></div>
+                        <div>
+                            <div style="font-size: 11px; color: var(--text-muted);">时尚声望</div>
+                            <div style="font-size: 20px; font-weight: 700; color: var(--pink-primary); display: flex; align-items: center; gap: 4px; justify-content: center;">
+                                <span class="iconify" data-icon="lucide:sparkles"></span>
+                                <span id="dealInfluenceEarned">+20</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 时代晋升卡片 (若触发时动态展示) -->
+                    <div id="eraUnlockCard" style="display: none; background: #fff5f7; border: 1.5px dashed var(--pink-primary); border-radius: var(--radius-md); padding: 10px; margin-bottom: 16px;">
+                        <div style="font-size: 12px; font-weight: 700; color: var(--pink-primary);" id="eraUnlockTitle">
+                            文明演变：时代正式晋升！
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;" id="eraUnlockDesc">
+                            已解锁全新工艺与历史手账彩蛋
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: center; gap: 10px;">
+                        <button class="btn-secondary" id="btnDealKeepToSalon">
+                            <span class="iconify" data-icon="lucide:heart"></span>
+                            <span>珍藏留念</span>
+                        </button>
+                        <button class="btn-primary btn-gold" id="btnDealNextDress">
+                            <span class="iconify" data-icon="lucide:plus"></span>
+                            <span>开启新衣</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模态框 3：私人高定沙龙展厅 (Salon) -->
+        <div class="modal-backdrop" id="modalSalon">
+            <div class="modal-window">
+                <div class="modal-header">
+                    <div class="modal-title-group">
+                        <span class="iconify gold-scissors-icon" data-icon="lucide:landmark"></span>
+                        <span class="modal-title">私人高定沙龙</span>
+                    </div>
+                    <button class="modal-close-btn" id="btnCloseSalon">
+                        <span class="iconify" data-icon="lucide:x"></span>
+                    </button>
+                </div>
+                <div class="modal-content-scroll">
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                        每件心爱杰作皆可永久珍藏于此，名流访客定期留下赞美便签并提升声望。
+                    </p>
+                    <div class="lore-book-grid" id="salonExhibitsGrid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模态框 4：裁缝手账·历史科普 (Lore) -->
+        <div class="modal-backdrop" id="modalLore">
+            <div class="modal-window">
+                <div class="modal-header">
+                    <div class="modal-title-group">
+                        <span class="iconify gold-scissors-icon" data-icon="lucide:book-open"></span>
+                        <span class="modal-title">裁缝手账 · 服饰文明科普</span>
+                    </div>
+                    <button class="modal-close-btn" id="btnCloseLore">
+                        <span class="iconify" data-icon="lucide:x"></span>
+                    </button>
+                </div>
+                <div class="modal-content-scroll">
+                    <div class="lore-book-grid" id="loreCardsGrid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模态框 5：摄影相册 (Album) -->
+        <div class="modal-backdrop" id="modalAlbum">
+            <div class="modal-window">
+                <div class="modal-header">
+                    <div class="modal-title-group">
+                        <span class="iconify gold-scissors-icon" data-icon="lucide:camera"></span>
+                        <span class="modal-title">高定大片相册</span>
+                    </div>
+                    <button class="modal-close-btn" id="btnCloseAlbum">
+                        <span class="iconify" data-icon="lucide:x"></span>
+                    </button>
+                </div>
+                <div class="modal-content-scroll">
+                    <div class="lore-book-grid" id="albumGrid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 业务逻辑脚本引入 -->
+    <script src="js/audio-synth.js"></script>
+    <script src="js/pattern-engine.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/design.js"></script>
+    <script src="js/history-data.js"></script>
+    <script src="js/mannequin.js"></script>
+    <script src="js/fabric.js"></script>
+    <script src="js/cutting.js"></script>
+    <script src="js/sewing.js"></script>
+    <script src="js/accessories.js"></script>
+    <script src="js/runway.js"></script>
+    <script src="js/auction.js"></script>
+    <script src="js/salon.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

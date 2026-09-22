@@ -1,0 +1,202 @@
+[
+  {
+    "id": "country_tchaikovsky_barcarolle",
+    "filename": "1_1_tchaikovsky_june_barcarolle.mp3",
+    "path": "assets/audio/1_1_tchaikovsky_june_barcarolle.mp3",
+    "title": "柴可夫斯基 - 六月：船歌",
+    "composer": "柴可夫斯基",
+    "era": "乡间小风",
+    "eraKey": "country",
+    "scene": [
+      "workshop"
+    ],
+    "desc": "柔和舒缓的水波与微风感，适合初入工坊与棉麻织造"
+  },
+  {
+    "id": "country_beethoven_pastoral",
+    "filename": "1_2_beethoven_pastoral_mvt1.ogg",
+    "path": "assets/audio/1_2_beethoven_pastoral_mvt1.ogg",
+    "title": "贝多芬 - 田园交响曲第一乐章",
+    "composer": "贝多芬",
+    "era": "乡间小风",
+    "eraKey": "country",
+    "scene": [
+      "workshop"
+    ],
+    "desc": "极其纯粹明朗的自然生机，弦乐与木管交织，工坊清晨挑选未漂白亚麻"
+  },
+  {
+    "id": "country_tarrega_guitar",
+    "filename": "1_3_tarrega_recuerdos_guitar.ogg",
+    "path": "assets/audio/1_3_tarrega_recuerdos_guitar.ogg",
+    "title": "阿尔罕布拉宫的回忆 (吉他)",
+    "composer": "塔雷加",
+    "era": "乡间小风",
+    "eraKey": "country",
+    "scene": [
+      "workshop"
+    ],
+    "desc": "草木清香与空气流动感，宫崎骏风格原声吉他轮指，新手引导放松背景"
+  },
+  {
+    "id": "greek_seikilos_epitaph",
+    "filename": "2_1_seikilos_epitaph.mp3",
+    "path": "assets/audio/2_1_seikilos_epitaph.mp3",
+    "title": "塞基洛斯的墓志铭 (纯器乐版)",
+    "composer": "古希腊佚名",
+    "era": "古希腊",
+    "eraKey": "greek",
+    "scene": [
+      "workshop",
+      "auction"
+    ],
+    "desc": "人类现存最早完整记谱音乐（纯器乐复原版，无任何歌词人声），绝配古希腊基同裙无针线打褶的手工悬垂"
+  },
+  {
+    "id": "greek_debussy_syrinx",
+    "filename": "2_2_debussy_syrinx.ogg",
+    "path": "assets/audio/2_2_debussy_syrinx.ogg",
+    "title": "德彪西 - 潘神笛 (长笛独奏)",
+    "composer": "德彪西",
+    "era": "古希腊",
+    "eraKey": "greek",
+    "scene": [
+      "workshop"
+    ],
+    "desc": "印象派长笛滑音空灵飘渺，完美贴合单块白布依附身体垂坠流动"
+  },
+  {
+    "id": "greek_satie_gymnopedie1",
+    "filename": "2_3_satie_gymnopedie1.mp3",
+    "path": "assets/audio/2_3_satie_gymnopedie1.mp3",
+    "title": "萨蒂 - 裸体歌舞第一号",
+    "composer": "萨蒂",
+    "era": "古希腊",
+    "eraKey": "greek",
+    "scene": [
+      "workshop"
+    ],
+    "desc": "极简低音跳跃与空灵旋律，营造安静雕刻维纳斯神像般的立裁氛围"
+  },
+  {
+    "id": "rococo_boccherini_minuet",
+    "filename": "3_1_boccherini_minuet.mp3",
+    "path": "assets/audio/3_1_boccherini_minuet.mp3",
+    "title": "博凯里尼 - 小步舞曲",
+    "composer": "博凯里尼",
+    "era": "洛可可",
+    "eraKey": "rococo",
+    "scene": [
+      "auction",
+      "workshop"
+    ],
+    "desc": "欧洲宫廷代名词，弦乐拨弦与顿音轻盈俏皮，像往裙摆缝制珍珠与缎带"
+  },
+  {
+    "id": "rococo_rameau_gavotte",
+    "filename": "3_2_rameau_gavotte_harpsichord.mp3",
+    "path": "assets/audio/3_2_rameau_gavotte_harpsichord.mp3",
+    "title": "拉莫 - 加沃特变奏曲 (羽管键琴)",
+    "composer": "拉莫",
+    "era": "洛可可",
+    "eraKey": "rococo",
+    "scene": [
+      "auction",
+      "workshop"
+    ],
+    "desc": "羽管键琴金属拨弦质感，极具凡尔赛宫沙龙下午茶的甜美与贵气"
+  },
+  {
+    "id": "rococo_mozart_romance",
+    "filename": "3_3_mozart_nachtmusik_romance.ogg",
+    "path": "assets/audio/3_3_mozart_nachtmusik_romance.ogg",
+    "title": "莫扎特 - 小夜曲浪漫曲",
+    "composer": "莫扎特",
+    "era": "洛可可",
+    "eraKey": "rococo",
+    "scene": [
+      "auction"
+    ],
+    "desc": "优雅温婉华美，贴合洛可可鱼骨撑与重磅织锦的贵族竞价氛围"
+  },
+  {
+    "id": "dior_satie_je_te_veux",
+    "filename": "4_1_satie_je_te_veux.ogg",
+    "path": "assets/audio/4_1_satie_je_te_veux.ogg",
+    "title": "萨蒂 - 我要你 (沙龙圆舞曲)",
+    "composer": "萨蒂",
+    "era": "50年代 Dior",
+    "eraKey": "dior",
+    "scene": [
+      "runway",
+      "workshop"
+    ],
+    "desc": "巴黎咖啡馆沙龙圆舞曲，花冠线条大伞裙款款转身"
+  },
+  {
+    "id": "dior_gershwin_swanee",
+    "filename": "4_2_gershwin_swanee.ogg",
+    "path": "assets/audio/4_2_gershwin_swanee.ogg",
+    "title": "格什温 - 天鹅 (战后爵士)",
+    "composer": "格什温",
+    "era": "50年代 Dior",
+    "eraKey": "dior",
+    "scene": [
+      "auction",
+      "runway"
+    ],
+    "desc": "战后巴黎蒙田大道复兴，大乐团摇摆爵士与名流狂欢"
+  },
+  {
+    "id": "dior_cool_jazz",
+    "filename": "4_3_cool_jazz_kool_kats.ogg",
+    "path": "assets/audio/4_3_cool_jazz_kool_kats.ogg",
+    "title": "50年代沙龙爵士 - 慢步酷猫",
+    "composer": "Kevin MacLeod",
+    "era": "50年代 Dior",
+    "eraKey": "dior",
+    "scene": [
+      "runway"
+    ],
+    "desc": "轻柔爵士鼓刷声、行进贝斯与慵懒钢琴，名模手持号码牌在沙龙走秀"
+  },
+  {
+    "id": "avant_vivaldi_spring",
+    "filename": "5_1_vivaldi_spring_allegro.ogg",
+    "path": "assets/audio/5_1_vivaldi_spring_allegro.ogg",
+    "title": "维瓦尔第 - 四季：春 第一乐章",
+    "composer": "维瓦尔第",
+    "era": "先锋高定",
+    "eraKey": "avantgarde",
+    "scene": [
+      "runway"
+    ],
+    "desc": "现代古典与环境律动的融合，时装周秀场最标志性的大秀推进乐章"
+  },
+  {
+    "id": "avant_modern_chamber",
+    "filename": "5_2_modern_chamber_trio.mp3",
+    "path": "assets/audio/5_2_modern_chamber_trio.mp3",
+    "title": "现代室内乐三人奏 (Experience)",
+    "composer": "Kevin MacLeod",
+    "era": "先锋高定",
+    "eraKey": "avantgarde",
+    "scene": [
+      "runway"
+    ],
+    "desc": "层层递进的情绪张力，成衣完成、镁光灯亮起、模特走向T台高潮"
+  },
+  {
+    "id": "avant_minimalist_glassworks",
+    "filename": "5_3_minimalist_waterford.ogg",
+    "path": "assets/audio/5_3_minimalist_waterford.ogg",
+    "title": "极简主义钢琴 (Glassworks)",
+    "composer": "Kevin MacLeod",
+    "era": "先锋高定",
+    "eraKey": "avantgarde",
+    "scene": [
+      "runway"
+    ],
+    "desc": "绵延不绝的机械式交替琶音，极具现代建筑感设计的秩序感与工业美感"
+  }
+]

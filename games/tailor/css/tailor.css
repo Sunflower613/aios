@@ -1,0 +1,1366 @@
+/* ==========================================================================
+   一起做裙子 (Let's Tailor!) - 高定工坊核心视觉系统 (粉金时装屋主题)
+   美学基调：法式高定柔粉 (Blush Rose) + 标志物金色剪刀 (Golden Scissors)
+   彻底清除 Emoji，基于标准矢量图标，移动端极简收纳，贴地避让，单步渐进
+   ========================================================================== */
+
+:root {
+    --bg-atelier: #fdf2f4;
+    --bg-card: #ffffff;
+    --bg-glass: rgba(255, 255, 255, 0.85);
+    --pink-primary: #e0637c;
+    --pink-hover: #eb7a91;
+    --pink-light: #fce8eb;
+    --pink-subtle: #fff5f7;
+    --pink-border: rgba(224, 99, 124, 0.25);
+    --gold-primary: #d4af37;
+    --gold-hover: #e5bf4c;
+    --gold-light: #fcf6e8;
+    --gold-border: rgba(212, 175, 55, 0.4);
+    --text-primary: #2a1f24;
+    --text-secondary: #6e5c65;
+    --text-muted: #a3929b;
+    --dark-navy: #1f1a20;
+
+    --border-light: rgba(224, 99, 124, 0.18);
+    --border-strong: rgba(224, 99, 124, 0.4);
+    --shadow-sm: 0 2px 8px rgba(42, 31, 36, 0.05);
+    --shadow-md: 0 8px 24px rgba(224, 99, 124, 0.1);
+    --shadow-modal: 0 20px 60px rgba(42, 31, 36, 0.22);
+
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 22px;
+    --font-serif: "Songti SC", "Noto Serif SC", "Source Han Serif SC", "Georgia", serif;
+    --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", "Hiragino Sans GB", sans-serif;
+}
+
+body { height: 100dvh; }
+.commission-card { display: flex; justify-content: space-between; gap: 16px; padding: 14px 24px; background: #fffcf7; border-bottom: 1px solid #e9ded1; flex-shrink: 0; }
+.commission-label { color: #92775c; font-size: 10px; letter-spacing: 2px; }
+.commission-card h2 { font-family: var(--font-serif); font-size: 22px; margin: 3px 0 4px; color: #584238; }
+.commission-card p { font-size: 12px; color: #78665b; line-height: 1.5; }
+.commission-details { display: flex; flex-direction: column; justify-content: center; gap: 8px; font-size: 12px; flex-shrink: 0; }
+.commission-details strong { color: #368576; font-weight: 600; }
+.commission-card > div:nth-last-child(2) { flex: 1; }
+.commission-sketch { width: 60px; flex: 0 0 60px; text-align: center; font-size: 9px; color: #78665b; }
+.commission-sketch svg { width: 48px; height: 64px; display: block; margin: auto; }
+#canvasCutting, #canvasSewing, #btnSewingPedal { touch-action: none; }
+.btn-primary:disabled { cursor: default; opacity: .5; }
+@media (max-width: 600px) {
+    .commission-card { padding: 9px 14px; gap: 4px 10px; display: grid; grid-template-columns: 48px 1fr; }
+    .commission-sketch { width: 48px; grid-row: span 2; }
+    .commission-sketch svg { height: 58px; }
+    .commission-card h2 { font-size: 18px; }
+    .commission-card p { display: none; }
+    .commission-details { gap: 4px; font-size: 11px; }
+    .commission-label { font-size: 9px; }
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body {
+    width: 100vw;
+    height: 100dvh;
+    overflow: hidden;
+    background-color: var(--bg-atelier);
+    background-image: radial-gradient(circle at 50% 20%, #fff7f8 0%, #fbe8ec 100%);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    display: flex;
+    flex-direction: column;
+}
+
+.gold-scissors-icon {
+    color: var(--gold-primary);
+    filter: drop-shadow(0 1px 2px rgba(212, 175, 55, 0.3));
+}
+
+.app-viewport {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    max-width: 1280px;
+    margin: 0 auto;
+    box-shadow: 0 0 40px rgba(224, 99, 124, 0.08);
+}
+
+/* ==========================================================================
+   顶部极简收纳导航栏 (单行舒展，彻底消除拥挤换行)
+   ========================================================================== */
+.top-header {
+    height: 48px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-light);
+    z-index: 50;
+    flex-shrink: 0;
+    gap: 8px;
+}
+
+.brand-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.brand-logo-scissors {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--gold-light);
+    border: 1px solid var(--gold-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold-primary);
+    font-size: 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+.brand-name {
+    font-family: var(--font-serif);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--pink-primary);
+    white-space: nowrap;
+}
+
+.brand-stage-capsule {
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: #fff;
+    border: 1px solid var(--border-light);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 110px;
+    transition: all 0.15s;
+}
+
+.brand-stage-capsule:hover {
+    border-color: var(--pink-primary);
+    color: var(--pink-primary);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.currency-badge {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: #fff;
+    border: 1px solid var(--border-light);
+    padding: 3px 8px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+}
+
+.nav-icon-btn {
+    background: #fff;
+    border: 1px solid var(--border-light);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+}
+
+.nav-icon-btn:hover {
+    background: var(--pink-light);
+    border-color: var(--pink-primary);
+    color: var(--pink-primary);
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   主舞台 3D 人台视窗与轻薄贴地 HUD
+   ========================================================================== */
+.main-stage {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+.viewport-3d-container {
+    flex: 1;
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    background: radial-gradient(circle at 50% 38%, #ffffff 0%, #fae6ea 100%);
+}
+
+#canvas3d {
+    width: 100%;
+    height: 100%;
+    display: block;
+    outline: none;
+    cursor: grab;
+}
+
+#canvas3d:active {
+    cursor: grabbing;
+}
+
+/* 顶部微型步进指示器 (不遮挡人台) */
+.crafting-step-indicator-bar {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-glass);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border-light);
+    border-radius: 20px;
+    padding: 4px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 10;
+    box-shadow: var(--shadow-sm);
+}
+
+.step-indicator-dot {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.step-indicator-dot.active {
+    color: var(--pink-primary);
+}
+
+.step-indicator-dot.completed {
+    color: var(--gold-primary);
+}
+
+.step-dot-circle {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+}
+
+.step-indicator-dot.active .step-dot-circle {
+    background: var(--pink-primary);
+    color: #fff;
+    box-shadow: 0 0 6px rgba(224, 99, 124, 0.4);
+}
+
+.step-indicator-dot.completed .step-dot-circle {
+    background: var(--gold-primary);
+    color: #fff;
+}
+
+.step-indicator-divider {
+    width: 10px;
+    height: 1px;
+    background: var(--border-light);
+}
+
+/* 右上角快捷工具 */
+.floating-action-tools {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 10;
+}
+
+.tool-chip-btn {
+    background: var(--bg-glass);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    box-shadow: var(--shadow-sm);
+}
+
+.tool-chip-btn:hover {
+    background: #fff;
+    border-color: var(--pink-primary);
+    color: var(--pink-primary);
+}
+
+/* 底部贴地轻薄 HUD 胶囊 (彻底移到人台下方，绝不遮挡视野) */
+.stage-bottom-floating-hud {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 10;
+    pointer-events: none;
+    width: max-content;
+    max-width: 95%;
+}
+
+.hud-capsule-badge {
+    background: rgba(42, 31, 36, 0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+}
+
+.hud-capsule-step {
+    color: #fce8eb;
+    font-weight: 700;
+}
+
+.hud-capsule-desc {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 10px;
+}
+
+.rotation-hint-subtle {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    padding: 3px 8px;
+    border-radius: 14px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+/* ==========================================================================
+   底部制作工序交互面板 (单步渐进展开)
+   ========================================================================== */
+.crafting-dock-container {
+    background: var(--bg-card);
+    border-top: 1px solid var(--pink-border);
+    display: flex;
+    flex-direction: column;
+    z-index: 40;
+    box-shadow: 0 -4px 20px rgba(224, 99, 124, 0.08);
+    flex-shrink: 0;
+}
+
+.crafting-panel-body {
+    padding: 10px 16px;
+    min-height: 150px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* 步骤 1：塑形面板 */
+.molding-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 14px;
+    align-items: center;
+}
+
+.section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--pink-primary);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.silhouette-chips-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+}
+
+.silhouette-chip {
+    border: 1px solid var(--border-light);
+    background: var(--pink-subtle);
+    padding: 5px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+}
+
+.silhouette-chip:hover, .silhouette-chip.active {
+    border-color: var(--pink-primary);
+    background: var(--pink-light);
+    color: var(--pink-primary);
+    font-weight: 700;
+}
+
+.molding-sliders-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 8px 14px;
+}
+
+.tape-slider-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tape-slider-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.tape-slider-val {
+    font-weight: 700;
+    color: var(--pink-primary);
+}
+
+.tape-range-input {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: repeating-linear-gradient(90deg, #e8cdd4, #e8cdd4 2px, transparent 2px, transparent 8px);
+    background-color: #f7e6e9;
+    outline: none;
+    cursor: pointer;
+}
+
+.tape-range-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--pink-primary);
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(224, 99, 124, 0.35);
+    cursor: pointer;
+}
+
+/* 步骤 2：选料 */
+.fabric-shelf-row {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.fabric-card-item {
+    flex: 0 0 130px;
+    background: #fff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.fabric-card-item:hover, .fabric-card-item.active {
+    border-color: var(--pink-primary);
+    background: var(--pink-subtle);
+    box-shadow: var(--shadow-sm);
+}
+
+.fabric-swatch-preview {
+    height: 56px;
+    border-radius: var(--radius-sm);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.06);
+}
+
+.fabric-card-title {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.fabric-card-prop {
+    font-size: 10px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.color-picker-dock {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.color-dots-row {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.color-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.15s;
+}
+
+.color-dot.active, .color-dot:hover {
+    transform: scale(1.2);
+    border-color: var(--pink-primary);
+}
+
+/* 步骤 3：裁剪 */
+.cutting-workspace-dock {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* 左下角工序纸样与车缝示例图卡片 (替换遗留旧框，展现高定专业图纸) */
+.craft-sample-diagram-card {
+    flex: 1;
+    height: 125px;
+    background: #faf5eb;
+    border: 1.5px dashed var(--gold-primary);
+    border-radius: var(--radius-md);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: inset 0 0 12px rgba(212, 175, 55, 0.08);
+}
+
+.sample-diagram-header {
+    background: rgba(212, 175, 55, 0.14);
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #5a4537;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sample-diagram-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 4px;
+}
+
+.sample-diagram-svg {
+    width: 100%;
+    height: 100%;
+    max-height: 95px;
+    display: block;
+}
+
+.cutting-tips-card {
+    width: 170px;
+    background: var(--pink-subtle);
+    padding: 8px 10px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* 步骤 4：缝纫 */
+.sewing-workspace-dock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.sewing-pedal-box {
+    width: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.pedal-button {
+    width: 120px;
+    height: 70px;
+    background: linear-gradient(145deg, #e0637c, #ba455d);
+    color: #fff;
+    border: none;
+    border-radius: 12px 12px 6px 6px;
+    box-shadow: 0 4px 12px rgba(224, 99, 124, 0.35);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+}
+
+.pedal-button:active, .pedal-button.pedal-down {
+    transform: translateY(4px);
+    box-shadow: 0 1px 3px rgba(224, 99, 124, 0.4);
+    background: linear-gradient(145deg, #ba455d, #9c354a);
+}
+
+.pedal-status-indicator {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+/* 步骤 5：配饰 */
+.decor-workspace-dock {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.decor-categories-row {
+    display: flex;
+    gap: 6px;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 4px;
+    overflow-x: auto;
+}
+
+.decor-cat-btn {
+    background: none;
+    border: none;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 3px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+.decor-cat-btn.active {
+    background: var(--pink-light);
+    color: var(--pink-primary);
+}
+
+.decor-items-shelf {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 3px 0;
+}
+
+.decor-item-chip {
+    flex: 0 0 90px;
+    background: #fff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    padding: 6px;
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.decor-item-chip:hover, .decor-item-chip.attached {
+    border-color: var(--pink-primary);
+    background: var(--pink-subtle);
+}
+
+.decor-item-icon {
+    font-size: 18px;
+    color: var(--pink-primary);
+}
+
+.decor-item-name {
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 底部操作行 (防文字溢出) */
+.crafting-footer-actions {
+    padding: 8px 14px;
+    background: #ffffff;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.btn-secondary {
+    background: var(--pink-subtle);
+    border: 1px solid var(--border-light);
+    padding: 6px 14px;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    white-space: nowrap;
+    min-height: 36px;
+    transition: all 0.15s;
+}
+
+.btn-secondary:hover {
+    background: var(--pink-light);
+    color: var(--pink-primary);
+}
+
+.btn-primary {
+    background: var(--pink-primary);
+    color: #fff;
+    border: none;
+    padding: 6px 20px;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    box-shadow: 0 3px 10px rgba(224, 99, 124, 0.35);
+    white-space: nowrap;
+    min-height: 36px;
+    transition: all 0.15s;
+}
+
+.btn-primary:hover {
+    background: var(--pink-hover);
+}
+
+.btn-gold {
+    background: linear-gradient(135deg, #d4af37, #b88d22);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(212, 175, 55, 0.35);
+}
+
+/* ==========================================================================
+   收纳抽屉：工坊百宝箱 (Workshop Drawer)
+   ========================================================================== */
+.workshop-drawer-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(31, 26, 32, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 120;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.workshop-drawer-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.workshop-drawer-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 82%;
+    max-width: 320px;
+    height: 100%;
+    background: #ffffff;
+    box-shadow: -8px 0 30px rgba(42, 31, 36, 0.2);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.workshop-drawer-backdrop.show .workshop-drawer-panel {
+    transform: translateX(0);
+}
+
+.drawer-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--pink-subtle);
+}
+
+.drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.drawer-card-box {
+    background: var(--pink-subtle);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 12px;
+}
+
+.drawer-card-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--pink-primary);
+}
+
+.drawer-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.drawer-nav-item {
+    background: #fff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+}
+
+.drawer-nav-item:hover {
+    border-color: var(--pink-primary);
+    background: var(--pink-light);
+    color: var(--pink-primary);
+}
+
+/* ==========================================================================
+   全系统统一模态弹窗设计规范
+   ========================================================================== */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(31, 26, 32, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.modal-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-window {
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 820px;
+    max-height: 84vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-modal);
+    border: 1px solid var(--pink-border);
+    overflow: hidden;
+    transform: scale(0.96);
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.modal-backdrop.show .modal-window {
+    transform: scale(1);
+}
+
+.modal-header {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--pink-subtle);
+}
+
+.modal-title-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--pink-primary);
+}
+
+.modal-title {
+    font-family: var(--font-serif);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.modal-close-btn {
+    background: #fff;
+    border: 1px solid var(--border-light);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.modal-close-btn:hover {
+    background: var(--pink-light);
+    color: var(--pink-primary);
+    border-color: var(--pink-primary);
+}
+
+.modal-content-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+/* 走秀摄影棚 */
+.runway-viewport-box {
+    position: relative;
+    height: 290px;
+    border-radius: var(--radius-md);
+    background: radial-gradient(circle at 50% 30%, #302028 0%, #150f13 100%);
+    overflow: hidden;
+}
+
+#canvasRunway {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.runway-controls-row {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--pink-subtle);
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* 拍卖行 */
+.auction-stage-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 14px;
+}
+
+.auction-preview-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--pink-subtle);
+    padding: 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+}
+
+.bidder-card {
+    background: #fff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: var(--shadow-sm);
+}
+
+.bidder-card.highlight {
+    border-color: var(--pink-primary);
+    background: var(--pink-light);
+    transform: scale(1.02);
+}
+
+/* 统一手账/沙龙/相册网格 */
+.lore-book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px;
+}
+
+.lore-card {
+    background: var(--pink-subtle);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.lore-card.locked {
+    opacity: 0.55;
+    filter: grayscale(0.8);
+}
+
+.lore-card-badge {
+    font-size: 10px;
+    color: var(--pink-primary);
+    font-weight: 700;
+}
+
+.lore-card-title {
+    font-family: var(--font-serif);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.lore-card-content {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* ==========================================================================
+   移动端紧凑适配 (消除折行截断，完全匹配图1)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .top-header {
+        height: 46px;
+        padding: 0 8px;
+        gap: 6px;
+    }
+    .brand-name {
+        font-size: 13px;
+    }
+    .brand-stage-capsule {
+        max-width: 85px;
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+    .currency-badge {
+        padding: 2px 6px;
+        font-size: 10px;
+    }
+    .crafting-step-indicator-bar {
+        top: 6px;
+        padding: 3px 8px;
+        gap: 4px;
+    }
+    .step-indicator-dot span:last-child {
+        display: none;
+    }
+    .crafting-panel-body {
+        padding: 8px 10px;
+        min-height: 140px;
+        max-height: 180px;
+    }
+    .molding-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    .auction-stage-layout {
+        grid-template-columns: 1fr;
+    }
+    .crafting-footer-actions {
+        padding: 6px 10px;
+    }
+    .btn-primary, .btn-secondary {
+        padding: 6px 12px;
+        font-size: 11px;
+        min-height: 34px;
+    }
+}
+
+/* ==========================================================================
+   全屏工序容器与自由配饰拖拽样式 (第一篇章深度重构专用)
+   ========================================================================== */
+.stage-fullscreen-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    z-index: 10;
+    background: #f8f1ea;
+}
+
+.stage-fullscreen-container.active {
+    display: flex;
+}
+
+.stage-fullscreen-canvas-wrapper {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.stage-fullscreen-canvas-wrapper canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* 案板与缝纫顶端浮动辅助状态指示 */
+.fullscreen-stage-hud {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--gold-border);
+    border-radius: 24px;
+    padding: 6px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow-md);
+    z-index: 20;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* 配饰自由拖拽移动层 */
+.accessories-drag-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 28;
+}
+
+.dress-accessory-pin {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    cursor: grab;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    touch-action: none;
+    transition: transform 0.15s cubic-bezier(0.18, 0.89, 0.32, 1.28), box-shadow 0.2s ease;
+}
+
+.dress-accessory-pin:active, .dress-accessory-pin.is-dragging {
+    cursor: grabbing;
+    transform: translate(-50%, -50%) scale(1.15);
+    z-index: 50;
+}
+
+.pin-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid var(--gold-primary);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold-primary);
+    font-size: 18px;
+}
+
+.dress-accessory-pin.snapped .pin-badge {
+    border-color: var(--pink-primary);
+    background: #fff0f3;
+    color: var(--pink-primary);
+    box-shadow: 0 0 16px rgba(224, 99, 124, 0.6);
+    animation: pulseSnap 0.4s ease;
+}
+
+@keyframes pulseSnap {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+.pin-tag-label {
+    margin-top: 4px;
+    background: rgba(42, 31, 36, 0.85);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+.pin-remove-btn {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--pink-primary);
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Core prototype: measurements, paper pattern and assembly take priority. */
+body { height: 100dvh; }
+#canvas3d, #canvasCutting, #canvasSewing { touch-action: none; }
+.crafting-step-indicator-bar { position: relative; top: auto; left: auto; transform: none; margin: 7px auto; flex-shrink: 0; }
+.commission-card { display: flex; padding: 10px 20px; }
+.commission-card h2 { font-size: 20px; }
+.commission-details { font-size: 11px; }
+.size-primary, .size-advanced { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 24px; }
+.size-field { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #655848; }
+.size-field > span { display: flex; justify-content: space-between; }
+.size-field b { color: #89624d; }
+.size-field input { width: 100%; accent-color: #ad7a63; }
+.size-field small { color: #8c806e; font-size: 10px; }
+.size-details { margin-top: 14px; color: #786858; font-size: 11px; }
+.size-details summary { cursor: pointer; }
+.size-details p { margin: 8px 0; }
+.pattern-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11px; }
+.pattern-legend .cut { color: #c04455; }.pattern-legend .seam { color: #2874ae; }.pattern-legend .opening { color: #bd651c; }.pattern-legend .dart { color: #3d826c; }.pattern-legend .fold { color: #8b62ae; }
+.pattern-pieces { display: flex; gap: 6px; overflow-x: auto; margin: 8px 0; padding-bottom: 3px; }
+.piece-chip { flex-shrink: 0; border: 1px solid #dbd0bf; border-radius: 6px; background: #fffdf7; color: #796b5b; padding: 7px 10px; font-size: 11px; cursor: pointer; }
+.piece-chip.active { background: #635443; color: #fffdf7; border-color: #635443; }.piece-chip.done:not(.active) { color: #368575; background: #eff7ef; }
+.cut-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cut-actions > div { display: flex; gap: 7px; }
+#cutProgressText { font-size: 12px; color: #655848; }
+.cut-actions button, .seam-controls button { min-height: 32px; padding: 5px 10px; font-size: 11px; }
+.craft-note { font-size: 11px; line-height: 1.6; color: #8a7a66; margin-top: 6px; }
+.pattern-zoom-controls { position: absolute; right: 12px; top: 40px; display: flex; align-items: center; gap: 5px; background: #fffdf4e8; padding: 5px; border-radius: 8px; font-size: 11px; }
+.pattern-zoom-controls button { border: 1px solid #d5cbbd; background: #fffdf5; padding: 5px 9px; border-radius: 5px; color: #655848; cursor: pointer; }
+.seam-operations { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; }
+.seam-tag { font-size: 10px; padding: 5px 7px; white-space: nowrap; color: #8c806e; border-bottom: 2px solid transparent; }
+.seam-tag.active { color: #3d826c; border-color: #3d826c; }
+.seam-controls { display: flex; align-items: stretch; gap: 8px; margin: 7px 0; }
+.seam-controls .pedal-button { height: auto; flex: 1; min-width: 80px; }
+#sewingStatusText { font-size: 11px; color: #796b5b; }
+#inspectionResult { padding: 12px 0; font-size: 13px; color: #368575; }
+body[data-step="0"] #btnToggleWind { display: none; }
+#btnDrawerOpenLore, #btnDrawerOpenPrologue { display: none; }
+button:disabled { cursor: default; opacity: .5; }
+@media(max-width:600px) {
+    .commission-card { padding: 8px 12px; flex-direction: column; gap: 4px; }
+    .commission-card h2 { font-size: 17px; }
+    .commission-label { font-size: 8px; }
+    .commission-details { gap: 3px; }
+    .size-primary, .size-advanced { gap: 10px; }
+    .size-field { font-size: 11px; }
+    .size-field > span { flex-direction: column; gap: 3px; }
+    .size-advanced { grid-template-columns: repeat(2,1fr); }
+    .crafting-panel-body { min-height: 140px; max-height: 230px; padding: 9px 12px; }
+    .cut-actions { align-items: flex-start; flex-direction: column; gap: 5px; }
+    .cut-actions > div { width: 100%; }.cut-actions > div button:last-child { margin-left: auto; }
+    .seam-controls { gap: 4px; }.seam-controls button { font-size: 10px; padding: 4px 6px; }
+    .pattern-legend { gap: 5px 10px; font-size: 10px; }
+    .pattern-zoom-controls { top: 37px; right: 8px; }
+    .hud-capsule-desc { max-width: 210px; }
+    .rotation-hint-subtle { display: none; }
+}

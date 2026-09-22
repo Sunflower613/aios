@@ -1,0 +1,67 @@
+{
+  "tchaikovsky_barcarolle": [],
+  "beethoven_pastoral": [
+    {
+      "title": "File:PDP-CH - BBC Symphony Orchestra - Arturo Toscanini - Symphony No. 6 in F major, Op. 68 - Beethoven - Part 1 - 1st Movement - Hmv-db3333-14707a-mo.flac",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/8c/PDP-CH_-_BBC_Symphony_Orchestra_-_Arturo_Toscanini_-_Symphony_No._6_in_F_major%2C_Op._68_-_Beethoven_-_Part_1_-_1st_Movement_-_Hmv-db3333-14707a-mo.flac?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "size": 122966591,
+      "mime": "audio/x-flac"
+    },
+    {
+      "title": "File:PDP-CH - BBC Symphony Orchestra - Arturo Toscanini - Symphony No. 6 in F major, Op. 68 - Beethoven - Part 6 - 2nd Movement - Hmv-db3335-14709b-mo.flac",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/2/21/PDP-CH_-_BBC_Symphony_Orchestra_-_Arturo_Toscanini_-_Symphony_No._6_in_F_major%2C_Op._68_-_Beethoven_-_Part_6_-_2nd_Movement_-_Hmv-db3335-14709b-mo.flac?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "size": 127980149,
+      "mime": "audio/x-flac"
+    },
+    {
+      "title": "File:PDP-CH - BBC Symphony Orchestra - Arturo Toscanini - Symphony No. 6 in F major, op. 68 - 1st movement - Part 1 - Side 1 - Beethoven - Gramophone-db3333-2er231.flac",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/b/be/PDP-CH_-_BBC_Symphony_Orchestra_-_Arturo_Toscanini_-_Symphony_No._6_in_F_major%2C_op._68_-_1st_movement_-_Part_1_-_Side_1_-_Beethoven_-_Gramophone-db3333-2er231.flac?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "size": 124572830,
+      "mime": "audio/x-flac"
+    },
+    {
+      "title": "File:PDP-CH - BBC Symphony Orchestra - Arturo Toscanini - Symphony No. 6 in F major, op. 68 - 1st movement - Part 2 - Side 2 - Beethoven - Gramophone-db3333-2er232.flac",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/3/37/PDP-CH_-_BBC_Symphony_Orchestra_-_Arturo_Toscanini_-_Symphony_No._6_in_F_major%2C_op._68_-_1st_movement_-_Part_2_-_Side_2_-_Beethoven_-_Gramophone-db3333-2er232.flac?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "size": 120462809,
+      "mime": "audio/x-flac"
+    }
+  ],
+  "pastoral_guitar": [],
+  "seikilos": [
+    {
+      "title": "File:Ο Επιτάφιος του Σεῖκιλου - Epitaph of Seikilos.ogg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/b/b6/%CE%9F_%CE%95%CF%80%CE%B9%CF%84%CE%AC%CF%86%CE%B9%CE%BF%CF%82_%CF%84%CE%BF%CF%85_%CE%A3%CE%B5%E1%BF%96%CE%BA%CE%B9%CE%BB%CE%BF%CF%85_-_Epitaph_of_Seikilos.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "size": 918000,
+      "mime": "application/ogg"
+    }
+  ],
+  "debussy_syrinx": [
+    {
+      "title": "File:Debussy - Syrinx.ogg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Debussy_-_Syrinx.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "size": 3679570,
+      "mime": "application/ogg"
+    }
+  ],
+  "satie_gymnopedie1": [
+    {
+      "title": "File:Erik Satie - gymnopedies - la 1 ere. lent et douloureux.ogg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/9/90/Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "size": 3696351,
+      "mime": "application/ogg"
+    },
+    {
+      "title": "File:Gymnopedie No. 1..ogg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Gymnopedie_No._1..ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "size": 6502597,
+      "mime": "application/ogg"
+    },
+    {
+      "title": "File:Gymnopedie No. 1 (ISRC USUAN1100787).mp3",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Gymnopedie_No._1_%28ISRC_USUAN1100787%29.mp3?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "size": 7487656,
+      "mime": "audio/mpeg"
+    }
+  ],
+  "einaudi_minimalist": []
+}

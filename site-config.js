@@ -138,6 +138,14 @@ export const siteConfig = {
       icon: "./games/lotus/lotus.png",
       color: "#1b3833",
       emoji: "🪷"
+    },
+    { 
+      id: "tailor",
+      name: "一起做裙子",
+      path: "./games/tailor/tailor.html",
+      icon: "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%2211%22%20fill%3D%22%23fce8eb%22%20stroke%3D%22%23e0637c%22%20stroke-width%3D%221.5%22/%3E%3Ccircle%20cx%3D%226%22%20cy%3D%226%22%20r%3D%222.8%22%20stroke%3D%22%23d4af37%22%20stroke-width%3D%222%22/%3E%3Ccircle%20cx%3D%226%22%20cy%3D%2218%22%20r%3D%222.8%22%20stroke%3D%22%23d4af37%22%20stroke-width%3D%222%22/%3E%3Cpath%20d%3D%22M8.2%207.8L19%2018M8.2%2016.2L19%206%22%20stroke%3D%22%23d4af37%22%20stroke-width%3D%222.2%22%20stroke-linecap%3D%22round%22/%3E%3Ccircle%20cx%3D%2212.5%22%20cy%3D%2212%22%20r%3D%221%22%20fill%3D%22%23b88d22%22/%3E%3C/svg%3E",
+      color: "#e0637c",
+      emoji: "✂️"
     }
   ],
 
