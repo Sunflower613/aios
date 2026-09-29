@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#008080">
+  <title>经典扫雷 · 韭菜盒子</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="desktop">
+    <a class="home" href="../../index.html">← 返回韭菜盒子</a>
+    <section id="game-window" class="window" aria-label="经典扫雷">
+      <header class="titlebar"><span><img src="icon.svg" alt=""> 扫雷</span><span class="title-detail">MINESWEEPER</span></header>
+      <div class="menubar"><label for="difficulty">游戏(G)</label><select id="difficulty"><option value="easy">初级 · 9 × 9 · 10 雷</option><option value="medium">中级 · 16 × 16 · 40 雷</option><option value="hard">高级 · 30 × 16 · 99 雷</option></select><button id="help" aria-expanded="false" aria-controls="instructions">帮助(H)</button></div>
+      <div class="game-body">
+        <div class="modebar"><label for="mode">地图模式</label><select id="mode"><option value="random">经典随机</option><option value="no-guess">无猜推理</option></select></div>
+        <div class="scoreboard inset"><output id="mines" class="counter" aria-label="剩余雷数">010</output><button id="restart" class="face" aria-label="重新开始" title="重新开始">☺</button><output id="timer" class="counter" aria-label="用时（秒）">000</output></div>
+        <div class="board-scroll inset"><div id="board" role="group" aria-label="雷区"></div></div>
+        <div class="controls"><button id="auto" aria-pressed="false">▶ 开启自动</button><button id="solve">一键解题</button><button id="flag-mode" aria-pressed="false">⚑ 插旗模式</button><button id="assist" aria-pressed="false">辅助模式</button><span class="speed">自动：1 次 / 秒</span></div>
+        <p id="assist-note" class="assist-note" hidden></p>
+        <details class="probability-help"><summary>概率怎么算？</summary><p>仅使用已翻开的数字、总雷数和已推理确认的旗子，统计所有符合条件的布雷方案。手动插旗不算确定有雷。数字四舍五入显示，只有确定时才标 0% 或 100%。</p><p>概率按符合线索的方案等可能计算；无猜推理地图经过筛选，因此中间概率只作参考，0% 和 100% 仍是逻辑结论。复杂局面超出计算预算时显示 ?，不估算、不自动猜测。</p></details>
+        <button id="log-toggle" class="statusbar" type="button" aria-expanded="false" aria-controls="log-panel" aria-label="展开或收起历史日志"><span id="indicator" aria-hidden="true"></span><span class="status-content"><span id="status" role="status">点击任意方格开始，第一步总是安全。</span><small id="log-hint">历史日志 · 点击展开</small></span></button>
+        <section id="log-panel" class="inset log-panel" aria-label="历史日志" hidden><p>历史日志 · 本次页面最近 1000 条</p><ol id="log-list" tabindex="0" aria-label="操作记录"></ol></section>
+        <div id="instructions" class="instructions inset" hidden><p>左键翻开，右键插旗。触屏可开启「插旗模式」。数字表示周围八格的地雷数。</p><p>点击已翻开的数字：周围旗数与数字相等时，展开其余邻格。旗子插错会踩雷。</p><p>方向键移动焦点，空格或 Enter 操作，F 插旗。点击笑脸重新开始。</p><p>自动模式每秒执行一步；一键解题不逐步等待。除安全首步外，两者只做确定性推理，无法确定时停止，交给你手动操作，再点击按钮继续。停止并不一定意味着只有二选一，也可能需要更复杂的推理。</p><p>解题时会重新验证手动插的旗，不把它们直接当作有雷的证据；确认安全的误标会先取消。</p><p>「无猜推理」会根据首格生成地图，并验证能否从这里纯推理通关。验证期间不计时，最多尝试 300 张，未找到则提示重试，不退回普通随机地图。开局后地雷位置固定。切换模式、难度或重新开始会取消生成和自动模式。</p><p>点击底部输出区可展开或收起历史日志，记录局数、用时及每步操作。重新开始会保留记录，刷新页面后清空。</p></div>
+      </div>
+    </section>
+    <p class="desktop-note">一点怀旧，一场小小的冒险。</p>
+  </main>
+  <script type="module" src="game.mjs"></script>
+</body>
+</html>
