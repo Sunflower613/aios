@@ -1,0 +1,32 @@
+/* A compact, quiet home: create beneath the classic games, challenges together. */
+.home-screen{width:min(100% - 28px,460px);padding:12px 0;display:block}
+.home-screen header .icon-button{background:#fff9;border:1px solid #dce4d6;color:#64765a}
+.home-screen .hero{justify-content:flex-start;gap:14px;margin:14px 10px 18px}
+.home-screen .hero img{width:58px;height:58px;padding:6px;background:#fff8;border:1px solid #e1e9d9;border-radius:20px;transform:rotate(-6deg)}
+.home-screen .hero h1{font-size:29px;letter-spacing:4px;color:#385340}
+.home-screen .hero p{letter-spacing:1px}
+.home-panel{padding:13px;border:1px solid #dfe7d7;border-radius:21px;background:#ffffff80;box-shadow:0 6px 22px #39522f05}
+.home-panel+.home-panel{margin-top:12px}
+.home-screen .home-panel h2{display:flex;align-items:center;justify-content:space-between;gap:4px;margin:0 0 10px;font-size:14px;letter-spacing:1px}
+.home-screen .home-panel h2 span{font-size:10px;margin:0;letter-spacing:0;color:#8a9780}
+.home-screen .classics{gap:7px}
+.home-screen .classics button{padding:11px 0 10px;border-radius:13px;border:1px solid #dbe5d1;box-shadow:none;background:#edf3e6}
+.home-screen .classics button:nth-child(2){background:#e6eeeb;border-color:#d6e2dc}
+.home-screen .classics button:nth-child(3){background:#f2eadf;border-color:#e7dece}
+.home-screen .classics strong{font-size:13px;color:#45604a}
+.home-screen .classics small{font-size:11px;letter-spacing:1px}
+.home-screen .home-panel #custom-title{margin:13px 0 8px;padding-top:11px;border-top:1px dashed #d8e2ce;font-size:12px;color:#708163}
+.home-screen .custom-entries{gap:6px}
+.home-screen .custom-entries button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:54px;padding:7px 1px;border-color:#e0e6d9;background:#fff9;font-size:11px;border-radius:11px}
+.custom-entries svg{width:19px;height:19px;fill:none;stroke:#7c916a;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.home-screen .custom-entries small{font-size:8px;margin-left:2px}
+.home-screen .challenge{padding:10px 11px;margin:0 0 7px;border:1px solid #00000004;border-radius:13px;gap:11px}
+.home-screen .challenge:last-child{margin-bottom:0}
+.home-screen .challenge strong{font-size:13px}
+.home-screen .challenge small{font-size:10px;margin-top:4px}
+.home-screen .daily{background:#ebe7f1}.home-screen .timed{background:#f1ecdd}.home-screen .survival{background:#e4edde}
+.home-screen .mode-icon{display:grid;place-items:center;width:29px;flex:none}
+.home-screen .mode-icon svg{width:26px;height:26px}
+.home-screen .arrow{font-size:17px;color:#8c9983}
+@media(max-height:650px){.home-screen{padding:9px 0}.home-screen .hero{margin:7px 10px 10px;gap:12px}.home-screen .hero img{width:48px;height:48px;padding:4px;border-radius:16px}.home-screen .hero h1{font-size:26px}.home-panel{padding:10px 12px}.home-panel+.home-panel{margin-top:9px}.home-screen .home-panel h2{margin-bottom:8px}.home-screen .classics button{padding:9px 0}.home-screen .home-panel #custom-title{margin-top:9px;padding-top:8px}.home-screen .custom-entries button{min-height:47px;gap:3px;padding:5px 0}.home-screen .challenge{padding:8px 10px;margin-bottom:6px}}
+@media(max-height:450px) and (min-width:540px){.home-screen{width:min(100% - 28px,760px);display:grid;grid-template-columns:1fr 1fr;column-gap:14px}.home-screen header{grid-column:1/-1}.home-screen .hero{grid-column:1/-1;grid-row:2;justify-content:center;margin:4px 0 8px}.home-screen .hero img{width:38px;height:38px;border-radius:13px}.home-screen .hero h1{font-size:23px}.home-screen .hero p{margin-top:3px;font-size:10px}.home-panel{grid-row:3;min-width:0}.relax-panel{grid-column:1}.challenge-panel{grid-column:2}.home-panel+.home-panel{margin-top:0}.home-screen .home-panel h2{font-size:13px}.home-screen .home-panel h2 span{font-size:9px}.home-screen .home-panel #custom-title{margin-top:10px}.home-screen .custom-entries button{min-height:45px}.home-screen .challenge{gap:7px;padding:9px 8px}.home-screen .challenge small{font-size:9px}.home-screen .mode-icon{width:25px}}

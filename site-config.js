@@ -164,6 +164,14 @@ export const siteConfig = {
       icon: "./games/rubik/icon.svg",
       color: "#eee8dc",
       emoji: "🧩"
+    },
+    {
+      id: "find-cow",
+      name: "找牛",
+      path: "./games/find-cow/index.html",
+      icon: "./games/find-cow/icon.svg",
+      color: "#e7eedf",
+      emoji: "🐮"
     }
   ],
 
