@@ -66,6 +66,15 @@ test('last double-tapped cow renders before results; finished boards remain read
   };
   const snapshot = () => get('board').children.map(e => [e.textContent, e.className, e.disabled]);
   easy.click(); await Promise.resolve();
+  const penTap=()=>{
+    const e={pointerType:'pen',pointerId:7,isPrimary:true,target:get('board').children[9],clientX:9,clientY:0,preventDefault(){}};
+    get('board').listeners.pointerdown(e);get('board').listeners.pointerup(e);
+    get('board').listeners.click({target:e.target,detail:0});
+    get('board').listeners.lostpointercapture({pointerId:7});
+  };
+  penTap();assert.match(get('board').children[9].className,/excluded/);
+  stamp=400;penTap();assert.equal(get('board').children[9].textContent,'🐮');
+  get('retry').click();
   tap(answer[0]);assert.equal(vibrations.at(-1),25);
   tap(answer[0]);assert.equal(vibrations.at(-1),50);
   for (const cell of answer.slice(0, -1)) { tap(cell); tap(cell); }
@@ -104,12 +113,12 @@ test('last double-tapped cow renders before results; finished boards remain read
   assert.equal(get('timer').textContent, '03:00');
   assert.equal(get('hint').hidden, true);
   tap(0);
-  stamp = 180000; t.mock.timers.tick(200);
+  stamp += 180000; t.mock.timers.tick(200);
   assert.equal(get('continue-daily').hidden, false);
   assert.equal(get('board').children.filter(e => e.textContent === '🐮').length, 0);
   assert.match(get('board').children[0].className, /excluded/);
   get('continue-daily').click();
-  stamp = 190000; t.mock.timers.tick(200);
+  stamp += 10000; t.mock.timers.tick(200);
   assert.equal(get('timer').textContent, '03:10');
   assert.ok(get('board').children.every(e => !e.disabled));
   for (let row = 0; row < 12; row++) {

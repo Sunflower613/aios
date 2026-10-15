@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CowGame, generate, solve, neighbors, levels } from './engine.mjs';
+test('batch erasing preserves cows, mistakes and untouched cells',()=>{
+  const game=new CowGame({size:6,regions:Array(36).fill(0),solution:[1,9,17,18,26,34]});
+  game.guess(1);game.guess(0);game.exclude(2);game.exclude(3);
+  assert.equal(game.unexclude(2),true);assert.equal(game.unexclude(2),false);
+  for(const cell of [0,1,4])assert.equal(game.unexclude(cell),false);
+  assert.ok(game.found.has(1));assert.ok(game.mistakes.has(0));assert.ok(game.marks.has(3));
+  game.state='lost';assert.equal(game.unexclude(3),false);
+});
 
 function seeded(seed) {
   return () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32; };

@@ -1,6 +1,7 @@
 import { neighbors } from './engine.mjs?v=2';
 
-export const sizes = [6, 8, 10, 12];
+export const sizes = [6, 7, 8, 9, 10, 11, 12];
+const codeSizes = [6, 8, 10, 12, 7, 9, 11];
 export const colors = ['#eda573','#74b8d0','#e0c56f','#ab95ca','#65b8ac','#809fca','#dca0b6','#a8bd77','#bd9a82','#a5bac4','#c88879','#849c70'];
 export function blockedByCow(cell, cows, size) {
   return cows.some(cow => {
@@ -49,7 +50,7 @@ export function findSolutions(regions, size, budget = 500000) {
 }
 
 export function validatePuzzle({ size, regions, solution }) {
-  if (!sizes.includes(size) || !Array.isArray(regions) || regions.length!==size*size) throw Error('地图尺寸不正确，仅支持 6、8、10、12。');
+  if (!sizes.includes(size) || !Array.isArray(regions) || regions.length!==size*size) throw Error('地图尺寸不正确，仅支持 6 到 12。');
   if (regions.some(c=>!Number.isInteger(c)||c<0||c>=size)) throw Error('还有格子未填色，或颜色编号不正确。');
   for (let color=0;color<size;color++) {
     const cells=regions.flatMap((c,i)=>c===color?[i]:[]);
@@ -87,18 +88,20 @@ export function encodePuzzle(puzzle) {
   const raw=regions.map(c=>bits(c,width)).join('');
   const predicted=regions.map((c,i)=>i%size&&c===regions[i-1]?'0':i>=size&&c===regions[i-size]?'10':`11${bits(c,width)}`).join('');
   const compressed=predicted.length<raw.length;
-  const payload='C2'+pack(bits(sizes.indexOf(size),2)+Number(compressed)+(compressed?predicted:raw));
+  const odd=size%2===1;
+  const payload=(odd?'C3':'C2')+pack(bits(codeSizes.indexOf(size),odd?3:2)+Number(compressed)+(compressed?predicted:raw));
   return `${payload}.${shortCheck(payload)}`;
 }
 export function decodePuzzle(text) {
   if(typeof text!=='string'||text.length>2048) throw Error('关卡字符串无效或过长。');
   const code=text.replace(/\s/g,''), parts=code.split('.');
-  if(code.startsWith('C2')){
+  if(/^C[23]/.test(code)){
     const broken=()=>{throw Error('关卡字符串不完整或已损坏，请重新复制。');};
-    if(parts.length!==2||!/^C2[A-Za-z0-9_-]+$/.test(parts[0])||shortCheck(parts[0])!==parts[1])broken();
+    if(parts.length!==2||!/^C[23][A-Za-z0-9_-]+$/.test(parts[0])||shortCheck(parts[0])!==parts[1])broken();
     const binary=[...parts[0].slice(2)].map(c=>bits(alphabet.indexOf(c),6)).join('');let cursor=0;
     const read=n=>{if(cursor+n>binary.length)broken();const v=parseInt(binary.slice(cursor,cursor+n),2);cursor+=n;return v;};
-    const size=sizes[read(2)],compressed=read(1),width=Math.ceil(Math.log2(size)),regions=[];
+    const size=codeSizes[read(code.startsWith('C3')?3:2)];if(!size)broken();
+    const compressed=read(1),width=Math.ceil(Math.log2(size)),regions=[];
     for(let i=0;i<size*size;i++){
       let color;
       if(!compressed)color=read(width);
@@ -110,7 +113,7 @@ export function decodePuzzle(text) {
     if(binary.length-cursor>=6||/1/.test(binary.slice(cursor)))broken();
     return validatePuzzle({size,regions});
   }
-  throw Error('关卡码格式不支持，请使用 C2 开头的关卡码。');
+  throw Error('关卡码格式不支持，请使用 C2 或 C3 开头的关卡码。');
 }
 
 export function autoColor(size, positions, random=Math.random) {

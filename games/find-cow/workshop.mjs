@@ -1,18 +1,18 @@
-import { blockedByCow, colors } from './puzzle.mjs';
-import { detectBoard, recognizeRegions } from './recognition.mjs';
+import { blockedByCow, colors } from './puzzle.mjs?v=4';
+import { detectBoard, detectSize, recognizeRegions } from './recognition.mjs?v=2';
 
 export function setupWorkshop({ getPuzzle, playPuzzle, showHome }) {
   const $=id=>document.getElementById(id);
   let size=6,regions=Array(36).fill(-1),cows=[],mode='cow',brush=0,showCows=true,busy=false;
-  let revision=0,drag=null,imageData=null,sourceCanvas=null,crop=null,cropStart=null;
+  let revision=0,drag=null,imageData=null,sourceCanvas=null,crop=null,cropStart=null,validated=null;
   const jobs=new Set();
   function cancel() {
-    revision++; drag=null; busy=false;
+    revision++; drag=null; cropStart=null; busy=false;
     for(const job of [...jobs])job.cancel();
   }
   function run(type,payload) {
     return new Promise((resolve,reject)=>{
-      const worker=new Worker(new URL('./workshop-worker.mjs?v=3',import.meta.url),{type:'module'});
+      const worker=new Worker(new URL('./workshop-worker.mjs?v=4',import.meta.url),{type:'module'});
       let timer;
       const finish=(error,result)=>{clearTimeout(timer);worker.terminate();jobs.delete(job);error?reject(Error(error)):resolve(result);};
       const job={cancel:()=>finish('操作已取消。')};jobs.add(job);
@@ -48,15 +48,16 @@ export function setupWorkshop({ getPuzzle, playPuzzle, showHome }) {
       if(mode==='color'&&color>=0){const n=document.createElement('span');n.className='region-number';n.textContent=color+1;b.append(n);}
       return b;
     }));
-    for(const id of ['editor-size','edit-cows','edit-colors','auto-color','clear-colors','editor-share','editor-play'])$(id).disabled=busy;
+    for(const id of ['editor-size','edit-cows','edit-colors','auto-color','clear-colors','editor-validate'])$(id).disabled=busy;
+    for(const id of ['editor-share','editor-play'])$(id).disabled=busy||!validated;
   }
   function info(text) {$('editor-info').textContent=text;}
   function openEditor(puzzle=null,hiddenCows=false) {
-    cancel();
+    cancel();validated=null;
     if(puzzle){size=puzzle.size;regions=[...puzzle.regions];cows=[...(puzzle.solution||[])];}
     else {size=Number($('editor-size').value)||6;regions=Array(size*size).fill(-1);cows=[];}
     showCows=!hiddenCows;mode=hiddenCows?'color':'cow';brush=0;
-    $('home').hidden=true;$('play').hidden=true;$('editor').hidden=false;
+    $('home').hidden=true;$('play').hidden=true;$('recognize-screen').hidden=true;$('editor').hidden=false;
     document.body.classList.add('playing');
     renderEditor();info(`先放置 ${size} 头牛，再手动填色或自动填色。`);
   }
@@ -89,7 +90,7 @@ export function setupWorkshop({ getPuzzle, playPuzzle, showHome }) {
       else {info('这格与已有的牛冲突，请选择没有叉号的格子。');return;}
       info(`已放 ${cows.length} / ${size} 头牛；冲突位置已自动排除。`);
     } else {regions[cell]=brush;info(`区域 ${brush+1} · 还有 ${regions.filter(c=>c<0).length} 格未填色。`);}
-    renderEditor();
+    validated=null;renderEditor();
   }
   function cellAt(x,y){const e=document.elementFromPoint(x,y)?.closest('[data-cell]');return e&&$('editor-board').contains(e)?Number(e.dataset.cell):null;}
   $('editor-board').addEventListener('pointerdown',event=>{
@@ -105,22 +106,37 @@ export function setupWorkshop({ getPuzzle, playPuzzle, showHome }) {
     const dx=event.clientX-drag.x,dy=event.clientY-drag.y,steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/5));
     for(let i=1;i<=steps;i++){
       const cell=cellAt(drag.x+dx*i/steps,drag.y+dy*i/steps);
-      if(cell!==null&&!drag.seen.has(cell)){drag.seen.add(cell);regions[cell]=brush;}
+      if(cell!==null&&!drag.seen.has(cell)){drag.seen.add(cell);regions[cell]=brush;validated=null;}
     }
     drag.x=event.clientX;drag.y=event.clientY;renderEditor();
   });
   for(const type of ['pointerup','pointercancel','lostpointercapture'])$('editor-board').addEventListener(type,()=>{drag=null;});
   $('editor-board').addEventListener('click',event=>{if(event.detail===0){const b=event.target.closest('[data-cell]');if(b)edit(Number(b.dataset.cell));}});
   $('auto-color').addEventListener('click',()=>editorJob(async token=>{
+    validated=null;
     const p=await run('color',{size,cows});if(token!==revision)return;
     regions=p.regions;cows=p.solution;mode='color';info('已按牛的位置自动填色，区域连通且答案唯一。可继续手动调整。');
   }));
-  $('clear-colors').addEventListener('click',()=>{regions.fill(-1);renderEditor();info('颜色已清空，牛的位置保留。');});
-  $('editor-play').addEventListener('click',()=>editorJob(async token=>{
+  $('clear-colors').addEventListener('click',()=>{validated=null;regions.fill(-1);renderEditor();info('颜色已清空，牛的位置保留。');});
+  $('editor-validate').addEventListener('click',()=>editorJob(async token=>{
+    validated=null;
+    if(regions.every(color=>color<0)){
+      info('尚未填色，正在按牛的位置自动填色…');
+      const colored=await run('color',{size,cows});if(token!==revision)return;
+      regions=colored.regions;cows=colored.solution;mode='color';renderEditor();
+    }
     const p=await run('validate',{puzzle:draft()});if(token!==revision)return;
-    $('editor').hidden=true;playPuzzle(p);
+    validated=p;info('唯一解验证通过，可以分享编码或开始游戏。');$('validated-dialog').showModal();
   }));
-  $('editor-share').addEventListener('click',()=>share(draft()));
+  $('close-validated').addEventListener('click',()=>$('validated-dialog').close());
+  $('editor-play').addEventListener('click',()=>{
+    if(busy||!validated)return;
+    $('validated-dialog').close();$('editor').hidden=true;playPuzzle(validated);
+  });
+  $('editor-share').addEventListener('click',()=>{
+    if(busy||!validated)return;
+    $('validated-dialog').close();return share(validated);
+  });
   $('share-level').addEventListener('click',()=>{const p=getPuzzle();if(p)share(p);});
   $('close-share').addEventListener('click',()=>$('share-dialog').close());
   $('share-dialog').addEventListener('close',cancel);
@@ -141,6 +157,11 @@ export function setupWorkshop({ getPuzzle, playPuzzle, showHome }) {
   });
 
   const preview=$('image-preview');
+  function suggestSize(){
+    const detected=detectSize(imageData,crop);
+    $('image-size').value=detected?String(detected):'auto';
+    $('image-message').textContent=detected?`已自动识别 ${detected} × ${detected}，可手动修正尺寸或重新框选棋盘。`:'暂时无法确定尺寸，请重新框选棋盘或手动选择尺寸。';
+  }
   function drawPreview(){
     if(!sourceCanvas)return;
     const ctx=preview.getContext('2d');ctx.drawImage(sourceCanvas,0,0);
@@ -152,15 +173,17 @@ export function setupWorkshop({ getPuzzle, playPuzzle, showHome }) {
     const scale=Math.min(r.width/preview.width,r.height/preview.height);
     return {x:Math.max(0,Math.min(preview.width,(event.clientX-r.left-(r.width-preview.width*scale)/2)/scale)),y:Math.max(0,Math.min(preview.height,(event.clientY-r.top-(r.height-preview.height*scale)/2)/scale))};
   }
-  $('open-recognize').addEventListener('click',()=>{cancel();$('recognize-dialog').showModal();$('recognize-image').disabled=!imageData;});
-  $('close-recognize').addEventListener('click',()=>$('recognize-dialog').close());
-  $('recognize-dialog').addEventListener('close',cancel);
+  $('open-recognize').addEventListener('click',()=>{
+    cancel();$('home').hidden=true;$('play').hidden=true;$('editor').hidden=true;$('recognize-screen').hidden=false;
+    document.body.classList.add('playing');$('recognize-image').disabled=!imageData;$('close-recognize').focus();
+  });
+  $('close-recognize').addEventListener('click',()=>{cancel();$('recognize-screen').hidden=true;showHome();$('open-recognize').focus();});
   $('level-image').addEventListener('change',async()=>{
     cancel();const token=revision,file=$('level-image').files[0];if(!file)return;
     $('upload-title').textContent='更换棋盘截图';
     $('upload-filename').textContent=file.name;
     $('upload-filename').title=file.name;
-    $('recognize-image').disabled=true;imageData=null;sourceCanvas=null;preview.hidden=true;
+    $('recognize-image').disabled=true;imageData=null;sourceCanvas=null;preview.hidden=true;$('image-empty').hidden=false;
     $('image-message').textContent='正在读取截图…';
     try {
       if(file.size>20*1024*1024)throw Error('图片过大，请选择 20 MB 以内的截图。');
@@ -170,23 +193,26 @@ export function setupWorkshop({ getPuzzle, playPuzzle, showHome }) {
       sourceCanvas=document.createElement('canvas');sourceCanvas.width=Math.max(1,Math.round(bitmap.width*scale));sourceCanvas.height=Math.max(1,Math.round(bitmap.height*scale));
       const ctx=sourceCanvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(bitmap,0,0,sourceCanvas.width,sourceCanvas.height);bitmap.close();
       imageData=ctx.getImageData(0,0,sourceCanvas.width,sourceCanvas.height);crop=detectBoard(imageData);
-      preview.width=sourceCanvas.width;preview.height=sourceCanvas.height;preview.hidden=false;drawPreview();
-      $('recognize-image').disabled=false;$('image-message').textContent='红框是自动检测范围，可拖动重新框选。请确认棋盘尺寸。';
+      preview.width=sourceCanvas.width;preview.height=sourceCanvas.height;preview.hidden=false;$('image-empty').hidden=true;drawPreview();
+      $('recognize-image').disabled=false;suggestSize();
     }catch(error){if(token===revision)$('image-message').textContent=error.message||'图片无法读取，请换一张截图。';}
   });
   preview.addEventListener('pointerdown',event=>{if(!imageData||!event.isPrimary)return;event.preventDefault();cropStart=imagePoint(event);preview.setPointerCapture(event.pointerId);});
   preview.addEventListener('pointermove',event=>{if(!cropStart)return;event.preventDefault();const p=imagePoint(event);crop={x:Math.min(p.x,cropStart.x),y:Math.min(p.y,cropStart.y),width:Math.abs(p.x-cropStart.x),height:Math.abs(p.y-cropStart.y)};drawPreview();});
-  for(const type of ['pointerup','pointercancel','lostpointercapture'])preview.addEventListener(type,()=>{cropStart=null;});
+  preview.addEventListener('pointerup',()=>{if(cropStart){cropStart=null;suggestSize();}});
+  for(const type of ['pointercancel','lostpointercapture'])preview.addEventListener(type,()=>{cropStart=null;});
   $('recognize-image').addEventListener('click',async()=>{
     if(!imageData)return;
     const token=revision;$('recognize-image').disabled=true;$('image-message').textContent='正在识别颜色并检查地图…';
     try {
-      const n=Number($('image-size').value),p={size:n,regions:recognizeRegions(imageData,crop,n)};
+      const n=$('image-size').value==='auto'?detectSize(imageData,crop):Number($('image-size').value);
+      if(!n)throw Error('暂时无法确定尺寸，请手动选择后再识别。');
+      const p={size:n,regions:recognizeRegions(imageData,crop,n)};
       let checked=p,message='已识别颜色。请校对区域边界，再验证并开始。';
       try {checked=await run('validate',{puzzle:p});message='识别成功，唯一解已验证。牛位暂不展示，可校对颜色后直接开始。';}
       catch(error){message=`颜色识别完成，但${error.message}请手动校正。`;}
       if(token!==revision)return;
-      $('recognize-dialog').close();openEditor(checked,true);info(message);
+      openEditor(checked,true);info(message);
     }catch(error){if(token===revision)$('image-message').textContent=error.message;}
     finally {if(token===revision)$('recognize-image').disabled=false;}
   });

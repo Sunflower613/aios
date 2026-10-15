@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#f7f8f2">
   <title>找牛 · 韭菜盒子</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
   <link rel="stylesheet" href="settings.css?v=2">
-  <link rel="stylesheet" href="workshop.css?v=2">
+  <link rel="stylesheet" href="workshop.css?v=5">
   <link rel="stylesheet" href="home.css">
 </head>
 <body>
@@ -44,21 +44,27 @@
       <button id="new" aria-label="换一片牧场" title="换一片牧场"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h3c5 0 7 12 12 12h3M3 18h3c5 0 7-12 12-12h3M18 3l3 3-3 3m0 6 3 3-3 3"/></svg></button>
     </div>
     <div id="review-tools" class="review-tools" hidden><button id="review-result">查看结果</button><button id="review-next">再来一局</button></div>
-    <p id="play-tip" class="play-tip"><span class="touch-tip">轻点排除 · 滑动批量排除 · 双击标牛</span><span class="mouse-tip">左键排除 · 右键标牛</span></p>
+    <p id="play-tip" class="play-tip"><span class="touch-tip">滑动排除 / 取消 · 双击标牛</span><span class="mouse-tip">左键排除 · 右键标牛</span></p>
   </main>
   <main id="editor" class="editor-screen" hidden>
-    <header><button id="editor-back" class="icon-button" aria-label="退出地图编辑">←</button><strong>自定义地图</strong><label class="size-label">尺寸 <select id="editor-size"><option value="6">6 × 6</option><option value="8">8 × 8</option><option value="10">10 × 10</option><option value="12">12 × 12</option></select></label></header>
-    <div class="editor-modes"><button id="edit-cows" aria-pressed="true">🐮 放置牛</button><button id="edit-colors" aria-pressed="false">填色</button><button id="auto-color">自动填色</button><button id="clear-colors">清空颜色</button></div>
+    <header><button id="editor-back" class="icon-button" aria-label="退出地图编辑">←</button><strong>自定义地图</strong><label class="size-label">尺寸 <select id="editor-size"><option value="6">6 × 6</option><option value="7">7 × 7</option><option value="8">8 × 8</option><option value="9">9 × 9</option><option value="10">10 × 10</option><option value="11">11 × 11</option><option value="12">12 × 12</option></select></label></header>
+    <div class="editor-modes" role="group" aria-label="编辑模式"><button id="edit-cows" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6 6 3v4M16 6l2-3v4M7 8 3 6v4l4 2m10-4 4-2v4l-4 2M7 9a5 5 0 0 1 10 0v7H7Z"/><rect x="6" y="14" width="12" height="7" rx="3"/><path d="M10 10v1m4-1v1m-4 6v1m4-1v1"/></svg><span>放牛</span></button><button id="edit-colors" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3 10 10-7 7H7l-5-5L12 5M4 13h15m1 3s-2 2-2 3a2 2 0 0 0 4 0c0-1-2-3-2-3Z"/></svg><span>填色</span></button></div>
     <div id="editor-palette" class="editor-palette" role="group" aria-label="选择区域颜色" hidden></div>
     <div class="board-space"><div id="editor-board" class="editor-board" role="group" aria-label="编辑棋盘"></div></div>
     <p id="editor-info" role="status"></p><p class="editor-tip">放牛时自动排除冲突位置；填色可按住滑动。再次点牛可移除。</p>
-    <div class="editor-actions"><button id="editor-share">生成分享码</button><button id="editor-play" class="primary">验证并开始</button></div>
+    <div class="editor-actions"><button id="clear-colors"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 3 7 7-10 10H6l-4-4zM8 10l7 7M11 20h11"/></svg><span>清空颜色</span></button><button id="auto-color"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 11-11 3 3L7 23zM12 12l3 3M6 3v6M3 6h6m9-5v6m-3-3h6m-1 13v4m-2-2h4"/></svg><span>自动填色</span></button><button id="editor-validate" class="primary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 3 6v6c0 5 9 10 9 10s9-5 9-10V6Z"/><path d="m7 12 3 3 7-7"/></svg><span>验证唯一</span></button></div>
   </main>
+  <dialog id="validated-dialog" aria-labelledby="validated-title"><div class="dialog-heading"><h2 id="validated-title">唯一解验证通过</h2><button id="close-validated" class="icon-button" aria-label="继续编辑">×</button></div><p class="workshop-note">这张地图只有一个答案。可以分享给朋友，也可以直接开始游戏。</p><button id="editor-share" class="secondary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M5 13v7h14v-7"/></svg><span>分享编码</span></button><button id="editor-play" class="primary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 4 12 8-12 8Z"/></svg><span>开始游戏</span></button></dialog>
   <dialog id="share-dialog" aria-labelledby="share-title"><div class="dialog-heading"><h2 id="share-title">分享关卡</h2><button id="close-share" class="icon-button" aria-label="关闭分享">×</button></div><p class="workshop-note">复制字符串发给朋友，在主页「载入关卡」中粘贴即可。只分享地图，不包含进度；载入后作为自定义关卡游玩，不计入每日成绩。</p><textarea id="share-code" rows="5" readonly aria-label="关卡分享字符串"></textarea><p id="share-message" role="status"></p><button id="copy-code" class="primary">复制关卡</button></dialog>
-  <dialog id="load-dialog" aria-labelledby="load-title"><div class="dialog-heading"><h2 id="load-title">载入关卡</h2><button id="close-load" class="icon-button" aria-label="关闭载入">×</button></div><textarea id="load-code" rows="5" placeholder="粘贴 C2 开头的关卡码" aria-label="粘贴关卡字符串"></textarea><p id="load-message" role="status">载入前会检查地图和唯一解。</p><button id="load-play" class="primary">载入并开始</button></dialog>
-  <dialog id="recognize-dialog" aria-labelledby="recognize-title"><div class="dialog-heading"><h2 id="recognize-title">识别关卡</h2><button id="close-recognize" class="icon-button" aria-label="关闭识图">×</button></div><p class="workshop-note">选择彩色棋盘截图，确认尺寸后拖动框选完整棋盘。识别颜色后可手动校正，牛的位置由规则推导；图片仅在本机处理。</p>
+  <dialog id="load-dialog" aria-labelledby="load-title"><div class="dialog-heading"><h2 id="load-title">载入关卡</h2><button id="close-load" class="icon-button" aria-label="关闭载入">×</button></div><textarea id="load-code" rows="5" placeholder="粘贴关卡码" aria-label="粘贴关卡字符串"></textarea><p id="load-message" role="status">载入前会检查地图和唯一解。</p><button id="load-play" class="primary">载入并开始</button></dialog>
+  <main id="recognize-screen" class="recognize-screen" aria-labelledby="recognize-title" hidden>
+    <header><button id="close-recognize" class="icon-button" aria-label="返回游戏主页">←</button><h1 id="recognize-title">识别关卡</h1><span class="recognize-private">本机识别</span></header>
+    <div class="recognize-controls"><p class="workshop-note">选择截图，自动识别尺寸；可拖动红框重新选取棋盘，识别后再校对。</p>
     <label class="file-label"><input id="level-image" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" aria-label="选择棋盘截图"><span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8" cy="9" r="1"/><path d="m4 17 5-5 4 4 3-3 4 4"/></svg></span><span class="upload-copy"><strong id="upload-title">选择棋盘截图</strong><small id="upload-filename">PNG、JPG、WebP、BMP · 最大 20 MB</small></span><span class="upload-arrow" aria-hidden="true">＋</span></label>
-    <label class="size-label">棋盘尺寸 <select id="image-size"><option value="6">6 × 6</option><option value="8">8 × 8</option><option value="10">10 × 10</option><option value="12">12 × 12</option></select></label><canvas id="image-preview" width="1" height="1" hidden aria-label="拖动框选棋盘"></canvas><p id="image-message" role="status">支持清晰、正面、无遮挡的彩色棋盘截图。</p><button id="recognize-image" class="primary" disabled>识别并校对</button></dialog>
+    <label class="size-label">棋盘尺寸 <select id="image-size"><option value="auto">自动识别</option><option value="6">6 × 6</option><option value="7">7 × 7</option><option value="8">8 × 8</option><option value="9">9 × 9</option><option value="10">10 × 10</option><option value="11">11 × 11</option><option value="12">12 × 12</option></select></label></div>
+    <div class="image-stage"><p id="image-empty">选择一张彩色棋盘截图<br><small>预览会显示在这里</small></p><canvas id="image-preview" width="1" height="1" hidden aria-label="拖动框选棋盘"></canvas></div>
+    <footer class="recognize-footer"><p id="image-message" role="status">上传后自动识别尺寸，也可手动修正。</p><button id="recognize-image" class="primary" disabled>识别并校对</button></footer>
+  </main>
   <dialog id="settings-dialog" aria-labelledby="settings-title">
     <div class="dialog-heading"><h2 id="settings-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3 .8-2h4.4l.8 2 2 1 2.2-.3 2.2 3.8L20 9v3l1.4 1.5-2.2 3.8L17 17l-2 1-.8 3H9.8L9 18l-2-1-2.2.3-2.2-3.8L4 12V9L2.6 7.5l2.2-3.8L7 4Z"/><circle cx="12" cy="10.5" r="3"/></svg>牧场设置</h2><button id="close-settings" class="icon-button" aria-label="关闭设置"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
     <div class="settings-list">
@@ -71,12 +77,12 @@
   </dialog>
   <dialog id="help-dialog" aria-labelledby="help-title">
     <div class="dialog-heading"><h2 id="help-title">玩法介绍</h2><button id="close-help" class="icon-button" aria-label="关闭玩法介绍">×</button></div>
-    <section class="instructions"><p><b>分享与自定义：</b>游玩时点击右上角分享图标，复制关卡字符串，朋友可在主页「载入关卡」中打开。支持所有模式的当前地图，载入后作为自定义关卡游玩，不计入每日成绩。「识别关卡」支持彩色棋盘截图，识别后可校正；「自定义」可选择 6、8、10、12 格尺寸，放牛时自动排除冲突位置，再手动或自动填色。开始或分享前会检查每个区域是否连通、答案是否唯一。</p></section>
+    <section class="instructions"><p><b>分享与自定义：</b>游玩时点击右上角分享图标，复制关卡字符串，朋友可在主页「载入关卡」中打开。支持所有模式的当前地图，载入后作为自定义关卡游玩，不计入每日成绩。「识别关卡」会自动识别彩色截图的棋盘尺寸，也可手动校正；「自定义」支持从 6×6 到 12×12 的每一种整数尺寸，放牛时自动排除冲突位置，再手动或自动填色。开始或分享前会检查每个区域是否连通、答案是否唯一。</p></section>
     <section class="instructions"><p><b>每日挑战：</b>每天一张固定的 12×12 棋盘，180 秒、三颗心，找到 12 头牛即通关。超时可选择继续，累计用时从 03:00 接着计；选择期间暂停计时。满分三颗星，超时扣一星；消耗过爱心统一扣一星，消耗两颗也只扣一星。主页保存当天最佳通关星级，同星级保留更短用时。按北京时间零点换题；本局跨过零点仍归属开局日期。</p></section>
-    <section class="instructions"><h3>怎么找牛？</h3><p>每行、每列、每个颜色区域各有一头牛。牛之间不能上下、左右或斜角相邻。标错一格扣一颗心。</p><p><b>手机：</b>点一下排除，再点取消；滑动经过的格子批量排除；同一格快速双击标牛。</p><p><b>电脑：</b>左键排除，右键标牛。键盘方向键移动，空格 / Enter 排除，C 标牛。</p><p><b>计时挑战：</b>180 秒内连续解 8×8 棋盘，每关重置三颗心；时间耗尽或本关失去三颗心即结束。</p><p><b>生存模式：</b>全程共用三颗心，第 1–2 关为 6×6，第 3–5 关为 8×8，第 6 关起为 10×10。</p><p>挑战模式没有提示、重玩或跳关。打开设置仍会计时，生成棋盘期间不计时。</p></section>
+    <section class="instructions"><h3>怎么找牛？</h3><p>每行、每列、每个颜色区域各有一头牛。牛之间不能上下、左右或斜角相邻。标错一格扣一颗心。</p><p><b>手机 / 手写笔：</b>点一下排除，再点取消；从未排除格起滑，批量排除；从叉号格起滑，批量取消排除。滑动不会改动已找到的牛和错误记录。同一格快速双击标牛。</p><p><b>电脑：</b>左键排除，右键标牛。键盘方向键移动，空格 / Enter 排除，C 标牛。</p><p><b>计时挑战：</b>180 秒内连续解 8×8 棋盘，每关重置三颗心；时间耗尽或本关失去三颗心即结束。</p><p><b>生存模式：</b>全程共用三颗心，第 1–2 关为 6×6，第 3–5 关为 8×8，第 6 关起为 10×10。</p><p>挑战模式没有提示、重玩或跳关。打开设置仍会计时，生成棋盘期间不计时。</p></section>
   </dialog>
   <dialog id="result-dialog" aria-labelledby="result-title"><div class="result-icon" id="result-icon">🐮</div><h2 id="result-title">牧场全员到齐</h2><p id="result-detail"></p><button id="continue-daily" class="primary" hidden>继续解题</button><button id="review" class="primary">查看棋盘</button><button id="again" class="secondary">再来一局</button><button id="result-home" class="secondary">返回主页</button></dialog>
   <dialog id="leave-dialog" aria-labelledby="leave-title"><h2 id="leave-title">返回主页？</h2><p>本次进度将结束。挑战计时仍在继续。</p><button id="stay" class="primary">继续找牛</button><button id="leave" class="secondary">结束并返回</button></dialog>
-  <script type="module" src="game.mjs?v=8"></script>
+  <script type="module" src="game.mjs?v=11"></script>
 </body>
 </html>

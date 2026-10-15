@@ -1,17 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {autoColor,validatePuzzle,encodePuzzle,decodePuzzle,blockedByCow,colors} from './puzzle.mjs';
-import {detectBoard,recognizeRegions} from './recognition.mjs';
+import {detectBoard,detectSize,recognizeRegions} from './recognition.mjs';
 import {Session} from './session.mjs';
 
 test('custom maps preserve cows and uniquely connected regions at every supported size; codes round-trip',()=>{
   let seed=12345;const random=()=>((seed=Math.imul(seed,1664525)+1013904223>>>0)/4294967296);
-  for(const size of [6,8,10,12]){
-    const cols=[...Array.from({length:size/2},(_,i)=>i*2+1),...Array.from({length:size/2},(_,i)=>i*2)];
+  for(const size of [6,7,8,9,10,11,12]){
+    const cols=[...Array.from({length:Math.floor(size/2)},(_,i)=>i*2+1),...Array.from({length:Math.ceil(size/2)},(_,i)=>i*2)];
     const cows=cols.map((c,r)=>r*size+c),map=autoColor(size,cows,random);
     assert.deepEqual(validatePuzzle(map).solution,cows);
     const code=encodePuzzle(map);assert.deepEqual(decodePuzzle(` \n${code}\n `),map);
-    assert.ok(code.startsWith('C2'));
+    assert.ok(code.startsWith(size%2?'C3':'C2'));
     assert.ok(code.length < size*size+16);
     assert.throws(()=>decodePuzzle(code.slice(0,-1)+'z'),/损坏/);
   }
@@ -19,7 +19,7 @@ test('custom maps preserve cows and uniquely connected regions at every supporte
 test('obsolete share codes and unsupported versions are rejected',()=>{
   const old='COW1.6.001002001102000002304442004545004555.9f120a06';
   assert.throws(()=>decodePuzzle(old),/格式不支持/);
-  assert.throws(()=>decodePuzzle('C3OGcNSVBbuFhduyg.11Pf'),/格式不支持/);
+  assert.throws(()=>decodePuzzle('C4OGcNSVBbuFhduyg.11Pf'),/格式不支持/);
   assert.throws(()=>decodePuzzle('C2OGcNSVBbuFhduyg.11Pf.extra'),/损坏/);
 });
 test('invalid and ambiguous imported maps are rejected; cow placement excludes conflicts',()=>{
@@ -40,6 +40,7 @@ test('screenshot recognition detects a board and preserves color groups despite 
     }
   }
   const image={data,width,height},rect=detectBoard(image),regions=recognizeRegions(image,rect,size);
+  assert.equal(detectSize(image,rect),size);
   assert.equal(rect.x,16);assert.equal(rect.y,50);
   assert.equal(new Set(regions).size,size);
   for(let r=0;r<size;r++)for(let c=0;c<size;c++)assert.equal(regions[r*size+c],regions[(r+c)%size]);

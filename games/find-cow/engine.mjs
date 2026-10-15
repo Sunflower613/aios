@@ -143,6 +143,10 @@ export class CowGame {
     if (this.found.size === this.size) this.state = 'won';
     return 'correct';
   }
+  unexclude(cell) {
+    if (!this.valid(cell) || this.state !== 'playing' || this.found.has(cell) || this.mistakes.has(cell)) return false;
+    return this.marks.delete(cell);
+  }
   hint() {
     if (this.state !== 'playing') return null;
     const cell = this.solution.find(i => !this.found.has(i));

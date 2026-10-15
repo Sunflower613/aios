@@ -1,9 +1,9 @@
-import { CowGame } from './engine.mjs?v=2';
+import { CowGame } from './engine.mjs?v=3';
 import { Session } from './session.mjs?v=5';
-import { setupWorkshop } from './workshop.mjs?v=3';
+import { setupWorkshop } from './workshop.mjs?v=6';
 import { dailyDate } from './daily.mjs?v=2';
 import { readDailyResult, saveDailyResult } from './daily-score.mjs';
-import { TouchInput } from './touch.mjs';
+import { TouchInput } from './touch.mjs?v=2';
 import { PastureAudio } from './audio.mjs';
 import { Haptics } from './haptics.mjs?v=2';
 
@@ -141,7 +141,7 @@ function start(mode, level = 'easy') {
 function home() {
   generation++; worker?.terminate(); worker = null;
   session?.pause(now()); resetGesture(); closeDialogs();
-  $('home').hidden = false; $('play').hidden = true; $('editor').hidden = true; $('game-tools').hidden = true;
+  $('home').hidden = false; $('play').hidden = true; $('editor').hidden = true; $('recognize-screen').hidden = true; $('game-tools').hidden = true;
   document.body.classList.remove('playing'); $('home-settings').focus();
   refreshDailyResult(true);
 }
@@ -194,6 +194,7 @@ function act(cell, action = 'toggle') {
     if (result === 'correct') $('status').textContent = autoExclude ? '找到啦，相关格子已自动排除。' : '找到啦！继续看看其他格子。';
     if (result === 'wrong') $('status').textContent = `这里没有牛，还剩 ${game.lives} 颗心。`;
   } else if (action === 'exclude') { if (!game.marks.has(cell) && game.exclude(cell)) feedback('mark'); }
+  else if (action === 'unexclude') { if (game.unexclude(cell)) feedback('mark'); }
   else if (game.mark(cell)) feedback('mark');
   afterAction();
 }
@@ -201,7 +202,7 @@ function act(cell, action = 'toggle') {
 // Touch uses pointer gestures; ignore its synthetic clicks to avoid double actions.
 $('board').addEventListener('click', event => {
   const cell = event.target.closest('[data-cell]');
-  if (!cell || event.pointerType === 'touch' || event.pointerType === 'pen' || (event.detail !== 0 && now() < ignoreClickUntil)) return;
+  if (!cell || event.pointerType === 'touch' || event.pointerType === 'pen' || now() < ignoreClickUntil) return;
   act(Number(cell.dataset.cell));
 });
 $('board').addEventListener('contextmenu', event => {
@@ -218,6 +219,7 @@ $('board').addEventListener('keydown', event => {
     event.preventDefault();
     $('board').children[Math.max(0, Math.min(game.size ** 2 - 1, index + offsets[event.key]))].focus();
   } else if (event.key.toLowerCase() === 'c') { event.preventDefault(); act(index, 'cow'); }
+  else if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); act(index); }
 });
 function cellAt(x, y) {
   const target = document.elementFromPoint(x, y)?.closest('[data-cell]');
@@ -227,7 +229,7 @@ $('board').addEventListener('pointerdown', event => {
   if (event.pointerType === 'mouse' || !event.isPrimary || !playing()) return;
   const cell = event.target.closest('[data-cell]'); if (!cell) return;
   event.preventDefault(); ignoreClickUntil = now() + 1000;
-  touch.begin(event.pointerId, Number(cell.dataset.cell), event.clientX, event.clientY);
+  touch.begin(event.pointerId, Number(cell.dataset.cell), event.clientX, event.clientY, { erase: game.marks.has(Number(cell.dataset.cell)), pointerType: event.pointerType });
   $('board').setPointerCapture(event.pointerId);
 });
 $('board').addEventListener('pointermove', event => {
@@ -241,7 +243,7 @@ $('board').addEventListener('pointerup', event => {
   touch.end(event.pointerId, cellAt(event.clientX, event.clientY));
 });
 $('board').addEventListener('pointercancel', resetGesture);
-$('board').addEventListener('lostpointercapture', () => { touch.gesture = null; });
+$('board').addEventListener('lostpointercapture', event => { if (touch.gesture?.id === event?.pointerId) touch.gesture = null; });
 
 document.querySelectorAll('[data-level]').forEach(button => button.addEventListener('click', () => start('classic', button.dataset.level)));
 document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => start(button.dataset.mode)));

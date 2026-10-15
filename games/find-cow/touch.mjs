@@ -3,16 +3,16 @@
 export class TouchInput {
   constructor(act, clock) { this.act = act; this.clock = clock; this.reset(); }
   reset() { this.gesture = null; this.lastTap = null; }
-  begin(id, cell, x, y) {
-    this.gesture = { id, cell, x, y, startX: x, startY: y, moved: false, seen: new Set() };
+  begin(id, cell, x, y, { erase = false, pointerType = 'touch' } = {}) {
+    this.gesture = { id, cell, x, y, startX: x, startY: y, moved: false, seen: new Set(), erase, pointerType };
   }
   paint(cell) {
     if (cell === null || !this.gesture || this.gesture.seen.has(cell)) return;
-    this.gesture.seen.add(cell); this.act(cell, 'exclude');
+    this.gesture.seen.add(cell); this.act(cell, this.gesture.erase ? 'unexclude' : 'exclude');
   }
   move(id, x, y, cellAt) {
     if (!this.gesture || this.gesture.id !== id) return;
-    if (!this.gesture.moved && Math.hypot(x - this.gesture.startX, y - this.gesture.startY) < 7) return;
+    if (!this.gesture.moved && (cellAt(x,y) === this.gesture.cell || Math.hypot(x - this.gesture.startX, y - this.gesture.startY) < (this.gesture.pointerType === 'pen' ? 12 : 7))) return;
     if (!this.gesture.moved) { this.gesture.moved = true; this.lastTap = null; this.paint(this.gesture.cell); }
     if (!this.gesture) return;
     const fromX = this.gesture.x, fromY = this.gesture.y;
@@ -25,10 +25,10 @@ export class TouchInput {
     const completed = this.gesture; this.gesture = null;
     if (completed.moved || cell !== completed.cell) { this.lastTap = null; return; }
     const stamp = this.clock();
-    if (this.lastTap?.cell === cell && stamp - this.lastTap.time <= 320) {
+    if (this.lastTap?.cell === cell && this.lastTap.pointerType === completed.pointerType && stamp - this.lastTap.time <= (completed.pointerType === 'pen' ? 500 : 320)) {
       this.lastTap = null; this.act(cell, 'cow');
     } else {
-      this.lastTap = { cell, time: stamp }; this.act(cell, 'toggle');
+      this.lastTap = { cell, time: stamp, pointerType: completed.pointerType }; this.act(cell, 'toggle');
     }
   }
 }

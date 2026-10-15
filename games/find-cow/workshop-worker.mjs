@@ -1,4 +1,4 @@
-import { autoColor, validatePuzzle, encodePuzzle, decodePuzzle } from './puzzle.mjs?v=3';
+import { autoColor, validatePuzzle, encodePuzzle, decodePuzzle } from './puzzle.mjs?v=4';
 self.onmessage=({data})=>{
   try {
     let result;

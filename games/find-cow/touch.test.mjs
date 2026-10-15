@@ -37,3 +37,16 @@ test('a timeout during a swipe may cancel the gesture without crashing', () => {
   assert.doesNotThrow(() => input.move(1, 50, 0, () => 1));
   assert.equal(input.gesture, null);
 });
+test('starting on an excluded cell erases the whole swipe without toggling revisited cells',()=>{
+  const s=setup(),at=x=>Math.floor(x/30);
+  s.input.begin(1,0,15,15,{erase:true});s.input.move(1,165,15,at);s.input.move(1,15,15,at);s.input.end(1,0);
+  assert.deepEqual(s.calls,Array.from({length:6},(_,i)=>[i,'unexclude']));
+});
+test('pen jitter inside the cell stays a tap and two pen taps mark a cow',()=>{
+  const s=setup();
+  for(const stamp of [0,400]){
+    s.time(stamp);s.input.begin(5,0,10,10,{pointerType:'pen'});
+    s.input.move(5,19,13,()=>0);s.input.end(5,0);
+  }
+  assert.deepEqual(s.calls,[[0,'toggle'],[0,'cow']]);
+});
