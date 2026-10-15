@@ -411,9 +411,6 @@ class NeonPoolGame {
     this.starfield = null;
 
     // API 网关配置
-    this.apiHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-      ? `http://${window.location.hostname}:3001`
-      : 'http://111.229.107.228:3001';
 
     // 事件绑定
     this.initEvents();
@@ -422,12 +419,6 @@ class NeonPoolGame {
     setTimeout(() => this.resizeCanvas(), 100);
     setTimeout(() => this.resizeCanvas(), 300);
 
-    // 初始化 SSO 登录界面
-    this.initSSOWidget();
-
-    // 同步云端数据
-    this.checkUrlSSOToken();
-    this.syncCloudData();
     this.loadLeaderboard();
   }
 
@@ -971,11 +962,6 @@ class NeonPoolGame {
       document.getElementById('finalScore').textContent = this.score;
       document.getElementById('bestScore').textContent = this.highScore;
 
-      // 保存进度与分数到云端
-      this.saveCloudData(this.highScore, {
-        maxUnlockedLevel: parseInt(localStorage.getItem('pool_maxUnlockedLevel') || '1')
-      });
-
       // 是否显示下一关按钮
       const btnNext = document.getElementById('btnNextLevel');
       if (this.currentLevel < this.levels.length) {
@@ -998,10 +984,17 @@ class NeonPoolGame {
       localStorage.setItem('pool_highScore', this.highScore);
     }
 
-    // 保存进度与分数到云端
-    this.saveCloudData(this.highScore, {
-      maxUnlockedLevel: parseInt(localStorage.getItem('pool_maxUnlockedLevel') || '1')
-    });
+    // 游客模式：同源上报最高分与进度（方法 saveCloudData 已随 SSO 一并移除，
+    // 这里直接调用游客存档接口，避免调用不存在的方法导致结算界面异常）
+    fetch('/api/game/score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        game_id: 'billiards',
+        score: this.highScore,
+        save_data: { maxUnlockedLevel: parseInt(localStorage.getItem('pool_maxUnlockedLevel') || '1') }
+      })
+    }).catch(() => {});
 
     setTimeout(() => {
       const overlay = document.getElementById('gameOverOverlay');
@@ -1560,184 +1553,8 @@ class NeonPoolGame {
     return `#${rHex}${gHex}${bHex}`;
   }
 
-  checkUrlSSOToken() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('sso_access_token');
-    const userStr = urlParams.get('sso_user');
-    if (token && userStr) {
-      localStorage.setItem('sso_access_token', token);
-      localStorage.setItem('sso_user', userStr);
-      
-      // 清理 URL 参数
-      urlParams.delete('sso_access_token');
-      urlParams.delete('sso_user');
-      const cleanQuery = urlParams.toString();
-      const cleanUrl = window.location.pathname + (cleanQuery ? '?' + cleanQuery : '') + window.location.hash;
-      window.history.replaceState({}, document.title, cleanUrl);
-    }
-  }
 
-  // ==================== SSO 登录界面处理 ====================
-  initSSOWidget() {
-    const avatarBtn = document.getElementById('account-avatar-btn');
-    
-    const updateUI = () => {
-      const token = localStorage.getItem('sso_access_token');
-      const userStr = localStorage.getItem('sso_user');
-      
-      if (token && userStr) {
-        try {
-          const user = JSON.parse(userStr);
-          if (avatarBtn) {
-            avatarBtn.textContent = user.username.slice(0, 1).toUpperCase();
-            avatarBtn.setAttribute('aria-label', `账号：${user.username}`);
-            avatarBtn.title = `账号：${user.username}`;
-          }
-        } catch(e) {
-          if (avatarBtn) avatarBtn.textContent = '👤';
-        }
-      } else {
-        if (avatarBtn) {
-          avatarBtn.textContent = '👤';
-          avatarBtn.setAttribute('aria-label', '账号登录');
-          avatarBtn.title = '账号登录';
-        }
-      }
-    };
 
-    // 全局暴露弹窗操作
-    window.showLoginModal = () => {
-      const token = localStorage.getItem('sso_access_token');
-      const userStr = localStorage.getItem('sso_user');
-      const loggedInPanel = document.getElementById('sso-logged-in-panel');
-      const loggedOutPanel = document.getElementById('sso-logged-out-panel');
-      
-      if (token && userStr) {
-        try {
-          const user = JSON.parse(userStr);
-          document.getElementById('sso-modal-avatar').src = user.avatar || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23718096"%3E%3Ccircle cx="12" cy="8" r="4"/%3E%3Cpath d="M12 14c-4 0-6 2-6 4v2h12v-2c0-2-2-4-6-4z"/%3E%3C/svg%3E';
-          document.getElementById('sso-modal-username').textContent = user.username;
-          
-          if (loggedInPanel) loggedInPanel.style.display = 'block';
-          if (loggedOutPanel) loggedOutPanel.style.display = 'none';
-        } catch (e) {
-          if (loggedInPanel) loggedInPanel.style.display = 'none';
-          if (loggedOutPanel) loggedOutPanel.style.display = 'block';
-        }
-      } else {
-        if (loggedInPanel) loggedInPanel.style.display = 'none';
-        if (loggedOutPanel) loggedOutPanel.style.display = 'block';
-      }
-      
-      const loginModal = document.getElementById('login-modal');
-      if (loginModal) {
-        loginModal.style.display = 'flex';
-        loginModal.classList.remove('hidden');
-      }
-    };
-
-    window.hideLoginModal = () => {
-      const loginModal = document.getElementById('login-modal');
-      if (loginModal) {
-        loginModal.style.display = 'none';
-        loginModal.classList.add('hidden');
-      }
-    };
-
-    window.closeLoginModal = (e) => {
-      if (e.target === e.currentTarget) window.hideLoginModal();
-    };
-
-    window.loginWithSSO = () => {
-      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      let homeUrl = isLocal ? 'http://127.0.0.1:8000/index.html' : '/index.html';
-      if (document.referrer && (document.referrer.includes('index.html') || document.referrer.endsWith('/'))) {
-        try {
-          const refUrl = new URL(document.referrer);
-          if (refUrl.pathname === '/' || refUrl.pathname.endsWith('/index.html')) {
-            homeUrl = refUrl.origin + refUrl.pathname;
-          }
-        } catch(e) {}
-      }
-      
-      const returnUrl = window.location.href;
-      window.location.href = `${homeUrl}?sso_return_url=${encodeURIComponent(returnUrl)}`;
-    };
-
-    window.logoutSSO = () => {
-      localStorage.removeItem('sso_access_token');
-      localStorage.removeItem('sso_user');
-      updateUI();
-      window.hideLoginModal();
-      window.location.reload();
-    };
-
-    updateUI();
-  }
-
-  // ==================== 云端跨域保存 ====================
-  async syncCloudData() {
-    const token = localStorage.getItem('sso_access_token');
-    if (!token) return;
-
-    try {
-      const response = await fetch(`${this.apiHost}/api/game/data?game_id=billiards`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const resData = await response.json();
-      if (resData && resData.success && resData.data) {
-        const cloudScore = resData.data.score || 0;
-        const cloudSave = resData.data.save_data;
-
-        if (cloudScore > this.highScore) {
-          this.highScore = cloudScore;
-          localStorage.setItem('pool_highScore', this.highScore);
-          this.updateHUD();
-        } else if (this.highScore > cloudScore) {
-          this.saveCloudData(this.highScore, {
-            maxUnlockedLevel: parseInt(localStorage.getItem('pool_maxUnlockedLevel') || '1')
-          });
-        }
-
-        if (cloudSave && cloudSave.maxUnlockedLevel) {
-          const localMax = parseInt(localStorage.getItem('pool_maxUnlockedLevel') || '1');
-          if (cloudSave.maxUnlockedLevel > localMax) {
-            localStorage.setItem('pool_maxUnlockedLevel', cloudSave.maxUnlockedLevel);
-          } else if (localMax > cloudSave.maxUnlockedLevel) {
-            this.saveCloudData(this.highScore, {
-              maxUnlockedLevel: localMax
-            });
-          }
-        }
-      }
-    } catch (err) {
-      console.error('Failed to sync cloud data:', err);
-    }
-  }
-
-  async saveCloudData(score, saveData) {
-    const token = localStorage.getItem('sso_access_token');
-    if (!token) return;
-
-    try {
-      await fetch(`${this.apiHost}/api/game/score`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          game_id: 'billiards',
-          score: score,
-          save_data: saveData
-        })
-      });
-    } catch (err) {
-      console.error('Failed to save cloud data:', err);
-    }
-  }
 
   async loadLeaderboard() {
     const listEl = document.getElementById('leaderboard-list');
@@ -1745,7 +1562,8 @@ class NeonPoolGame {
     listEl.textContent = '加载中...';
 
     try {
-      const response = await fetch(`${this.apiHost}/api/game/leaderboard?game_id=billiards`);
+      // 游客模式：同源拉取排行榜（服务端以 guest 记账，无需登录）
+      const response = await fetch('/api/game/leaderboard?game_id=billiards');
       const data = await response.json();
 
       if (data && data.success && data.leaderboard && data.leaderboard.length > 0) {

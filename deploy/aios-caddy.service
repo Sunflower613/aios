@@ -1,0 +1,26 @@
+; aios 站点专用 Caddy 实例（与面板的 caddy.service 完全分离）
+; 面板 Caddy：/etc/caddy/Caddyfile  -> :80, :16991
+; 本实例     ：/etc/caddy/aios.Caddyfile -> :443(域名), :8443(IP 旧入口)
+; 独立的数据/配置目录，避免与面板实例争用证书存储与 autosave
+[Unit]
+Description=aios site Caddy (124.222.183.43:8443; :443 保留供 IP 证书 TLS-ALPN 校验)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=caddy
+Group=caddy
+Environment=XDG_DATA_HOME=/var/lib/caddy-aios/data
+Environment=XDG_CONFIG_HOME=/var/lib/caddy-aios/config
+ExecStart=/usr/bin/caddy run --environ --config /etc/caddy/aios.Caddyfile
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+Restart=on-failure
+RestartSec=3
+LimitNOFILE=1048576
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

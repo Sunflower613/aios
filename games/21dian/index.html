@@ -397,33 +397,29 @@
     </div>
   </div>
 
-  <!-- 登录弹窗 (SSO 统一登录改造) -->
+  <!-- 账号中心（本地账号 + 游客，无 SSO） -->
   <div class="modal-overlay hidden" id="login-modal" onclick="closeLoginModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()">
       <h3 style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">账号中心</h3>
       
-      <!-- 已登录 SSO 面板 -->
-      <div id="sso-logged-in-panel" style="display: none;">
-        <div style="display:flex; flex-direction:column; align-items:center; gap:12px; padding: 20px 0 10px;">
-          <img id="sso-modal-avatar" style="width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--gold); object-fit: cover;" src="" alt="头像">
-          <div style="font-weight: 800; font-size: 1.15rem; color: var(--text);" id="sso-modal-username"></div>
-          <div style="color: var(--text-muted); font-size: 0.8rem;">已通过 SSO 统一认证登录</div>
-        </div>
-        <button class="btn-danger btn-block" id="sso-logout-btn" onclick="logoutSSO()">退出登录</button>
+      <div style="display:flex; align-items:center; gap:8px; margin:0 0 14px;">
+        <span style="color: var(--text-muted); font-size:0.85rem;">当前身份</span>
+        <strong id="account-name" style="color: var(--gold); font-size:1rem;">游客</strong>
       </div>
 
-      <!-- 未登录 SSO 面板 -->
-      <div id="sso-logged-out-panel" style="display: none;">
-        <div style="text-align: center; padding: 20px 0 10px;">
-          <div style="font-size: 1.8rem; margin-bottom: 12px;">🔐</div>
-          <div style="font-weight: 700; font-size: 1rem; margin-bottom: 8px; color: var(--text);">SSO 统一身份认证</div>
-          <div style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.4;">一键登录 Sunflower 统一身份平台</div>
-        </div>
-        <button class="btn-primary btn-block" id="sso-login-btn" onclick="loginWithSSO()" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <iconify-icon icon="lucide:key-round" style="font-size: 18px;"></iconify-icon>
-          SSO 统一登录
-        </button>
-        <button class="btn-ghost btn-block" onclick="hideLoginModal()" style="margin-top: 8px; font-size: 0.8rem;">以游客身份继续</button>
+      <div class="form-group">
+        <label class="form-label" for="nickname-input">账号名称</label>
+        <input type="text" id="nickname-input" placeholder="输入账号名称（新账号将自动注册）" autocomplete="username"
+          spellcheck="false">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password-input">密码</label>
+        <input type="password" id="password-input" placeholder="输入密码" autocomplete="current-password">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-ghost" style="flex:1" onclick="hideLoginModal()">以游客身份继续</button>
+        <button class="btn-primary" style="flex:1" id="login-btn" onclick="loginAccount()">登录 / 注册</button>
       </div>
     </div>
   </div>
@@ -440,70 +436,22 @@
     loadStoredAccount();
     loadLeaderboard();
 
-    function checkUrlSSOToken() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get('sso_access_token');
-      const userStr = urlParams.get('sso_user');
-      if (token && userStr) {
-        localStorage.setItem('sso_access_token', token);
-        localStorage.setItem('sso_user', userStr);
-        
-        // 清理 URL 参数
-        urlParams.delete('sso_access_token');
-        urlParams.delete('sso_user');
-        const cleanQuery = urlParams.toString();
-        const cleanUrl = window.location.pathname + (cleanQuery ? '?' + cleanQuery : '') + window.location.hash;
-        window.history.replaceState({}, document.title, cleanUrl);
-      }
-    }
 
     async function loadStoredAccount() {
-      checkUrlSSOToken();
-      await syncSSOToBlackjack();
-    }
-
-    async function syncSSOToBlackjack() {
-      const ssoToken = localStorage.getItem('sso_access_token');
-      const ssoUserStr = localStorage.getItem('sso_user');
-      
-      if (ssoToken && ssoUserStr) {
-        try {
-          const ssoUser = JSON.parse(ssoUserStr);
-          const username = ssoUser.username;
-          const password = 'SSO_SECURE_' + ssoUser.id;
-          
-          // 执行静默注册或登录
-          const res = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password }),
-          });
-          const data = await res.json();
-          if (!data.error) {
-            currentAccount = { username: data.username, score: data.score };
-            localStorage.setItem(ACCOUNT_KEY, JSON.stringify(currentAccount));
-          } else {
-            // 如果后端登录返回错误（如同名冲突或接口限制），依然使用 SSO 昵称，积分为 0
-            currentAccount = { username: username, score: 0 };
-            localStorage.setItem(ACCOUNT_KEY, JSON.stringify(currentAccount));
-          }
-        } catch (e) {
-          console.error('SSO sync failed:', e);
-          try {
-            // 本地未启动 Go 后端时，走此降级，仍强制同步 SSO 的真实用户名
-            const ssoUser = JSON.parse(ssoUserStr);
-            currentAccount = { username: ssoUser.username, score: 0 };
-            localStorage.setItem(ACCOUNT_KEY, JSON.stringify(currentAccount));
-          } catch (err) {
-            currentAccount = createGuestAccount();
-          }
+      // 本地账号（无 SSO）：有存档则恢复，否则用游客身份
+      try {
+        const saved = localStorage.getItem(ACCOUNT_KEY);
+        if (saved) {
+          const acc = JSON.parse(saved);
+          if (acc && acc.username) currentAccount = acc;
         }
-      } else {
-        currentAccount = createGuestAccount();
-        localStorage.removeItem(ACCOUNT_KEY);
+      } catch (e) {
+        console.error(e);
       }
+      if (!currentAccount) currentAccount = createGuestAccount();
       updateAccountUI();
     }
+
 
     function createGuestAccount() {
       let guestName = sessionStorage.getItem(GUEST_KEY);
@@ -521,6 +469,8 @@
       avatarBtn.textContent = isGuest ? '👤' : currentAccount.username.slice(0, 1).toUpperCase();
       avatarBtn.setAttribute('aria-label', isGuest ? '账号登录' : `账号：${currentAccount.username}`);
       avatarBtn.title = isGuest ? '账号登录' : `账号：${currentAccount.username}`;
+      const nameEl = document.getElementById('account-name');
+      if (nameEl) nameEl.textContent = currentAccount ? currentAccount.username : '游客';
     }
 
     async function loginAccount() {
@@ -567,28 +517,6 @@
     }
 
     function showLoginModal() {
-      const ssoToken = localStorage.getItem('sso_access_token');
-      const ssoUserStr = localStorage.getItem('sso_user');
-      const loggedInPanel = document.getElementById('sso-logged-in-panel');
-      const loggedOutPanel = document.getElementById('sso-logged-out-panel');
-      
-      if (ssoToken && ssoUserStr) {
-        try {
-          const ssoUser = JSON.parse(ssoUserStr);
-          document.getElementById('sso-modal-avatar').src = ssoUser.avatar || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"%3E%3Ccircle cx="12" cy="8" r="4"/%3E%3Cpath d="M12 14c-4 0-6 2-6 4v2h12v-2c0-2-2-4-6-4z"/%3E%3C/svg%3E';
-          document.getElementById('sso-modal-username').textContent = ssoUser.username;
-          
-          loggedInPanel.style.display = 'block';
-          loggedOutPanel.style.display = 'none';
-        } catch (e) {
-          loggedInPanel.style.display = 'none';
-          loggedOutPanel.style.display = 'block';
-        }
-      } else {
-        loggedInPanel.style.display = 'none';
-        loggedOutPanel.style.display = 'block';
-      }
-      
       document.getElementById('login-modal').classList.remove('hidden');
     }
 
@@ -600,28 +528,6 @@
       if (e.target === e.currentTarget) hideLoginModal();
     }
 
-    function loginWithSSO() {
-      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      let homeUrl = isLocal ? 'http://127.0.0.1:8000/index.html' : '/index.html';
-      if (document.referrer && (document.referrer.includes('index.html') || document.referrer.endsWith('/'))) {
-        try {
-          const refUrl = new URL(document.referrer);
-          if (refUrl.pathname === '/' || refUrl.pathname.endsWith('/index.html')) {
-            homeUrl = refUrl.origin + refUrl.pathname;
-          }
-        } catch(e) {}
-      }
-      
-      const returnUrl = window.location.href;
-      window.location.href = `${homeUrl}?sso_return_url=${encodeURIComponent(returnUrl)}`;
-    }
-
-    function logoutSSO() {
-      localStorage.removeItem('sso_access_token');
-      localStorage.removeItem('sso_user');
-      localStorage.removeItem(ACCOUNT_KEY);
-      window.location.reload();
-    }
 
     async function loadLeaderboard() {
       try {

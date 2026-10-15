@@ -3,3 +3,22 @@ game-api/node_modules/
 .DS_Store
 *.log
 3d-home/.git_bak/
+
+# ==== 服务器迁移适配（本地新增）====
+# 3d-home 在上游是子模块(gitlink)，其服务器端改动不随主仓库提交
+/3d-home/
+# 21点后端运行时文件
+games/21dian/backend/build/server.log
+games/21dian/backend/build/server.pid
+*.pre-sso-strip.bak
+
+# ==== 敏感/运行时文件：停止跟踪，仅保留本地副本 ====
+# game-api/.env 内含 SSO_CLIENT_SECRET；注意它已存在于公开提交历史中，
+# 仅删除跟踪无法收回泄露，必须轮换密钥。
+game-api/.env
+# SQLite 游玩数据
+game-api/game_data.db
+# 21点后端账号库（含 passwordHash / score）
+games/21dian/backend/build/accounts.json
+# 21点后端编译产物（5MB，需随 Go 源码变更重新构建）
+games/21dian/backend/build/blackjack-linux-amd64

@@ -1,0 +1,110 @@
+{
+	# 独立实例：与面板的 Caddy(/etc/caddy/Caddyfile, 16991 + :80) 完全分开
+	admin off
+	# 面板 Caddy 占着 :80，本实例只用 443/8443，ACME 走 TLS-ALPN
+	# 关闭自动 :80 重定向，避免与面板实例抢绑 :80
+	auto_https disable_redirects
+	default_sni 124.222.183.43
+}
+
+# =====================================================================
+# aios 站点（本文件由 deploy/deploy-aios.sh 维护，面板重新生成 Caddyfile 不影响它）
+#   主域名  https://sunflower.dpdns.org      443  Let's Encrypt 正式证书
+#   旧入口  https://124.222.183.43:8443      8443 IP 短周期证书
+# =====================================================================
+
+(aios_site) {
+	encode gzip zstd
+
+	# ---- 21点 Go 后端（同源服务器路径）----
+	handle /ws {
+		reverse_proxy 127.0.0.1:8081 {
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	handle /api/auth/* {
+		reverse_proxy 127.0.0.1:8081 {
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	handle /api/leaderboard {
+		reverse_proxy 127.0.0.1:8081 {
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	handle /api/room/* {
+		reverse_proxy 127.0.0.1:8081 {
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	# ---- 游戏存档 / 排行榜（Node，游客模式，已去除 SSO）----
+	handle /api/* {
+		reverse_proxy 127.0.0.1:3001 {
+			header_up Host {upstream_hostport}
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	# ---- 后端可执行文件 / 账号数据禁止通过站点访问 ----
+	handle /games/21dian/backend/* {
+		respond 404
+	}
+
+	# ---- 静态站点 ----
+	root * /var/www/aios
+	file_server
+
+	# ---- 404 页面 ----
+	handle_errors {
+		@404 expression {err.status_code} == 404
+		rewrite @404 /404.html
+		file_server
+	}
+}
+
+# ------------------------------------------------- 域名（当前不可用，仅保留 443 监听）
+# 实测结论：本机（国内）443 端口对「未备案域名」按 SNI 拦截，带该域名 SNI 的
+# TLS 连接一律被重置（外部节点 5/5 复现），换任何证书都无效；免费二级域名又
+# 无法备案。因此这里用内部自签证书，不再向 CA 发无效申请，只为让 Caddy 持续
+# 监听 443 —— 124.222.183.43 的 IP 证书续期依赖 443 上的 TLS-ALPN 校验。
+# 将来若要启用域名：改用 Cloudflare 前置（Tunnel）或换成境外服务器再恢复 ACME。
+https://sunflower.dpdns.org {
+	tls internal
+
+	import aios_site
+
+	log {
+		output file /var/log/caddy/aios-domain-access.log {
+			roll_size 10MiB
+			roll_keep 5
+		}
+	}
+}
+
+# ------------------------------------------------- 旧入口（IP + 8443，保留）
+https://124.222.183.43:8443 {
+	tls {
+		issuer acme {
+			profile shortlived
+			disable_http_challenge
+		}
+	}
+
+	import aios_site
+
+	log {
+		output file /var/log/caddy/aios-access.log {
+			roll_size 10MiB
+			roll_keep 5
+		}
+	}
+}

@@ -201,37 +201,5 @@
     </div>
   </div>
 
-  <!-- 登录弹窗 (SSO 统一登录改造，与 21点 结构一致，但使用台球粉红色调) -->
-  <div class="modal-overlay" id="login-modal" style="display: none;" onclick="closeLoginModal(event)">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <h3 style="margin-bottom: 16px; border-bottom: 1px solid var(--panel-border); padding-bottom: 10px; font-weight: 800;">账号中心</h3>
-      
-      <!-- 已登录 SSO 面板 -->
-      <div id="sso-logged-in-panel" style="display: none;">
-        <div style="display:flex; flex-direction:column; align-items:center; gap:12px; padding: 20px 0 10px;">
-          <img id="sso-modal-avatar" style="width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--primary-neon); object-fit: cover;" src="" alt="头像">
-          <div style="font-weight: 800; font-size: 1.15rem; color: var(--text-main);" id="sso-modal-username"></div>
-          <div style="color: var(--text-muted); font-size: 0.8rem;">已通过 SSO 统一认证登录</div>
-        </div>
-        <button class="sso-billiards-logout-big" id="sso-logout-btn" onclick="logoutSSO()" style="width: 100%; margin-top: 16px;">退出登录</button>
-      </div>
-
-      <!-- 未登录 SSO 面板 -->
-      <div id="sso-logged-out-panel" style="display: none;">
-        <div style="text-align: center; padding: 20px 0 10px;">
-          <div style="font-size: 1.8rem; margin-bottom: 12px;">🔐</div>
-          <div style="font-weight: 700; font-size: 1rem; margin-bottom: 8px; color: var(--text-main);">SSO 统一身份认证</div>
-          <div style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.4;">一键登录 Sunflower 统一身份平台</div>
-        </div>
-        <button class="sso-billiards-login-big" id="sso-login-btn" onclick="loginWithSSO()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <iconify-icon icon="lucide:key-round" style="font-size: 18px;"></iconify-icon>
-          SSO 统一登录
-        </button>
-        <button class="sso-billiards-guest-big" onclick="hideLoginModal()" style="width: 100%; margin-top: 8px;">以游客身份继续</button>
-      </div>
-    </div>
-  </div>
-
-  <script type="module" src="./game.js?v=4"></script>
 </body>
 </html>
