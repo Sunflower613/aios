@@ -16,6 +16,21 @@
 (aios_site) {
 	encode gzip zstd
 
+	# ---- 指尖旋律：搜索、下载、个人上传、制谱和受控媒体 ----
+	handle /api/melody/* {
+		request_body {
+			max_size 83MiB
+		}
+		reverse_proxy 127.0.0.1:8765 {
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-Proto https
+		}
+	}
+	@melody_private path /games/fingertip-melody/scripts/* /games/fingertip-melody/media/* /games/fingertip-melody/.venv/* /games/fingertip-melody/.models/* /games/fingertip-melody/.tools/*
+	handle @melody_private {
+		respond 404
+	}
+
 	# ---- 21点 Go 后端（同源服务器路径）----
 	handle /ws {
 		reverse_proxy 127.0.0.1:8081 {

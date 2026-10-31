@@ -172,6 +172,14 @@ export const siteConfig = {
       icon: "./games/find-cow/icon.svg",
       color: "#e7eedf",
       emoji: "🐮"
+    },
+    {
+      id: "fingertip-melody",
+      name: "指尖旋律",
+      path: "./games/fingertip-melody/index.html",
+      icon: "./games/fingertip-melody/icon.svg",
+      color: "#8e77ff",
+      emoji: "🎵"
     }
   ],
 

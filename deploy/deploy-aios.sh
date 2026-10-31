@@ -45,6 +45,8 @@ rsync -a --delete \
   --exclude 'deploy/' \
   --exclude '.git*' --exclude '.vscode/' --exclude '.htaccess' --exclude '.user.ini' \
   --exclude 'node_modules/' --exclude 'game-api/' --exclude '__pycache__/' --exclude '*.pyc' \
+  --exclude 'games/fingertip-melody/scripts/' --exclude 'games/fingertip-melody/media/' \
+  --exclude 'games/fingertip-melody/.venv/' --exclude 'games/fingertip-melody/.models/' --exclude 'games/fingertip-melody/.tools/' \
   --exclude '*.log' --exclude '*.tar.gz' --exclude '*.zip' --exclude '*.orig' --exclude '*.bak' \
   --exclude '3d-home/src/' --exclude '3d-home/public/' --exclude '3d-home/node_modules/' \
   --exclude '3d-home/*.html' --exclude '3d-home/style.css' \

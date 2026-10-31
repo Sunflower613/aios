@@ -1,0 +1,27 @@
+[Unit]
+Description=Fingertip Melody catalog and alignment worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/apps/fingertip-melody
+EnvironmentFile=/home/ubuntu/apps/fingertip-melody/server.env
+ExecStart=/home/ubuntu/.local/node/bin/node scripts/server.mjs
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+KillMode=control-group
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/fingertip-melody
+MemoryMax=6G
+TasksMax=128
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
