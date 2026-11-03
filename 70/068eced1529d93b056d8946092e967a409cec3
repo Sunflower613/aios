@@ -1,0 +1,21 @@
+games/fingertip-melody/scripts/server.mjs
+  s_baa6cd6cac760d::t_b08ebfdb88bf10 315-339
+games/fingertip-melody/启动曲库.cmd
+  s_baa6cd6cac760d::t_1659189db0a33c 2-6,8-9,11-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "5.30.8",
+  "base_commit_sha": "70068eced1529d93b056d8946092e967a409cec3",
+  "prompts": {},
+  "sessions": {
+    "s_baa6cd6cac760d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18adf-dbe0-7662-9543-b53838786602",
+        "model": "unknown"
+      },
+      "human_author": "Sunflower <tangjiao17@h-partners.com>"
+    }
+  }
+}
