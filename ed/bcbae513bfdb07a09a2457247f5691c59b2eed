@@ -1,0 +1,19 @@
+games/fingertip-melody/scripts/netease.mjs
+  s_baa6cd6cac760d::t_a5a59ac1cc62e5 54-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "5.30.8",
+  "base_commit_sha": "edbcbae513bfdb07a09a2457247f5691c59b2eed",
+  "prompts": {},
+  "sessions": {
+    "s_baa6cd6cac760d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18adf-dbe0-7662-9543-b53838786602",
+        "model": "unknown"
+      },
+      "human_author": "Sunflower <tangjiao17@h-partners.com>"
+    }
+  }
+}
