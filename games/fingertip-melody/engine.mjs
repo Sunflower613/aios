@@ -1,4 +1,7 @@
 const HAN = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]/gu;
+export function stripSingerPrefix(text) {
+  return String(text).replace(/^\s*(?:(?:【[^】\n]{1,12}】|[（(](?:男|女|合|合唱|齐唱|男声|女声)[）)]|(?:男|女|合|合唱|齐唱|领唱|男声|女声|男女合唱)\s*[:：])\s*)+/u, '');
+}
 export function ratingFor(round) {
   const total = round.notes.length;
   if (total && round.perfect === total && !round.wrong) return 'φ';
@@ -12,7 +15,7 @@ export function parseLrc(source) {
   const lines = [];
   for (const raw of source.split(/\r?\n/)) {
     const stamps = [...raw.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g)];
-    const text = raw.replace(/\[[^\]]*\]/g, '').trim();
+    const text = stripSingerPrefix(raw.replace(/\[[^\]]*\]/g, '').trim());
     // Keep blank/credit timestamps as interval boundaries, but never make notes from credits.
     for (const stamp of stamps) lines.push({ time: Math.max(0, Number(stamp[1]) * 60 + Number(stamp[2]) + offset), text, playable: !CREDIT.test(text) && (text.match(HAN)?.length || 0) > 0 });
   }

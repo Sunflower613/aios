@@ -107,13 +107,16 @@ class FunAsrAligner:
         result = self.model.generate(input=(samples, ' '.join(chars)), data_type=['sound', 'text'], fs=16000, batch_size=1, disable_pbar=True)
         return result[0]['timestamp'], None
 
+def strip_singer_prefix(text):
+    return re.sub(r'^\s*(?:(?:【[^】\n]{1,12}】|[（(](?:男|女|合|合唱|齐唱|男声|女声)[）)]|(?:男|女|合|合唱|齐唱|领唱|男声|女声|男女合唱)\s*[:：])\s*)+', '', text)
+
 def parse_lrc(text, title='', artist=''):
     offset_match = re.search(r'\[offset:([+-]?\d+)\]', text)
     offset = int(offset_match[1]) / 1000 if offset_match else 0
     lines = []
     for raw in text.splitlines():
         stamps = re.findall(r'\[(\d+):(\d+(?:\.\d+)?)\]', raw)
-        content = re.sub(r'\[[^\]]*\]', '', raw).strip()
+        content = strip_singer_prefix(re.sub(r'\[[^\]]*\]', '', raw).strip())
         playable = bool(HAN.search(content)) and not CREDIT.search(content) and ' - ' not in content and content not in (title, artist)
         for minute, second in stamps:
             lines.append({'time': max(0, int(minute) * 60 + float(second) + offset), 'text': content, 'playable': bool(playable)})
@@ -127,13 +130,17 @@ def parse_yrc(text, duration):
         if not header:
             continue
         tokens = re.findall(r'\((\d+),(\d+),\d+\)([^()]*)', raw)
-        content = ''.join(token[2] for token in tokens).strip()
+        raw_content = ''.join(token[2] for token in tokens)
+        content = strip_singer_prefix(raw_content)
+        prefix_remaining = len(raw_content) - len(content)
         if not HAN.search(content) or CREDIT.search(content):
             continue
         index = len(lines)
         lines.append({'time': int(header[1]) / 1000, 'text': content, 'playable': True})
         for begin, length, token in tokens:
-            chars = HAN.findall(token)
+            skip = min(prefix_remaining, len(token))
+            prefix_remaining -= skip
+            chars = HAN.findall(token[skip:])
             if not chars:
                 continue
             if len(chars) != 1:

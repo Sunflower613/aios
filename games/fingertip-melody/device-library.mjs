@@ -1,4 +1,4 @@
-import { parseLrc, makeChart } from './engine.mjs';
+import { parseLrc, makeChart, stripSingerPrefix } from './engine.mjs';
 import { catalogApi, catalogBlob } from './service.mjs';
 import { repairKnownTiming } from './timing-corrections.mjs';
 const urls = new Map();
@@ -88,11 +88,13 @@ export function yrcChart(text, duration, hash) {
   for (const raw of text.split(/\r?\n/)) {
     const head = raw.match(/^\[(\d+),(\d+)\]/); if (!head) continue;
     const tokens = [...raw.matchAll(/\((\d+),(\d+),\d+\)([^()]+)/g)];
-    const content = tokens.map(t => t[3]).join(''), time = Number(head[1]) / 1000;
+    const rawContent = tokens.map(t => t[3]).join(''), content = stripSingerPrefix(rawContent), time = Number(head[1]) / 1000;
+    let prefixRemaining = rawContent.length - content.length;
     const line = lines.length, playable = parseLrc(`[${Math.floor(time / 60)}:${time % 60}]${content}`)[0]?.playable ?? false;
     lines.push({ text: content, time, playable }); if (!playable) continue;
     for (const token of tokens) {
-      const chars = token[3].normalize('NFC').match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]/gu) || []; if (!chars.length) continue;
+      const skip = Math.min(prefixRemaining, token[3].length); prefixRemaining -= skip;
+      const chars = token[3].slice(skip).normalize('NFC').match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]/gu) || []; if (!chars.length) continue;
       if (chars.length !== 1 && !/[\p{Script=Hiragana}\p{Script=Katakana}ー]/u.test(token[3])) throw new Error('该 YRC 不是逐字时间轴，不能均分汉字时间');
       words.push({ char: chars.join(''), start: Number(token[1]) / 1000, end: (Number(token[1]) + Number(token[2])) / 1000, line });
     }

@@ -31,3 +31,9 @@ test('known malformed line is repaired once for its exact recording, preserving 
   assert.deepEqual(chart.words.map(word => word.char), ['きみ', 'の', 'スター']);
   assert.deepEqual(chart.words.map(word => word.start), [0, .5, 1]);
  });
+
+test('YRC drops separately timed singer prefixes without shifting lyric timings', () => {
+  const chart=yrcChart('[0,2000](0,100,0)男(100,100,0)：(500,500,0)你(1000,500,0)好',3,'hash');
+  assert.deepEqual(chart.words.map(word=>[word.char,word.start]),[['你',.5],['好',1]]);
+  assert.equal(chart.lines[0].text,'你好');
+});
