@@ -1,0 +1,44 @@
+games/fingertip-melody/device-library.test.mjs
+  s_baa6cd6cac760d::t_ffa915a888e026 28-33
+games/fingertip-melody/chart-editor.mjs
+  s_baa6cd6cac760d::t_61648f5db8ee91 1-100
+games/fingertip-melody/engine.mjs
+  s_baa6cd6cac760d::t_ebfab416614150 28
+  s_baa6cd6cac760d::t_7b66674d342a94 1
+games/fingertip-melody/chart-editor.test.mjs
+  s_baa6cd6cac760d::t_1e3e33f815ddf7 1-15
+games/fingertip-melody/style.css
+  s_baa6cd6cac760d::t_f808b4d89bce55 64-69
+games/fingertip-melody/game.mjs
+  s_baa6cd6cac760d::t_f808b4d89bce55 1-2,20-21,29,138,176,215,218,223-224,269-270,320-329,340,353,355-366,388,400,414,418-427
+games/fingertip-melody/device-library.mjs
+  s_baa6cd6cac760d::t_ebfab416614150 64-65
+  s_baa6cd6cac760d::t_7b66674d342a94 63
+  s_baa6cd6cac760d::t_ffa915a888e026 103
+games/fingertip-melody/index.html
+  s_baa6cd6cac760d::t_f808b4d89bce55 3,48,59
+games/fingertip-melody/开发与部署说明.md
+  s_baa6cd6cac760d::t_1e3e33f815ddf7 288-299
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "5.30.8",
+  "base_commit_sha": "3d57e6c2409f587eba5ccf5858650053e32f5da2",
+  "prompts": {},
+  "sessions": {
+    "s_baa6cd6cac760d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18adf-dbe0-7662-9543-b53838786602",
+        "model": "gpt-6-astra"
+      },
+      "human_author": null,
+      "custom_attributes": {
+        "stats_model_totals": "{\"gpt-6-astra\":{\"additions\":132,\"deletions\":7}}",
+        "stats_total_additions": "132",
+        "stats_total_deletions": "7",
+        "stats_turn_models": "{\"t_1e3e33f815ddf7\":\"gpt-6-astra\",\"t_61648f5db8ee91\":\"gpt-6-astra\",\"t_f808b4d89bce55\":\"gpt-6-astra\"}"
+      }
+    }
+  }
+}
