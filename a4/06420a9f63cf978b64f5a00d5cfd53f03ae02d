@@ -1,0 +1,180 @@
+games/fingertip-melody/style.css
+  s_baa6cd6cac760d::t_96d455c9c202a5 30-54,56-62
+  s_baa6cd6cac760d::t_8d1f5877a75a6d 55
+  s_baa6cd6cac760d::t_450de915f3be2e 63
+games/fingertip-melody/scripts/advanced_ready.py
+  s_58a0a0cbd8dfef::t_7bcbdf19161451 1-30
+games/fingertip-melody/media/音频下载链接.md
+  s_baa6cd6cac760d::t_e012a1c1d33b47 1-13
+games/fingertip-melody/package.json
+  s_baa6cd6cac760d::t_daa3c6e88da81b 1
+games/fingertip-melody/scripts/netease.mjs
+  s_baa6cd6cac760d::t_a5a59ac1cc62e5 54-55
+games/fingertip-melody/media/2655771946.lrc
+  s_baa6cd6cac760d::t_f9821562b33648 1-50
+games/fingertip-melody/scripts/setup-alignment.ps1
+  s_58a0a0cbd8dfef::t_882e387aa67a6e 1,10-15,34
+games/fingertip-melody/service.mjs
+  s_baa6cd6cac760d::t_a43cf119b04012 2-4,7-9
+  s_baa6cd6cac760d::t_f57d548464a492 5,10-18,20
+games/fingertip-melody/media/33361894.yrc
+  s_58a0a0cbd8dfef::t_980044bfeb45d1 41
+  s_58a0a0cbd8dfef::t_0f917a0e0eb855 1-40,42-44
+games/fingertip-melody/media/3436855494.whisperx.chart.json
+  s_baa6cd6cac760d::t_1f5e3001b49f9b 1-3246
+games/fingertip-melody/media/1957866769.lrc
+  s_baa6cd6cac760d::t_b214296ca4ada6 1-74
+games/fingertip-melody/media/1436709403.hybrid.chart.json
+  s_baa6cd6cac760d::t_ee70d543d06dcf 1-3781
+games/fingertip-melody/media/1436709403.lrc
+  s_baa6cd6cac760d::t_a3fed4f8a560bf 1-72
+games/fingertip-melody/device-library.test.mjs
+  s_58a0a0cbd8dfef::t_0bac1db0a79648 12-23,25-27
+  s_58a0a0cbd8dfef::t_dec0a9493abc93 24
+games/fingertip-melody/scripts/align.py
+  s_58a0a0cbd8dfef::t_dec0a9493abc93 3-5,309-310
+  s_58a0a0cbd8dfef::t_0bac1db0a79648 265-268
+  s_58a0a0cbd8dfef::t_882e387aa67a6e 190-191,198-199
+  s_58a0a0cbd8dfef::t_c7065f58aaa1ef 277-308,311-312,314-320,329,342-348,350,356-362,364,375
+  s_58a0a0cbd8dfef::t_ab6c67d16b76c1 237,256-264,269-276,313
+games/fingertip-melody/README.md
+  s_58a0a0cbd8dfef::t_b1839f40f3820d 22,37,39-43,51,53,59,76,93-96
+games/fingertip-melody/media/1472877518.whisperx.chart.json
+  s_baa6cd6cac760d::t_5a2bd0a5b84cc0 1-1432
+games/fingertip-melody/media/2077620214.lrc
+  s_baa6cd6cac760d::t_937f9838e938b4 1-55
+games/fingertip-melody/media/1436709403.whisperx.chart.json
+  s_baa6cd6cac760d::t_d2d059b063d9a8 1-3779
+games/fingertip-melody/media/28707594.lrc
+  s_baa6cd6cac760d::t_ffac974b34a931 1-34
+games/fingertip-melody/media/2655771946.download.chart.json
+  s_baa6cd6cac760d::t_47a576a7dd5fad 1-3542
+games/fingertip-melody/scripts/cloud-account.mjs
+  s_baa6cd6cac760d::t_e13dadb98bc6cc 23-25
+  s_baa6cd6cac760d::t_f662c7f6896d25 20-22
+  s_baa6cd6cac760d::t_4532303422d8c8 26-28
+  s_baa6cd6cac760d::t_0a7536ba44a6dd 1-19,29-52
+games/fingertip-melody/media/28707594.yrc
+  s_baa6cd6cac760d::t_89c58c1c48d6bc 1-34
+games/fingertip-melody/index.html
+  s_baa6cd6cac760d::t_85a0025f09faeb 3,19,29-37,42,48,59
+games/fingertip-melody/catalog.mjs
+  s_baa6cd6cac760d::t_d4dc0705d696b7 3,9-10
+games/fingertip-melody/scripts/setup_lite.py
+  s_58a0a0cbd8dfef::t_745504b5dee533 1-33
+games/fingertip-melody/timing-corrections.mjs
+  s_58a0a0cbd8dfef::t_0bac1db0a79648 1-25
+games/fingertip-melody/media/33361894.download.chart.json
+  s_58a0a0cbd8dfef::t_980044bfeb45d1 693-2606
+  s_58a0a0cbd8dfef::t_200b0edcf9ea03 1-692
+games/fingertip-melody/package-lock.json
+  s_baa6cd6cac760d::t_1577f32a18e6fe 1-2196
+games/fingertip-melody/song-archive.mjs
+  s_baa6cd6cac760d::t_864454112b116b 11,69
+  s_baa6cd6cac760d::t_00e4b127409331 1-10,12-32,34-37,40,48-54,56-64,68,70-102
+  s_baa6cd6cac760d::t_e2c5910dd7ecf4 33,38-39,41-47,55,65-67
+games/fingertip-melody/media/2077620214.download.chart.json
+  s_baa6cd6cac760d::t_59411ab472bad0 1-4195
+games/fingertip-melody/scripts/server.mjs
+  s_baa6cd6cac760d::t_b54fe875c53537 1,213,238-244,252-258,273,278-279
+  s_baa6cd6cac760d::t_0ed59cbfdba72c 332-333,335-337,339-348
+  s_58a0a0cbd8dfef::t_7bcbdf19161451 40-49,81,84,245,247,296-297,299-300,305
+  s_58a0a0cbd8dfef::t_12d8ef5a2d4e39 219,246,298
+  s_baa6cd6cac760d::t_b08ebfdb88bf10 331,338
+games/fingertip-melody/media/1472877518.lrc
+  s_baa6cd6cac760d::t_db981b6f148dfd 1-21
+games/fingertip-melody/library-search.mjs
+  s_baa6cd6cac760d::t_8d1f5877a75a6d 73
+  s_baa6cd6cac760d::t_fb46cea159b98d 4,12,14,17-48,62-68,74-84,87-88,93,100-101,111-112
+games/fingertip-melody/media/3436855494.lrc
+  s_baa6cd6cac760d::t_42614673aa9244 1-35
+games/fingertip-melody/game.mjs
+  s_baa6cd6cac760d::t_664153c3e3a794 1,7-8,11,17-18,26-27,31,37,83-84,133-137,156-157,162,169,172-173,181,193,196-212,217-218,345
+  s_baa6cd6cac760d::t_8d1f5877a75a6d 108,111,380
+  s_baa6cd6cac760d::t_a97a79b7448527 230,240,244,246-250,256,304,311,326-327,337-341,343-344,346-349,360,368,373-379,381-383
+games/fingertip-melody/media/1472877518.hybrid.chart.json
+  s_baa6cd6cac760d::t_2b54f483703b84 1-1435
+games/fingertip-melody/media/library.json
+  s_baa6cd6cac760d::t_ee1641f98886b6 1-181
+games/fingertip-melody/media/28707594.chart.json
+  s_baa6cd6cac760d::t_28ec620446bb1a 1-2423
+games/fingertip-melody/song-archive.test.mjs
+  s_baa6cd6cac760d::t_864454112b116b 1-33
+games/fingertip-melody/scripts/prepare_advanced.py
+  s_58a0a0cbd8dfef::t_882e387aa67a6e 1-10
+deploy/setup-melody.sh
+  s_58a0a0cbd8dfef::t_882e387aa67a6e 16-18,42-43
+  s_baa6cd6cac760d::t_d0e079376f6192 12,14
+games/fingertip-melody/catalog.test.mjs
+  s_58a0a0cbd8dfef::t_0bac1db0a79648 76-92
+  s_58a0a0cbd8dfef::t_0cc6e3db4da9f0 75
+games/fingertip-melody/scripts/lite_alignment.py
+  s_58a0a0cbd8dfef::t_882e387aa67a6e 1-73,76-77,79-93,95-172
+  s_58a0a0cbd8dfef::t_569ca7000521e6 74
+  s_58a0a0cbd8dfef::t_c7065f58aaa1ef 173
+  s_58a0a0cbd8dfef::t_745504b5dee533 94
+  s_58a0a0cbd8dfef::t_c85b03354ce3d5 75,78
+games/fingertip-melody/media/1957866769.download.chart.json
+  s_baa6cd6cac760d::t_61a6f9663dbd36 1-3630
+games/fingertip-melody/device-library.mjs
+  s_baa6cd6cac760d::t_8f785bcf8a12e4 3,5-20,27-38,41-44,70,93-97,99-100,106
+games/fingertip-melody/timing-corrections.json
+  s_58a0a0cbd8dfef::t_980044bfeb45d1 1-31
+games/fingertip-melody/开发与部署说明.md
+  s_baa6cd6cac760d::t_9db51796a854c8 3,13,33,41,68,123,152,205-207,209,211,213-215,227,277,282-287
+  s_baa6cd6cac760d::t_e9bfeb18aa3c7f 99-104
+games/fingertip-melody/scripts/test_lite.py
+  s_58a0a0cbd8dfef::t_a96ac1ef5b2848 1,4,6-9,26-47
+  s_58a0a0cbd8dfef::t_569ca7000521e6 2-3,5,10-25
+games/fingertip-melody/scripts/requirements-lite.txt
+  s_58a0a0cbd8dfef::t_dec0a9493abc93 1-5
+games/fingertip-melody/media/1306112195.lrc
+  s_baa6cd6cac760d::t_e202e3acfed05d 1-71
+games/fingertip-melody/.gitignore
+  s_baa6cd6cac760d::t_3445275b9bd700 1-6
+  s_baa6cd6cac760d::t_37c2d527c763e2 11-12
+games/fingertip-melody/启动曲库.cmd
+  s_baa6cd6cac760d::t_1659189db0a33c 2-9,11-17
+games/fingertip-melody/vendor/fflate-LICENSE.txt
+  s_baa6cd6cac760d::t_458c40feeac720 1-21
+games/fingertip-melody/vendor/fflate.mjs
+  s_baa6cd6cac760d::t_6758ebbef409bf 1-2692
+games/fingertip-melody/scripts/restart-local.ps1
+  s_baa6cd6cac760d::t_e1bf177267b51b 1-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "5.30.8",
+  "base_commit_sha": "a406420a9f63cf978b64f5a00d5cfd53f03ae02d",
+  "prompts": {},
+  "sessions": {
+    "s_58a0a0cbd8dfef": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1a173-ed28-7a12-ab82-311af1e7322b",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Sunflower <tangjiao17@h-partners.com>",
+      "custom_attributes": {
+        "stats_model_totals": "{\"gpt-6-astra\":{\"additions\":690,\"deletions\":95}}",
+        "stats_total_additions": "690",
+        "stats_total_deletions": "95",
+        "stats_turn_models": "{\"t_0bac1db0a79648\":\"gpt-6-astra\",\"t_12d8ef5a2d4e39\":\"gpt-6-astra\",\"t_1cb2f763b15f22\":\"gpt-6-astra\",\"t_569ca7000521e6\":\"gpt-6-astra\",\"t_745504b5dee533\":\"gpt-6-astra\",\"t_7bcbdf19161451\":\"gpt-6-astra\",\"t_882e387aa67a6e\":\"gpt-6-astra\",\"t_980044bfeb45d1\":\"gpt-6-astra\",\"t_a96ac1ef5b2848\":\"gpt-6-astra\",\"t_ab6c67d16b76c1\":\"gpt-6-astra\",\"t_b1839f40f3820d\":\"gpt-6-astra\",\"t_c7065f58aaa1ef\":\"gpt-6-astra\",\"t_c85b03354ce3d5\":\"gpt-6-astra\",\"t_dec0a9493abc93\":\"gpt-6-astra\"}"
+      }
+    },
+    "s_baa6cd6cac760d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18adf-dbe0-7662-9543-b53838786602",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Sunflower <tangjiao17@h-partners.com>",
+      "custom_attributes": {
+        "stats_model_totals": "{\"gpt-6-sol\":{\"additions\":257,\"deletions\":58}}",
+        "stats_total_additions": "257",
+        "stats_total_deletions": "58",
+        "stats_turn_models": "{\"t_00e4b127409331\":\"gpt-6-sol\",\"t_450de915f3be2e\":\"gpt-6-sol\",\"t_4abc1eb1db5199\":\"gpt-6-sol\",\"t_664153c3e3a794\":\"gpt-6-sol\",\"t_6e3ddd1b00ef00\":\"gpt-6-sol\",\"t_85a0025f09faeb\":\"gpt-6-sol\",\"t_864454112b116b\":\"gpt-6-sol\",\"t_8d1f5877a75a6d\":\"gpt-6-sol\",\"t_8f785bcf8a12e4\":\"gpt-6-sol\",\"t_96d455c9c202a5\":\"gpt-6-sol\",\"t_9db51796a854c8\":\"gpt-6-sol\",\"t_a97a79b7448527\":\"gpt-6-sol\",\"t_daa3c6e88da81b\":\"gpt-6-sol\",\"t_e2c5910dd7ecf4\":\"gpt-6-sol\",\"t_e9bfeb18aa3c7f\":\"gpt-6-sol\",\"t_fb46cea159b98d\":\"gpt-6-sol\"}"
+      }
+    }
+  }
+}
