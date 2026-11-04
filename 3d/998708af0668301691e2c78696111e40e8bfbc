@@ -1,0 +1,53 @@
+games/fingertip-melody/game.mjs
+  s_baa6cd6cac760d::t_16709d49bb6ae1 1-2,12,20-21,29,79-90,133,137-138,152,157,164,177,216,219,224-225,270-271,321-330,341,354,356-367,383,389,397,399,401,415,418-420,422-430,439,443,457-467
+  s_baa6cd6cac760d::t_418f01b89d060c 421
+games/fingertip-melody/index.html
+  s_baa6cd6cac760d::t_16709d49bb6ae1 3,41-42
+games/fingertip-melody/chart-editor.mjs
+  s_baa6cd6cac760d::t_4e9db47000168f 1-33,35-37,39-73,75-85,87-122
+  s_baa6cd6cac760d::t_087bce543914c7 34,38,74,86
+games/fingertip-melody/开发与部署说明.md
+  s_baa6cd6cac760d::t_087bce543914c7 288-305
+games/fingertip-melody/chart-editor.test.mjs
+  s_baa6cd6cac760d::t_1e3e33f815ddf7 1-15
+games/fingertip-melody/device-library.test.mjs
+  s_baa6cd6cac760d::t_ffa915a888e026 28-33
+games/fingertip-melody/chart-editor.css
+  s_baa6cd6cac760d::t_f2b6ae7e5e12e2 1
+games/fingertip-melody/device-library.mjs
+  s_baa6cd6cac760d::t_ebfab416614150 64-65
+  s_baa6cd6cac760d::t_7b66674d342a94 63
+  s_baa6cd6cac760d::t_ffa915a888e026 103
+games/fingertip-melody/chart-editor.html
+  s_baa6cd6cac760d::t_f2b6ae7e5e12e2 1-15
+games/fingertip-melody/play.html
+  s_baa6cd6cac760d::t_16709d49bb6ae1 1-28,30-41
+  s_baa6cd6cac760d::t_418f01b89d060c 29
+games/fingertip-melody/style.css
+  s_baa6cd6cac760d::t_418f01b89d060c 64-71
+games/fingertip-melody/engine.mjs
+  s_baa6cd6cac760d::t_ebfab416614150 28
+  s_baa6cd6cac760d::t_7b66674d342a94 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "5.30.8",
+  "base_commit_sha": "3d998708af0668301691e2c78696111e40e8bfbc",
+  "prompts": {},
+  "sessions": {
+    "s_baa6cd6cac760d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18adf-dbe0-7662-9543-b53838786602",
+        "model": "gpt-6-astra"
+      },
+      "human_author": null,
+      "custom_attributes": {
+        "stats_model_totals": "{\"gpt-6-astra\":{\"additions\":158,\"deletions\":79}}",
+        "stats_total_additions": "158",
+        "stats_total_deletions": "79",
+        "stats_turn_models": "{\"t_087bce543914c7\":\"gpt-6-astra\",\"t_16709d49bb6ae1\":\"gpt-6-astra\",\"t_418f01b89d060c\":\"gpt-6-astra\",\"t_4e9db47000168f\":\"gpt-6-astra\",\"t_f2b6ae7e5e12e2\":\"gpt-6-astra\"}"
+      }
+    }
+  }
+}
