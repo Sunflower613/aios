@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#e5dcff"><title>指尖旋律</title><link rel="icon" href="./icon.svg"><link rel="stylesheet" href="./style.css?v=16"></head>
+<body data-mood="sunshine">
+  <svg class="icon-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+    <symbol id="i-download" viewBox="0 0 32 32"><path d="M16 4v16m-7-7 7 7 7-7M5 23v5h22v-5"/></symbol>
+    <symbol id="i-back" viewBox="0 0 32 32"><path d="M19 7 9 16l10 9M10 16h16"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 32 32"><path d="m11 7-.4 18M22 7l-.5 18"/></symbol>
+    <symbol id="i-play" viewBox="0 0 32 32"><path d="m11 6 15 10-15 10Z"/></symbol>
+    <symbol id="i-restart" viewBox="0 0 32 32"><path d="M8 10a11 11 0 1 1-2 12M7 4l.3 8 8-.5"/></symbol>
+    <symbol id="i-list" viewBox="0 0 32 32"><path d="m12 8 15 .4M12 16l15-.4M12 24l15 .3M5 8h1M5 16h1M5 24h1"/></symbol>
+    <symbol id="i-music" viewBox="0 0 32 32"><path d="m13 23 .5-16L27 4v16M14 12l12-3"/><ellipse cx="9" cy="24" rx="4" ry="3"/><ellipse cx="23" cy="21" rx="4" ry="3"/></symbol>
+    <symbol id="i-check" viewBox="0 0 32 32"><path d="m7 16 6 7L26 8"/></symbol>
+    <symbol id="i-target" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11"/><circle cx="16" cy="16" r="5"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 32 32"><path d="M18 3 7 18h9l-2 11 12-16h-9Z"/></symbol>
+    <symbol id="i-star" viewBox="0 0 32 32"><path d="m16 3 3 9 10 4-10 3-3 10-4-10-9-3 9-4Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 32 32"><circle cx="16" cy="16" r="6"/><path d="M16 2v4M16 26v4M2 16h4M26 16h4M6 6l3 3M23 23l3 3M26 6l-3 3M9 23l-3 3"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 32 32"><path d="M8 25C0 24 2 15 8 14 6 3 24 2 25 14c9 1 6 12-1 11Z"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 32 32"><path d="M16 3v4m0 18v4M3 16h4m18 0h4M7 7l3 3m12 12 3 3M25 7l-3 3M10 22l-3 3"/><circle cx="16" cy="16" r="6"/></symbol>
+  </defs></svg>
+  <div class="ambient-shapes" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<main><input id="volume" type="hidden" value="0.7">    <section id="play-screen">
+      <div class="play-header"><button id="leave" class="icon-button" aria-label="返回列表" title="返回列表"><svg class="icon"><use href="#i-back"/></svg></button><h2 id="playing-title"></h2><button id="pause" class="icon-button" aria-label="设置" title="设置" disabled><svg class="icon"><use href="#i-settings"/></svg></button></div>
+      <div class="game-layout"><aside class="game-aside"><div class="music-mark" aria-hidden="true"><svg class="icon"><use href="#i-music"/></svg></div><span id="playing-mood" class="eyebrow"></span><h3 id="mode-title"></h3><p id="mode-help"></p><p class="legend">字块下沿对齐开唱时刻<br>叠词同列同色，连续点两下<br>细横线对应音乐节拍</p><p id="timing-note" class="timing-note"></p></aside>
+        <div class="game-center"><div class="scorebar"><div><span>SCORE</span><strong id="score">000000</strong></div><div><span>COMBO</span><strong id="combo">0</strong></div><div><span id="metric-label">RATE</span><strong id="metric">100%</strong></div></div>
+          <div id="board" class="board" tabindex="0" aria-label="歌词轨道，使用 D F J K 点击"><div class="tracks" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div id="beats" aria-hidden="true"></div><div id="notes"></div><div class="hit-band"><span>HIT HERE</span></div><div id="feedback" class="feedback" aria-live="polite"></div><div class="keys" aria-hidden="true"><span>D</span><span>F</span><span>J</span><span>K</span></div>
+            <div id="overlay" class="overlay"><div id="overlay-song" class="overlay-song" hidden></div><span id="overlay-label" class="eyebrow"></span><h3 id="overlay-title"></h3><p id="overlay-copy"></p><button id="overlay-action" class="primary"></button>
+              <section id="pause-settings" hidden aria-label="暂停设置">
+                <div id="pause-mode" class="pause-mode"><button data-value="score" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg><span>计分模式</span></button><button data-value="rhythm" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-bolt"/></svg><span>节奏模式</span></button><button data-value="listen" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-music"/></svg><span>欣赏模式</span></button><button data-value="chart" aria-pressed="false"><svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><path d="m7 24 2-7L23 3l6 6-14 14-8 1ZM18 8l6 6M5 29h22"/></svg><span>制谱模式</span></button></div><p id="mode-change-note">切换模式会从头开始 · 欣赏模式不计入历史</p>
+                <label class="setting-label">音量 <input id="pause-volume" type="range" min="0" max="1" step="0.05" value="0.7" aria-label="暂停音量"></label>
+                <label class="setting-label">延迟 <output id="offset-value">0 ms</output><input id="offset" type="range" min="-200" max="200" step="10" value="0" aria-label="延迟"><small>歌词偏早向右调，偏晚向左调</small></label>
+                <div class="pause-actions"><button id="pause-leave" class="icon-button" aria-label="返回列表" title="返回列表"><svg class="icon"><use href="#i-list"/></svg></button><button id="resume" class="icon-button resume" aria-label="继续游戏" title="继续游戏"><svg class="icon"><use href="#i-play"/></svg></button><button id="restart" class="icon-button" aria-label="重新开始" title="重新开始"><svg class="icon"><use href="#i-restart"/></svg></button></div>
+              </section>
+            </div>
+          </div>
+          <div class="progress"><div id="progress-fill"></div></div><div class="time-row"><span id="elapsed">0:00</span><span id="transport-status"></span><span id="total">0:00</span></div><div id="lyric-line" class="lyric-line"></div>
+        </div>
+      </div>
+    </section>
+  </main><script type="module" src="./game.mjs?v=17"></script>
+</body></html>

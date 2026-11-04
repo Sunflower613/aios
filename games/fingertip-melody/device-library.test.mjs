@@ -25,3 +25,9 @@ test('known malformed line is repaired once for its exact recording, preserving 
   assert.equal(chart.review.required, true);
   assert.equal(repairKnownTiming(chart), false);
 });
+
+ test('Japanese YRC retains kana groups and long vowels at provider timestamps', () => {
+  const chart = yrcChart('[0,2000](0,500,0)きみ(500,500,0)の(1000,1000,0)スター', 3, 'hash');
+  assert.deepEqual(chart.words.map(word => word.char), ['きみ', 'の', 'スター']);
+  assert.deepEqual(chart.words.map(word => word.start), [0, .5, 1]);
+ });

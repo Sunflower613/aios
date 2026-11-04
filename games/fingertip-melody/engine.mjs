@@ -1,4 +1,4 @@
-const HAN = /\p{Script=Han}/gu;
+const HAN = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]/gu;
 export function ratingFor(round) {
   const total = round.notes.length;
   if (total && round.perfect === total && !round.wrong) return 'φ';
@@ -25,7 +25,7 @@ export function makeChart(alignment, duration, seed = 1) {
   let previousTime = -1;
   const notes = alignment.words.map((word, i) => {
       const { start, end, char, line } = word;
-      if (!/^\p{Script=Han}$/u.test(char) || !Number.isFinite(start) || !Number.isFinite(end) || start < 0 || start < previousTime || end <= start || end > duration + .1) throw new Error(`无效的逐字时间轴：第 ${i + 1} 字`);
+      if (!/^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]+$/u.test(char) || !Number.isFinite(start) || !Number.isFinite(end) || start < 0 || start < previousTime || end <= start || end > duration + .1) throw new Error(`无效的逐字时间轴：第 ${i + 1} 字`);
       previousTime = start;
       return { char, time: start, end, line, confidence: word.confidence };
   }).filter(note => alignment.lines?.[note.line]?.playable !== false && !CREDIT.test(alignment.lines?.[note.line]?.text || ''));

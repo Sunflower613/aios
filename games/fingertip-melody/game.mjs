@@ -1,4 +1,5 @@
-import { initChartSettings, deviceSongs, hiddenSongs, removeSong, songKey, listFolders, createFolder, songPlacements, moveSongs } from './device-library.mjs';
+import { openChartEditor } from './chart-editor.mjs';
+import { saveSong, initChartSettings, deviceSongs, hiddenSongs, removeSong, songKey, listFolders, createFolder, songPlacements, moveSongs } from './device-library.mjs';
 import { makeChart, layoutChart, Round, RhythmRound, ratingFor } from './engine.mjs?v=9';
 import { Transport } from './transport.mjs';
 import { MenuAudio } from './menu-audio.mjs';
@@ -8,7 +9,7 @@ import { repairKnownTiming } from './timing-corrections.mjs';
 import { exportArchive } from './song-archive.mjs';
 
 const $ = id => document.getElementById(id);
-initChartSettings($('chart-settings'), $('advanced-chart'));
+if ($('chart-settings')) initChartSettings($('chart-settings'), $('advanced-chart'));
 const palettes = { sunshine: '#ff94b8', rain: '#65c9d8', dream: '#aa8cef' };
 let transport, library = [], selected, alignment, round;
 let managing = false, chosen = new Set(), placements = new Map(), folders = [], dragging = false;
@@ -16,6 +17,8 @@ let mode = 'score', state = 'library';
 let pendingMode = mode;
 let settingsOrigin = null, resultOverlay = null;
 let partialChart = false;
+let recording = [], recordingChars = [], recordingLines = [], songBytes;
+const lyricChars = text => text.normalize('NFC').match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]/gu) || [];
 const icon = name => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 const menuAudio = new MenuAudio();
 let menuPreference = true;
@@ -23,7 +26,7 @@ let start = 0, end = 0, offset = 0, generation = 0, frame = 0, countdownUntil = 
 const elements = new Map(), beatElements = new Map();
 const fmt = seconds => `${Math.floor(Math.max(0, seconds) / 60)}:${String(Math.floor(Math.max(0, seconds) % 60)).padStart(2, '0')}`;
 const escape = text => String(text).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-const modeName = () => ({ score: '计分模式', rhythm: '节奏模式', listen: '欣赏模式' })[mode];
+const modeName = () => ({ score: '计分模式', rhythm: '节奏模式', listen: '欣赏模式', chart: '手动制谱' })[mode];
 function bestKey() { return `melody:${selected.id}:${mode}:full:v3${partialChart ? ':partial' : ''}`; }
 function readBest() { try { return Number(localStorage.getItem(bestKey())) || 0; } catch { return 0; } }
 const ratings = ['F', 'C', 'B', 'A', 'S', 'V', 'φ'];
@@ -73,18 +76,18 @@ async function deleteSongs(songs) {
     await loadLibrary(); document.dispatchEvent(new Event('melody-library-changed'));
   } catch (error) { $('catalog-status').textContent = error.message; }
 }
-$('folder-filter').onchange = () => loadLibrary();
-$('manage-songs').onclick = () => { managing = !managing; chosen.clear(); loadLibrary(); };
-$('bulk-cancel').onclick = () => { managing = false; chosen.clear(); loadLibrary(); };
-$('bulk-select-all').onclick = () => { $('song-list').querySelectorAll('[data-choose]').forEach(input => { input.checked = true; chosen.add(songKey(library[Number(input.dataset.choose)])); }); updateBulk(); };
-$('folder-create').onclick = async () => { const name = prompt('新文件夹名称'); if (name === null) return; try { const created = await createFolder(name); await loadLibrary(); $('bulk-folder').value = created; } catch (error) { $('catalog-status').textContent = error.message; } };
-$('bulk-move').onclick = async () => { try { await moveSongs(library.filter(song => chosen.has(songKey(song))), $('bulk-folder').value); chosen.clear(); await loadLibrary(); } catch (error) { $('catalog-status').textContent = error.message; } };
-$('bulk-delete').onclick = () => deleteSongs(library.filter(song => chosen.has(songKey(song))));
-$('bulk-export').onclick = async () => { try { await exportArchive(library.filter(song => chosen.has(songKey(song))), message => { $('catalog-status').textContent = message; }); } catch (error) { $('catalog-status').textContent = error.message; } };
-$('export-library').onclick = async () => { try { await exportArchive(library, message => { $('upload-status').textContent = message; }); } catch (error) { $('upload-status').textContent = error.message; } };
-$('song-trash').addEventListener('dragover', event => { event.preventDefault(); $('song-trash').classList.add('over'); });
-$('song-trash').addEventListener('dragleave', () => $('song-trash').classList.remove('over'));
-$('song-trash').addEventListener('drop', event => { event.preventDefault(); const key = event.dataTransfer.getData('text/plain'); $('song-trash').classList.remove('visible', 'over'); dragging = false; const song = library.find(item => songKey(item) === key); if (song) deleteSongs([song]); });
+if ($('folder-filter')) $('folder-filter').onchange = () => loadLibrary();
+if ($('manage-songs')) $('manage-songs').onclick = () => { managing = !managing; chosen.clear(); loadLibrary(); };
+if ($('bulk-cancel')) $('bulk-cancel').onclick = () => { managing = false; chosen.clear(); loadLibrary(); };
+if ($('bulk-select-all')) $('bulk-select-all').onclick = () => { $('song-list').querySelectorAll('[data-choose]').forEach(input => { input.checked = true; chosen.add(songKey(library[Number(input.dataset.choose)])); }); updateBulk(); };
+if ($('folder-create')) $('folder-create').onclick = async () => { const name = prompt('新文件夹名称'); if (name === null) return; try { const created = await createFolder(name); await loadLibrary(); $('bulk-folder').value = created; } catch (error) { $('catalog-status').textContent = error.message; } };
+if ($('bulk-move')) $('bulk-move').onclick = async () => { try { await moveSongs(library.filter(song => chosen.has(songKey(song))), $('bulk-folder').value); chosen.clear(); await loadLibrary(); } catch (error) { $('catalog-status').textContent = error.message; } };
+if ($('bulk-delete')) $('bulk-delete').onclick = () => deleteSongs(library.filter(song => chosen.has(songKey(song))));
+if ($('bulk-export')) $('bulk-export').onclick = async () => { try { await exportArchive(library.filter(song => chosen.has(songKey(song))), message => { $('catalog-status').textContent = message; }); } catch (error) { $('catalog-status').textContent = error.message; } };
+if ($('export-library')) $('export-library').onclick = async () => { try { await exportArchive(library, message => { $('upload-status').textContent = message; }); } catch (error) { $('upload-status').textContent = error.message; } };
+$('song-trash')?.addEventListener('dragover', event => { event.preventDefault(); $('song-trash').classList.add('over'); });
+$('song-trash')?.addEventListener('dragleave', () => $('song-trash').classList.remove('over'));
+$('song-trash')?.addEventListener('drop', event => { event.preventDefault(); const key = event.dataTransfer.getData('text/plain'); $('song-trash').classList.remove('visible', 'over'); dragging = false; const song = library.find(item => songKey(item) === key); if (song) deleteSongs([song]); });
 async function loadLibrary(nextLibrary) {
   try {
     if (Array.isArray(nextLibrary)) library = nextLibrary;
@@ -127,12 +130,12 @@ async function loadLibrary(nextLibrary) {
     library = [];
     $('library-count').textContent = '曲库未就绪';
     $('song-list').innerHTML = '<div class="error-card">尚未找到已下载曲库，请先下载歌曲并运行制谱工具。<button class="plain-button" id="reload-library">重新加载</button></div>';
-    $('reload-library').onclick = loadLibrary;
+    if ($('reload-library')) $('reload-library').onclick = loadLibrary;
   }
 }
 function setState(value) {
-  state = value; $('board').dataset.state = value; $('menu-sound').hidden = value !== 'library';
-  if (value === 'library') updateCardScores();
+  state = value; $('board').dataset.state = value; if ($('menu-sound')) $('menu-sound').hidden = value !== 'library';
+  if (value === 'library') { updateCardScores(); loadLibrary(); }
   if (['ready', 'result'].includes(value)) { $('pause').disabled = false; $('pause').innerHTML = icon('settings'); $('pause').setAttribute('aria-label', '设置'); $('pause').title = '设置'; }
 }
 function overlay(label, title, copy, button, callback) {
@@ -146,18 +149,19 @@ function overlay(label, title, copy, button, callback) {
   $('overlay-label').textContent = label; $('overlay-title').textContent = title; $('overlay-copy').textContent = copy;
   $('overlay-action').textContent = button || ''; $('overlay-action').hidden = !button; $('overlay-action').disabled = false; action = callback;
 }
-$('overlay-action').onclick = () => action?.();
+if ($('overlay-action')) $('overlay-action').onclick = () => action?.();
 function clearNotes() { for (const map of [elements, beatElements]) { map.forEach(el => el.remove()); map.clear(); } }
 function stop() { generation++; transport?.pause(); cancelAnimationFrame(frame); $('pause').disabled = true; }
 
 async function selectSong(song) {
+  if (!$('play-screen')) { sessionStorage.setItem('melody-selected', JSON.stringify(song)); location.assign('./play.html?song=' + encodeURIComponent(songKey(song))); return; }
   stop(); const token = generation;
   menuAudio.stop(); updateMenuButton();
   if (!song.chart) mode = pendingMode = 'listen';
   partialChart = false; selected = song; applyCover($('overlay'), song); setState('loading'); round = null;
   $('playing-title').textContent = song.title;
   document.body.dataset.mood = song.mood;
-  $('library').hidden = true; $('play-screen').hidden = false;
+  if ($('library')) $('library').hidden = true; $('play-screen').hidden = false;
   $('playing-mood').textContent = song.label;
   updateModeCopy();
   $('offset').disabled = mode === 'rhythm';
@@ -170,6 +174,7 @@ async function selectSong(song) {
     if (generation !== token) return;
     const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(b => b.toString(16).padStart(2, '0')).join('');
     if (song.chart && data.audioSha256 !== hash) throw new Error('谱面与音频版本不一致，请为当前音频重新制谱。');
+    songBytes = bytes;
     repairKnownTiming(data);
     transport?.dispose();
     const nextTransport = new Transport();
@@ -208,14 +213,16 @@ function prepare() {
       $('offset').disabled = true;
     }
   }
-  if (!notes.length && mode !== 'listen') mode = pendingMode = 'listen';
+  if (!notes.length && !['listen', 'chart'].includes(mode)) mode = pendingMode = 'listen';
   round = mode === 'rhythm' ? new RhythmRound(notes) : new Round(notes, .24);
   transport.seek(start);
+  if (mode === 'chart') { resultOverlay = null; recording = []; round = new Round([]); }
   $('elapsed').textContent = '0:00'; $('total').textContent = fmt(end - start); $('progress-fill').style.width = '0%';
   $('transport-status').textContent = modeName(); $('lyric-line').textContent = '一个字，一次点击。';
   updateScore(); draw(start);
   overlay(mode === 'listen' ? '♪' : bestRating(), mode === 'listen' ? '放松听完整首' : readBest().toLocaleString(), `${modeName()} · ${notes.length ? `${notes.length} 个字` : '纯音频'}\n${mode === 'listen' ? '歌词字块会自动弹奏，点击不会触发判定。' : mode === 'score' ? '跟着原曲节奏点击，失误不会结束。' : '点击最下面的歌词，音乐才会往前走。'}`, '开始', begin);
-  if (mode !== 'listen') { showGrade(bestRating()); $('overlay-label').setAttribute('aria-label', `最高评级 ${bestRating()}`); }
+  if (mode === 'chart') overlay('REC', '点击记录字点', '音乐原速播放，每唱到一个字点任意轨道。\n全部字录完后播放到曲末自动保存。', '开始制谱', begin);
+  if (!['listen', 'chart'].includes(mode)) { showGrade(bestRating()); $('overlay-label').setAttribute('aria-label', `最高评级 ${bestRating()}`); }
 }
 async function begin() {
   if (!['ready', 'paused'].includes(state)) return;
@@ -260,6 +267,8 @@ function tick(now) {
 }
 
 function draw(time) {
+  if (mode === 'chart') { $('feedback').textContent = recordingChars[recording.length]?.char || '字点已录完'; $('feedback').style.opacity = '1'; return; }
+  $('feedback').style.opacity = '';
   const height = $('board').clientHeight, speed = height * .78 / 2.6;
   $('board').dataset.time = time.toFixed(4);
   const visible = new Set();
@@ -309,6 +318,16 @@ function feedback(text, success = true) {
 }
 function hit(lane) {
   if (state !== 'playing' || mode === 'listen') return;
+  if (mode === 'chart') {
+    const next = recordingChars[recording.length]; if (!next) return;
+    const time = Math.max(0, transport.time - offset);
+    if (recording.length && time <= recording.at(-1).start + .03) return;
+    if (recording.length) recording.at(-1).end = time;
+    recording.push({ ...next, start: time, end: Math.min(end, time + .3) });
+    $('score').textContent = `${recording.length}/${recordingChars.length}`;
+    $('lyric-line').textContent = recordingLines[next.line].text;
+    draw(time); return;
+  }
   const track = $('board').querySelectorAll('.tracks i')[lane]; track.classList.add('pressed');
   setTimeout(() => track.classList.remove('pressed'), 100);
   const result = mode === 'score' ? round.hit(lane, transport.time - offset) : round.tap(lane, performance.now() / 1000, transport.time);
@@ -319,6 +338,7 @@ function hit(lane) {
   updateScore(); draw(transport.time - (mode === 'score' ? offset : 0));
 }
 function updateLyrics(time) {
+  if (mode === 'chart') return;
   const index = alignment.lines.findLastIndex(line => line.playable && line.time <= time + .15);
   if (index !== lastLine) { lastLine = index; $('lyric-line').textContent = index >= 0 ? alignment.lines[index].text : '听，节奏正在靠近。'; }
 }
@@ -331,8 +351,20 @@ function pause() {
   pendingMode = mode; updatePauseMode(); $('pause-volume').value = $('volume').value;
   $('pause-settings').hidden = false;
 }
-function finish() {
+async function finish() {
   if (state !== 'playing') return;
+  if (mode === 'chart') {
+    stop(); setState('result');
+    if (!recording.length || recording.length !== recordingChars.length) { overlay('REC', '字点未录完整', `已录 ${recording.length}/${recordingChars.length} 个字，请重新录制。`, '重新制谱', prepare); return; }
+    try {
+      const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', songBytes))].map(v => v.toString(16).padStart(2, '0')).join('');
+      const chart = { version: 2, method: 'manual', audioSha256: hash, duration: end, words: recording, lines: recordingLines.map((line, i) => ({...line, time: recording.find(word => word.line === i)?.start || 0})), beats: [] };
+      await saveSong(selected, new Blob([songBytes]), chart);
+      alignment = chart; selected.chart = URL.createObjectURL(new Blob([JSON.stringify(chart)], {type:'application/json'}));
+      resultOverlay = {grade:'REC', score:'谱面已保存', copy:`已保存 ${recording.length} 个字到设备曲库，可切换计分模式演奏。`}; showResult();
+    } catch (error) { overlay('REC', '保存失败', error.message, '重新制谱', prepare); }
+    return;
+  }
   if (mode === 'score') round.expire(end + 1);
   if (mode === 'listen') {
     for (const note of round.notes) if (note.status === 'pending') round.accept(note);
@@ -348,12 +380,13 @@ function showResult() {
   overlay(resultOverlay.grade, resultOverlay.score, resultOverlay.copy, '再弹一次', prepare);
   showGrade(resultOverlay.grade); $('overlay-label').setAttribute('aria-label', resultOverlay.grade);
 }
-$('board').addEventListener('pointerdown', event => {
+$('board')?.addEventListener('pointerdown', event => {
   if (event.target.closest('button') || state !== 'playing') return;
   event.preventDefault(); const bounds = $('board').getBoundingClientRect();
   hit(Math.max(0, Math.min(3, Math.floor((event.clientX - bounds.left) / bounds.width * 4))));
 });
 document.addEventListener('keydown', event => {
+  if (document.querySelector('.chart-studio[open]')) return;
   if (event.repeat || event.ctrlKey || event.altKey || event.metaKey || event.target.matches('input,select,textarea')) return;
   const lane = ['KeyD', 'KeyF', 'KeyJ', 'KeyK'].indexOf(event.code);
   if (lane >= 0 && state === 'playing') { event.preventDefault(); hit(lane); }
@@ -361,11 +394,11 @@ document.addEventListener('keydown', event => {
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 window.addEventListener('blur', pause);
-$('pause').onclick = () => state === 'paused' ? resume() : pause();
+if ($('pause')) $('pause').onclick = () => state === 'paused' ? resume() : pause();
 function updatePauseMode() {
-  $('pause-mode').querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.value === pendingMode)));
+  $('pause-mode')?.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.value === pendingMode)));
   $('offset').disabled = pendingMode === 'rhythm';
-  $('pause-mode').querySelectorAll('button').forEach(button => { button.disabled = !selected?.chart && button.dataset.value !== 'listen'; });
+  $('pause-mode')?.querySelectorAll('button').forEach(button => { button.disabled = !selected?.chart && !['listen', 'chart'].includes(button.dataset.value); });
 }
 function applyPendingMode() {
   mode = pendingMode;
@@ -379,16 +412,22 @@ function updateModeCopy() {
 function resume() {
   if (pendingMode !== mode) { applyPendingMode(); prepare(); return; }
   if (settingsOrigin === 'ready') { prepare(); return; }
-  if (settingsOrigin === 'result') { showResult(); return; }
+  if (settingsOrigin === 'result') { if (resultOverlay) showResult(); else prepare(); return; }
   begin();
 }
-$('resume').onclick = resume;
-$('pause-mode').querySelectorAll('button').forEach(button => button.onclick = () => { pendingMode = button.dataset.value; updatePauseMode(); });
-$('restart').onclick = () => { if (round && state === 'paused') { applyPendingMode(); prepare(); begin(); } };
-$('leave').onclick = () => { stop(); mode = pendingMode = 'score'; setState('library'); clearNotes(); $('play-screen').hidden = true; $('library').hidden = false; document.body.dataset.mood = 'sunshine'; if (menuPreference) menuAudio.start().then(updateMenuButton).catch(() => {}); };
-$('pause-leave').onclick = () => $('leave').onclick();
-for (const id of ['volume', 'pause-volume']) $(id).oninput = event => { const volume = Number(event.target.value); $('volume').value = $('pause-volume').value = volume; menuAudio.volume = volume; if (transport) transport.volume = volume; };
-$('offset').oninput = event => { offset = Number(event.target.value) / 1000; $('offset-value').textContent = `${event.target.value} ms`; };
+if ($('resume')) $('resume').onclick = resume;
+$('pause-mode')?.querySelectorAll('button').forEach(button => button.onclick = () => {
+  if (button.dataset.value === 'chart') {
+    openChartEditor({song:selected, bytes:songBytes, alignment, volume:Number($('volume').value)}).catch(error => { $('mode-change-note').textContent = error.message; });
+    return;
+  }
+  pendingMode = button.dataset.value; updatePauseMode();
+});
+if ($('restart')) $('restart').onclick = () => { if (round && state === 'paused') { applyPendingMode(); prepare(); begin(); } };
+if ($('leave')) $('leave').onclick = () => { stop(); location.assign('./index.html'); };
+if ($('pause-leave')) $('pause-leave').onclick = () => $('leave').onclick();
+for (const id of ['volume', 'pause-volume']) if ($(id)) $(id).oninput = event => { const volume = Number(event.target.value); $('volume').value = volume; if ($('pause-volume')) $('pause-volume').value = volume; menuAudio.volume = volume; if (transport) transport.volume = volume; };
+if ($('offset')) $('offset').oninput = event => { offset = Number(event.target.value) / 1000; $('offset-value').textContent = `${event.target.value} ms`; };
 for (const id of ['mode']) {
   $(id)?.querySelectorAll('button').forEach(button => button.onclick = () => {
     $(id).querySelectorAll('button').forEach(item => { item.classList.toggle('active', item === button); item.setAttribute('aria-pressed', String(item === button)); });
@@ -397,10 +436,11 @@ for (const id of ['mode']) {
   });
 }
 function updateMenuButton() {
+  if (!$('menu-sound')) return;
   $('menu-sound').innerHTML = icon('music') + `<span>${menuAudio.enabled ? '音乐已开' : '开启音乐'}</span>`;
   $('menu-sound').setAttribute('aria-pressed', String(menuAudio.enabled));
 }
-$('menu-sound').onclick = async () => {
+if ($('menu-sound')) $('menu-sound').onclick = async () => {
   menuPreference = !menuAudio.enabled;
   if (menuPreference) await menuAudio.start(); else menuAudio.stop();
   updateMenuButton();
@@ -414,4 +454,14 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) { menuAudio.stop(); updateMenuButton(); }
   else if (state === 'library' && menuPreference) menuAudio.start().then(updateMenuButton).catch(() => {});
 });
-loadLibrary().then(() => initCatalogSearch({ getLibrary: () => library, selectSong, reloadLibrary: loadLibrary }));
+if ($('library')) loadLibrary().then(() => initCatalogSearch({ getLibrary: () => library, selectSong, reloadLibrary: loadLibrary }));
+else if ($('play-screen')) {
+  (async () => {
+    const key = new URLSearchParams(location.search).get('song');
+    let song = (await deviceSongs()).find(song => songKey(song) === key);
+    if (!song) { try { const cached = JSON.parse(sessionStorage.getItem('melody-selected')); if (cached && !cached.device && songKey(cached) === key) song = cached; } catch {} }
+    if (!song) { let seeds; try { seeds = (await catalogApi('library')).songs; } catch { seeds = await (await request('./media/library.json')).json(); } song = seeds.find(song => songKey(song) === key); }
+    if (!song) throw new Error('未找到歌曲，请返回列表选择');
+    await selectSong(song);
+  })().catch(error => { setState('error'); overlay('MUSIC', '请选择歌曲', error.message, '返回列表', () => location.assign('./index.html')); });
+}

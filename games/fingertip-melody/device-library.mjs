@@ -49,7 +49,39 @@ export async function songPlacements() { return new Map(await transaction('place
 export async function moveSongs(songs, folder) { await Promise.all(songs.map(song => transaction('placements', 'readwrite', s => s.put({ key: songKey(song), folder }, songKey(song))))); }
 export async function removeSong(song) { const key = songKey(song); await transaction('placements', 'readwrite', s => s.delete(key)); await transaction('hidden', 'readwrite', s => s.put(true, key)); await transaction('songs', 'readwrite', s => s.delete(key)); revoke(key); }
 export async function saveSong(song, audio, chart, lyric = '') {
-  const key = songKey(song); await transaction('songs', 'readwrite', s => s.put({ key, song, audio, chart, lyric })); await transaction('hidden', 'readwrite', s => s.delete(key));
+  const key = songKey(song);
+  await transaction('songs', 'readwrite', s => { const request = s.get(key); request.onsuccess = () => s.put({ ...request.result, key, song, audio, chart, lyric }); return request; });
+  await transaction('hidden', 'readwrite', s => s.delete(key));
+}
+export async function chartVersions(song, initial) {
+  const key = songKey(song);
+  if (initial) await transaction('songs', 'readwrite', store => {
+    const request = store.get(key);
+    request.onsuccess = () => {
+      const record = request.result || {key, song, audio:initial.audio, chart:initial.chart, lyric:initial.lyric || ''};
+      if (!record.charts) {
+        record.charts = record.chart?.words?.length ? [{id:crypto.randomUUID(), name:'原始谱面', chart:record.chart, lyric:record.lyric, created:Date.now()}] : [];
+        record.activeChart = record.charts[0]?.id || ''; store.put(record);
+      }
+    }; return request;
+  });
+  return transaction('songs', 'readonly', store => store.get(key));
+}
+export async function changeChartVersion(song, action, id, value) {
+  return transaction('songs', 'readwrite', store => {
+    const request = store.get(songKey(song));
+    request.onsuccess = () => {
+      const record = request.result; if (!record) return;
+      const versions = record.charts || [];
+      if (action === 'save') { versions.push(value); record.activeChart = value.id; }
+      if (action === 'rename') { const item = versions.find(item => item.id === id); if (item) item.name = String(value).trim().slice(0,60) || item.name; }
+      if (action === 'select' && versions.some(item => item.id === id)) record.activeChart = id;
+      record.charts = action === 'delete' ? versions.filter(item => item.id !== id) : versions;
+      const active = record.charts.find(item => item.id === record.activeChart) || record.charts[0];
+      record.activeChart = active?.id || ''; record.chart = active?.chart; record.lyric = active?.lyric || record.lyric;
+      store.put(record);
+    }; return request;
+  });
 }
 export function yrcChart(text, duration, hash) {
   const lines = [], words = [];
@@ -60,9 +92,9 @@ export function yrcChart(text, duration, hash) {
     const line = lines.length, playable = parseLrc(`[${Math.floor(time / 60)}:${time % 60}]${content}`)[0]?.playable ?? false;
     lines.push({ text: content, time, playable }); if (!playable) continue;
     for (const token of tokens) {
-      const chars = token[3].match(/\p{Script=Han}/gu) || []; if (!chars.length) continue;
-      if (chars.length !== 1) throw new Error('该 YRC 不是逐字时间轴，不能均分汉字时间');
-      words.push({ char: chars[0], start: Number(token[1]) / 1000, end: (Number(token[1]) + Number(token[2])) / 1000, line });
+      const chars = token[3].normalize('NFC').match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]/gu) || []; if (!chars.length) continue;
+      if (chars.length !== 1 && !/[\p{Script=Hiragana}\p{Script=Katakana}ー]/u.test(token[3])) throw new Error('该 YRC 不是逐字时间轴，不能均分汉字时间');
+      words.push({ char: chars.join(''), start: Number(token[1]) / 1000, end: (Number(token[1]) + Number(token[2])) / 1000, line });
     }
   }
   words.sort((a, b) => a.start - b.start);
@@ -100,7 +132,7 @@ export async function importSong(audio, lyric, metadata = {}, progress = () => {
   const song = { id, sourceId: String(id), source: 'upload', artist: '我的导入', title: audio.name?.replace(/\.[^.]+$/, '') || '我的歌曲', mood: 'dream', label: '此设备', ...songMetadata, duration: duration || 0, available: true };
   // Save the original first; a failed remote alignment must not lose the local import.
   await saveSong(song, audio, chart, text);
-  if (text && !chart) {
+  if (text && !chart && !/[\p{Script=Hiragana}\p{Script=Katakana}]/u.test(text)) {
     progress('音频已保存在此设备，正在临时制谱…');
     const form = new FormData(); form.set('audio', audio, audio.name || 'song.mp3'); form.set('lyrics', lyric, 'song.lrc');
     form.set('backend', advancedEnabled ? 'whisperx' : 'lite');
