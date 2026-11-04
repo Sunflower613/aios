@@ -9,9 +9,13 @@ PYTHON=${MELODY_SYSTEM_PYTHON:-python3.12}
 command -v "$PYTHON" >/dev/null
 /home/ubuntu/.local/node/bin/node -e 'if(Number(process.versions.node.split(".")[0])<22)process.exit(1)'
 install -d -o ubuntu -g ubuntu "$APP" "$DATA" "$DATA/media" "$DATA/cache"
-rsync -a --exclude media --exclude .venv --exclude .tools --exclude .models --exclude __pycache__ "$SRC/games/fingertip-melody/" "$APP/"
+rsync -a --exclude node_modules --exclude media --exclude .venv --exclude .tools --exclude .models --exclude __pycache__ "$SRC/games/fingertip-melody/" "$APP/"
 chown -R ubuntu:ubuntu "$APP"
+runuser -u ubuntu -- env PATH="/home/ubuntu/.local/node/bin:$PATH" npm --prefix "$APP" ci --omit=dev --ignore-scripts --no-audit
 runuser -u ubuntu -- "$PYTHON" -m venv "$APP/.venv"
+runuser -u ubuntu -- "$APP/.venv/bin/python" -m pip install -r "$APP/scripts/requirements-lite.txt"
+runuser -u ubuntu -- "$APP/.venv/bin/python" "$APP/scripts/setup_lite.py"
+if [[ "${MELODY_INSTALL_ADVANCED:-0}" == 1 ]]; then
 runuser -u ubuntu -- "$APP/.venv/bin/python" -m pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
 runuser -u ubuntu -- "$APP/.venv/bin/python" -m pip install -r "$APP/scripts/requirements.txt"
 runuser -u ubuntu -- "$APP/.venv/bin/python" -m pip install --no-deps whisperx==3.8.6
@@ -35,6 +39,8 @@ for url, target, marker in [
    if not (target/member.filename).resolve().is_relative_to(target.resolve()): raise ValueError('Unsafe archive')
   z.extractall(target)
 PY
+  runuser -u ubuntu -- env HF_HOME="$DATA/cache/huggingface" TORCH_HOME="$DATA/cache/torch" "$APP/.venv/bin/python" "$APP/scripts/prepare_advanced.py"
+fi
 if [[ ! -f "$APP/server.env" ]]; then
   cat > "$APP/server.env" <<'ENV'
 MELODY_PORT=8765

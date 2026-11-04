@@ -1,13 +1,46 @@
 import { parseLrc, makeChart } from './engine.mjs';
 import { catalogApi, catalogBlob } from './service.mjs';
+import { repairKnownTiming } from './timing-corrections.mjs';
 const urls = new Map();
+let advancedEnabled = false;
+export async function initChartSettings(panel, toggle) {
+  const refresh = async () => {
+    const caps = await catalogApi('capabilities').catch(() => ({}));
+    panel.hidden = caps.whisperx !== true;
+    advancedEnabled = false;
+    try { advancedEnabled = !panel.hidden && localStorage.getItem('melody-advanced-chart') === '1'; } catch { /* Storage is optional. */ }
+    toggle.checked = advancedEnabled;
+  };
+  toggle.onchange = () => {
+    advancedEnabled = !panel.hidden && toggle.checked;
+    try { localStorage.setItem('melody-advanced-chart', advancedEnabled ? '1' : '0'); } catch { /* Storage is optional. */ }
+  };
+  window.addEventListener('focus', refresh);
+  await refresh();
+}
 function db() { return new Promise((resolve, reject) => { const r = indexedDB.open('melody-device-library', 2); r.onupgradeneeded = () => { for (const name of ['songs', 'hidden', 'folders', 'placements']) if (!r.result.objectStoreNames.contains(name)) r.result.createObjectStore(name, name === 'songs' ? { keyPath: 'key' } : undefined); }; r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error); }); }
 async function transaction(store, mode, action) { const d = await db(); return new Promise((resolve, reject) => { const t = d.transaction(store, mode), r = action(t.objectStore(store)); t.oncomplete = () => { d.close(); resolve(r.result); }; t.onerror = t.onabort = () => { d.close(); reject(t.error || new Error('浏览器存储失败')); }; }); }
 export const songKey = song => `${song.source}:${song.sourceId || song.id}`;
 function revoke(key) { (urls.get(key) || []).forEach(URL.revokeObjectURL); urls.delete(key); }
 export async function deviceSongs() {
   const records = await transaction('songs', 'readonly', s => s.getAll());
+  for (const record of records) {
+    if (record.chart && repairKnownTiming(record.chart)) {
+      await transaction('songs', 'readwrite', store => {
+        const request = store.get(record.key);
+        request.onsuccess = () => {
+          const current = request.result;
+          if (current?.chart && repairKnownTiming(current.chart)) store.put(current);
+        };
+        return request;
+      });
+    }
+  }
   return records.map(record => { revoke(record.key); const audio = URL.createObjectURL(record.audio), chart = record.chart ? URL.createObjectURL(new Blob([JSON.stringify(record.chart)], { type: 'application/json' })) : ''; urls.set(record.key, [audio, chart].filter(Boolean)); return { ...record.song, device: true, audio, chart, playable: !!chart }; });
+}
+export async function deviceRecords(keys) {
+  const records = await transaction('songs', 'readonly', s => s.getAll());
+  return records.filter(record => !keys || keys.has(record.key));
 }
 export async function hiddenSongs() { return new Set(await transaction('hidden', 'readonly', s => s.getAllKeys())); }
 export async function listFolders() { return transaction('folders', 'readonly', s => s.getAllKeys()); }
@@ -34,6 +67,7 @@ export function yrcChart(text, duration, hash) {
   }
   words.sort((a, b) => a.start - b.start);
   const chart = { version: 2, method: 'provider-character-timestamps', audioSha256: hash, duration, lines, words, beats: [], bpm: 0, beatMethod: 'none', review: { required: false } };
+  repairKnownTiming(chart);
   makeChart(chart, duration); return chart;
 }
 async function inspectAudio(audio) {
@@ -56,14 +90,20 @@ export async function importSong(audio, lyric, metadata = {}, progress = () => {
     return importSong(file, lyric, { ...metadata, id: metadata.id || `device-${hash.slice(0, 24)}` }, progress, true);
   }
   if (metadata.duration && duration && duration < metadata.duration - Math.max(5, metadata.duration * .03)) throw new Error('音源仅提供试听片段，不能导入为完整歌曲');
-  if (text && /\[\d+,\d+\]/.test(text)) chart = yrcChart(text, duration, hash);
+  if (metadata.chart) {
+    chart = structuredClone(metadata.chart);
+    if (chart.audioSha256 !== hash) throw new Error('压缩包中的谱面与音频不匹配');
+    makeChart(chart, duration);
+  } else if (text && /\[\d+,\d+\]/.test(text)) chart = yrcChart(text, duration, hash);
   const id = metadata.id || `device-${hash.slice(0, 24)}`;
-  const song = { id, sourceId: String(id), source: 'upload', artist: '我的导入', title: audio.name?.replace(/\.[^.]+$/, '') || '我的歌曲', mood: 'dream', label: '此设备', ...metadata, duration: duration || 0, available: true };
+  const { chart: suppliedChart, ...songMetadata } = metadata;
+  const song = { id, sourceId: String(id), source: 'upload', artist: '我的导入', title: audio.name?.replace(/\.[^.]+$/, '') || '我的歌曲', mood: 'dream', label: '此设备', ...songMetadata, duration: duration || 0, available: true };
   // Save the original first; a failed remote alignment must not lose the local import.
   await saveSong(song, audio, chart, text);
   if (text && !chart) {
     progress('音频已保存在此设备，正在临时制谱…');
     const form = new FormData(); form.set('audio', audio, audio.name || 'song.mp3'); form.set('lyrics', lyric, 'song.lrc');
+    form.set('backend', advancedEnabled ? 'whisperx' : 'lite');
     const result = await catalogApi('prepare', { method: 'POST', body: form, signal: AbortSignal.timeout(31 * 60 * 1000) });
     chart = result.chart; audio = new Blob([Uint8Array.from(atob(result.audio), c => c.charCodeAt(0))], { type: 'audio/mpeg' }); song.duration = chart.duration;
     await saveSong(song, audio, chart, text);

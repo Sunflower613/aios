@@ -72,3 +72,21 @@ test('deployed API accepts the configured site and isolates uploaded catalog/med
   assert.equal((await fetch(base+'download',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).status,403);
   const fresh=await fetch(base+'health'); assert.match(fresh.headers.get('set-cookie'),/HttpOnly; SameSite=Lax/); assert.match(fresh.headers.get('set-cookie'),/Secure/);
 });
+
+test('advanced switch is advertised only by an available worker; rejected requests never enter alignment', async t => {
+  let ready = false;
+  const server = createServer({ probeAdvanced: async () => ready });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const base = `http://127.0.0.1:${server.address().port}/api/melody/`;
+  assert.deepEqual(await (await fetch(base + 'capabilities')).json(), { whisperx: false });
+  const form = new FormData();
+  form.set('audio', new Blob(['test']), 'song.mp3');
+  form.set('lyrics', new Blob(['[00:01]花开']), 'song.lrc');
+  form.set('backend', 'whisperx');
+  assert.equal((await fetch(base + 'prepare', { method: 'POST', body: form })).status, 503);
+  form.set('backend', 'unknown');
+  assert.equal((await fetch(base + 'prepare', { method: 'POST', body: form })).status, 400);
+  ready = true;
+  assert.deepEqual(await (await fetch(base + 'capabilities')).json(), { whisperx: true });
+});

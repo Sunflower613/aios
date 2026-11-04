@@ -1,3 +1,4 @@
+import { accountCookie, loginAction, downloadUrl, memberLyrics } from './cloud-account.mjs';
 import http from 'node:http';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
@@ -36,6 +37,16 @@ function registerJob(job) {
   if (jobs.size > 100) { const old = [...jobs.values()].find(j => ['ready', 'error', 'downloaded'].includes(j.stage)); if (old) jobs.delete(old.id); }
 }
 const pythonPath = () => process.env.MELODY_PYTHON || path.join(gameRoot, '.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
+let advancedProbe, probeUntil = 0;
+function advancedAvailable() {
+  if (process.env.MELODY_DISABLE_ADVANCED === '1') return Promise.resolve(false);
+  if (!advancedProbe || Date.now() >= probeUntil) {
+    probeUntil = Date.now() + 60000;
+    advancedProbe = promisify(execFile)(pythonPath(), [path.join(gameRoot, 'scripts/advanced_ready.py')],
+      { timeout: 4000, windowsHide: true }).then(({ stdout }) => stdout.trim() === 'true', () => false);
+  }
+  return advancedProbe;
+}
 const coverCache = new Map();
 async function withCovers(songs) {
   return Promise.all(songs.map(async song => {
@@ -67,10 +78,10 @@ async function downloadAudio(id, destination) {
   await writeFile(destination + '.tmp', Buffer.concat(chunks));
   await rename(destination + '.tmp', destination);
 }
-function align(job, audio, lrc, output) {
+function align(job, audio, lrc, output, backend = 'lite') {
   return new Promise((resolve, reject) => {
     const python = pythonPath();
-    const child = spawn(python, ['-u', path.join(gameRoot, 'scripts/align.py'), '--audio', audio, '--lyrics', lrc, '--output', output], { cwd: gameRoot, windowsHide: true });
+    const child = spawn(python, ['-u', path.join(gameRoot, 'scripts/align.py'), '--backend', backend, '--audio', audio, '--lyrics', lrc, '--output', output], { cwd: gameRoot, windowsHide: true });
     const timer = setTimeout(() => { child.kill(); reject(new Error('制谱超时，音频已保留，可重试')); }, 30 * 60 * 1000);
     child.stdout.on('data', bytes => {
       const match = bytes.toString().match(/aligned line (\d+)\/(\d+)/);
@@ -199,13 +210,13 @@ function send(res, status, data) { res.writeHead(status, { 'Content-Type': 'appl
 export async function safeStaticPath(root, pathname) {
   const decoded = decodeURIComponent(pathname);
   if (decoded.includes('\\') || decoded.split('/').some(s => s.startsWith('.'))) return null;
-  if (decoded.includes('/scripts/') || decoded.startsWith('/game-api/')) return null;
+  if (decoded.includes('/node_modules/') || decoded.includes('/scripts/') || decoded.startsWith('/game-api/')) return null;
   const file = path.resolve(root, '.' + decoded + (decoded.endsWith('/') ? 'index.html' : ''));
   if (!file.startsWith(root + path.sep)) return null;
   const resolved = await realpath(file);
   return resolved.startsWith(root + path.sep) ? resolved : null;
 }
-export function createServer({ origins = publicOrigins, readCatalog = readLibrary, mediaRoot = media } = {}) {
+export function createServer({ origins = publicOrigins, readCatalog = readLibrary, mediaRoot = media, probeAdvanced = advancedAvailable } = {}) {
   const limits = new Map(); let uploads = 0;
   return http.createServer(async (req, res) => {
     try {
@@ -224,11 +235,27 @@ export function createServer({ origins = publicOrigins, readCatalog = readLibrar
         if (++entry.count > (req.method === 'POST' ? 12 : 60)) return send(res, 429, { error: '操作太频繁，请稍后再试' });
         if (limits.size > 2000) for (const [key, value] of limits) if (value.until < now) limits.delete(key);
       }
+      const auth = url.pathname.match(/^\/api\/melody\/login\/(start|check|state|logout)$/);
+      if (auth && req.method === (['start','logout'].includes(auth[1]) ? 'POST' : 'GET')) {
+        res.setHeader('Cache-Control','no-store');
+        try { return send(res, 200, await loginAction(auth[1], owner)); }
+        catch { return send(res, 502, { error: '网易云登录服务暂不可用，请重试' }); }
+      }
+      const cookie = accountCookie(owner);
+      if (url.pathname === '/api/melody/capabilities' && req.method === 'GET') {
+        return send(res, 200, { whisperx: await probeAdvanced() });
+      }
       if (url.pathname === '/api/melody/health') return send(res, 200, { ok: true, service: 'fingertip-melody', scope: origins.length ? 'server' : 'development' });
       if (url.pathname === '/api/melody/search' && req.method === 'GET') {
         const q = url.searchParams.get('q') || '';
         if (q.length > 80) return send(res, 400, { error: '搜索词过长' });
-        return send(res, 200, { songs: await search(q), provider: 'netease' });
+        const songs = await search(q);
+        if (cookie) {
+          for (const song of songs.filter(s => ['member','purchase'].includes(s.access))) {
+            if (await downloadUrl(song.sourceId, cookie).catch(() => null)) song.access = 'authorized';
+          }
+        }
+        return send(res, 200, { songs, provider: 'netease' });
       }
       if (url.pathname === '/api/melody/jobs' && req.method === 'GET') return send(res, 200, { jobs: [...jobs.values()].filter(j => j.owner === owner).map(({ owner, ...job }) => job) });
       if (url.pathname === '/api/melody/library' && req.method === 'GET') return send(res, 200, { songs: (await withCovers(visibleSongs(await readCatalog(), owner))).map(clientSong) });
@@ -243,12 +270,13 @@ export function createServer({ origins = publicOrigins, readCatalog = readLibrar
       }
       if (url.pathname === '/api/melody/resource' && req.method === 'GET') {
         const id = validId(url.searchParams.get('id'));
-        const [song, data] = await Promise.all([details(id), lyrics(id)]);
+        const [song, data] = await Promise.all([details(id), cookie ? memberLyrics(id, cookie).catch(() => lyrics(id)) : lyrics(id)]);
         return send(res, 200, { song, yrc: data.yrc?.lyric || '', lrc: data.lrc?.lyric || '' });
       }
       if (url.pathname === '/api/melody/audio' && req.method === 'GET') {
         const id = validId(url.searchParams.get('id'));
-        const upstream = await remote(`https://music.163.com/song/media/outer/url?id=${id}.mp3`);
+        const authorized = cookie && await downloadUrl(id, cookie).catch(() => null);
+        const upstream = await remote(authorized || `https://music.163.com/song/media/outer/url?id=${id}.mp3`);
         if (!upstream.headers.get('content-type')?.startsWith('audio/')) { await upstream.body?.cancel(); return send(res, 404, { error: '没有可下载音频' }); }
         res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-store' });
         let size = 0;
@@ -265,11 +293,16 @@ export function createServer({ origins = publicOrigins, readCatalog = readLibrar
           const form = await new Response(Buffer.concat(chunks), { headers: { 'Content-Type': req.headers['content-type'] } }).formData();
           const file = form.get('audio'), lyric = form.get('lyrics');
           if (!file?.size || file.size > 80 * 1024 * 1024 || (lyric?.size || 0) > 2 * 1024 * 1024) return send(res, 400, { error: '请选择音频和歌词' });
+          const backend = form.get('backend') || 'lite';
+          if (!['lite', 'whisperx'].includes(backend)) return send(res, 400, { error: '未知制谱方式' });
+          if (lyric?.size && backend === 'whisperx' && !await probeAdvanced()) {
+            return send(res, 503, { error: '高级制谱服务不可用，请关闭高级制谱后重试' });
+          }
           folder = await mkdtemp(path.join(tmpdir(), 'melody-prepare-'));
           const original = path.join(folder, 'input'), audio = path.join(folder, 'song.mp3'), lrc = path.join(folder, 'song.lrc'), output = path.join(folder, 'song.chart.json');
           await writeFile(original, Buffer.from(await file.arrayBuffer())); if (lyric?.size) await writeFile(lrc, await lyric.text());
           const inspected = await promisify(execFile)(pythonPath(), [path.join(gameRoot, 'scripts/align.py'), '--inspect-audio', original, '--output', audio], { timeout: 120000, windowsHide: true });
-          if (lyric?.size) await align({}, audio, lrc, output);
+          if (lyric?.size) await align({}, audio, lrc, output, backend);
           return send(res, 200, { duration: JSON.parse(inspected.stdout.trim()).duration, chart: lyric?.size ? JSON.parse(await readFile(output, 'utf8')) : null, audio: (await readFile(audio)).toString('base64') });
         } finally {
           uploads--;
@@ -295,7 +328,22 @@ export function createServer({ origins = publicOrigins, readCatalog = readLibrar
   });
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const port = Number(process.env.MELODY_PORT || 8765);
+  const desktop = process.argv.includes('--desktop');
+  const port = desktop ? 8765 : Number(process.env.MELODY_PORT || 8765);
+  const base = `http://127.0.0.1:${port}`;
   await restoreJobs();
-  createServer().listen(port, '127.0.0.1', () => console.log(`Melody: http://127.0.0.1:${port}/games/fingertip-melody/`));
+  const server = createServer();
+  server.once('error', async error => {
+    if (!desktop || error.code !== 'EADDRINUSE') throw error;
+    try {
+      const response = await fetch(base + '/api/melody/health', {signal: AbortSignal.timeout(1500), redirect: 'error'});
+      if ((await response.json()).service === 'fingertip-melody') {
+        console.log(`曲库已在运行，请打开 ${base}/games/fingertip-melody/`);
+        return;
+      }
+    } catch { /* Report a port conflict below. */ }
+    console.error(`端口 ${port} 被其他程序占用，请释放端口后再启动曲库。`);
+    process.exitCode = 1;
+  });
+  server.listen(port, '127.0.0.1', () => console.log(`曲库已启动，请打开 ${base}/games/fingertip-melody/`));
 }

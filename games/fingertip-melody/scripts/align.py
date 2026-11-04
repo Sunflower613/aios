@@ -1,7 +1,8 @@
 """Reusable Chinese audio + LRC -> character intervals + detected beat grid.
 
-No equal-duration fallback. A failed or incomplete alignment is an error.
-Optional --vocals uses a separated vocal stem with the same time origin.
+Lite is the default CPU backend; uncertain lines are marked for practice/review.
+Advanced backends fail on incomplete alignment. Optional --vocals uses a separated
+vocal stem with the same time origin for advanced alignment.
 """
 import argparse
 import hashlib
@@ -186,14 +187,16 @@ def align_song(model, audio_path, lyric_path, output_path, title='', artist='', 
     for i, line in enumerate(lines if not native_ready else []):
         if not line['playable'] or line['time'] >= duration:
             continue
-        base = max(0, line['time'])
-        limit = min(duration, next((n['time'] for n in lines[i+1:] if n['time'] > line['time']), duration))
+        base = max(0, line['time'] - .7, words[-1]['start'] + .02 if words else 0)
+        limit = min(duration, next((n['time'] for n in lines[i+1:] if n['time'] > line['time']), duration) + .5)
         chars = HAN.findall(line['text'])
         samples = voice[round(base * 16000):round(limit * 16000)]
         stamps, confidence = model.intervals(samples, chars)
         aligned = validate_intervals(chars, stamps, base, limit, i)
         for word in aligned:
             word['confidence'] = confidence
+        if words:
+            words[-1]['end'] = min(words[-1]['end'], aligned[0]['start'])
         words.extend(aligned)
         print(f'{audio_path.stem}: aligned line {i + 1}/{len(lines)} ({len(chars)} characters)', flush=True)
     # Percussive onset envelope and beat tracking stay separate from vocal alignment.
@@ -231,6 +234,7 @@ def align_song(model, audio_path, lyric_path, output_path, title='', artist='', 
         suspicious = [i for i, word in enumerate(data['words']) if word['end'] - word['start'] < .05 or word['end'] - word['start'] > 3 or word.get('tailReview')]
         data['review']['unusualDurationIndices'] = suspicious
         data['review']['required'] = bool(suspicious)
+    repair_known_timing(data)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     temporary = output_path.with_suffix('.tmp')
     temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -249,6 +253,71 @@ class LazyAligner:
         return self.model.intervals(samples, chars)
 
 
+def repair_known_timing(data):
+    fixes = json.loads((Path(__file__).resolve().parents[1] / 'timing-corrections.json').read_text('utf8'))
+    for fix in fixes:
+        if data['audioSha256'] != fix['audioSha256']:
+            continue
+        for index, word in enumerate(data['words']):
+            words = data['words'][index:index+len(fix['text'])]
+            if ''.join(w['char'] for w in words) != fix['text']:
+                continue
+            def matches(times):
+                return all(w['line'] == words[0]['line'] and round(w['start']*1000) == times[i]
+                           and round(w['end']*1000) == times[i+1] for i,w in enumerate(words))
+            if not (matches(fix['original']) or matches(fix['corrected'])):
+                continue
+            for i,w in enumerate(words):
+                w.update(start=fix['corrected'][i]/1000, end=fix['corrected'][i+1]/1000,
+                         timingCorrection=fix['method'])
+            data['lines'][words[0]['line']]['time'] = fix['corrected'][0]/1000
+            data['review'].update(required=True, correctedTimingIndices=list(range(index,index+len(words))))
+
+
+def lite_chart(audio_path, lyric_path, output_path, title='', artist=''):
+    import imageio_ffmpeg
+    import numpy as np
+    from lite_alignment import lite_words
+    lines = parse_lrc(lyric_path.read_text(encoding='utf-8-sig'), title, artist)
+    native = audio_path.with_suffix('.yrc')
+    with tempfile.TemporaryDirectory(prefix='melody-pcm-') as folder:
+        pcm = Path(folder) / 'mono.f32'
+        subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), '-v', 'error', '-i', str(audio_path),
+                        '-ac', '1', '-ar', '16000', '-f', 'f32le', str(pcm)], check=True)
+        duration = pcm.stat().st_size / 64000
+        method = 'lite-zipformer-ctc'
+        words = []
+        if native.is_file():
+            try:
+                lines, words = parse_yrc(native.read_text(encoding='utf-8-sig'), duration)
+                method = 'provider-character-timestamps'
+            except ValueError:
+                pass
+        if not words:
+            audio = np.memmap(pcm, dtype='<f4', mode='r')
+            try:
+                words = lite_words(audio, lines, HAN.findall)
+            finally:
+                del audio
+    if not words:
+        raise ValueError('No playable timestamped Chinese lyrics.')
+    for index, w in enumerate(words):
+        if not 0 <= w['start'] < w['end'] <= duration + .0001:
+            raise ValueError(f'Invalid lite interval at {index}')
+    with audio_path.open('rb') as audio_file:
+        digest = hashlib.file_digest(audio_file, 'sha256').hexdigest()
+    review = [i for i,w in enumerate(words) if w.get('tailReview') or lines[w['line']].get('practiceOnly')
+              or lines[w['line']].get('timingReview') or w['end']-w['start'] < .05 or w['end']-w['start'] > 3]
+    data = dict(version=2, duration=duration, method=method, audioSha256=digest, lines=lines, words=words,
+                bpm=0, beats=[], beatMethod='none', review=dict(required=bool(review), unusualDurationIndices=review))
+    repair_known_timing(data)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    temp = output_path.with_suffix('.tmp')
+    temp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf8')
+    temp.replace(output_path)
+    return data
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--inspect-audio', type=Path)
@@ -257,7 +326,7 @@ def main():
     parser.add_argument('--output', type=Path)
     parser.add_argument('--vocals', type=Path)
     parser.add_argument('--library', type=Path)
-    parser.add_argument('--backend', choices=['whisperx', 'sofa', 'funasr'], default='whisperx')
+    parser.add_argument('--backend', choices=['lite', 'whisperx', 'sofa', 'funasr'], default='lite')
     root = Path(__file__).resolve().parents[1]
     parser.add_argument('--sofa-dir', type=Path, default=root / '.tools/SOFA')
     parser.add_argument('--checkpoint', type=Path, default=root / '.models/sofa/pretrained_mandarin_singing/v1.0.0_mandarin_singing.ckpt')
@@ -270,18 +339,29 @@ def main():
             subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), '-v', 'error', '-y', '-i', str(inspected), '-map', '0:a:0', '-codec:a', 'libmp3lame', '-q:a', '2', str(temporary)], check=True, capture_output=True, timeout=110)
             temporary.replace(args.output)
             inspected = args.output
-        samples = decode(inspected)
-        if len(samples) < 1600:
+        import imageio_ffmpeg
+        with subprocess.Popen([imageio_ffmpeg.get_ffmpeg_exe(), '-v', 'error', '-i', str(inspected),
+                               '-ac', '1', '-ar', '16000', '-f', 's16le', 'pipe:1'], stdout=subprocess.PIPE) as proc:
+            size = sum(len(chunk) for chunk in iter(lambda: proc.stdout.read(65536), b''))
+            if proc.wait():
+                raise ValueError('Could not decode audio')
+        if size < 3200:
             raise ValueError('Audio is empty or too short')
-        print(json.dumps({'duration': len(samples) / 16000}))
+        print(json.dumps({'duration': size / 32000}))
         return
     if args.audio and (not args.lyrics or not args.output):
         parser.error('--audio requires --lyrics and --output')
     factory = lambda: (SofaAligner(args.sofa_dir, args.checkpoint) if args.backend == 'sofa' else
              WhisperXAligner(SofaAligner(args.sofa_dir, args.checkpoint)) if args.backend == 'whisperx' else FunAsrAligner())
-    model = LazyAligner(factory, {'sofa': 'sofa-mandarin-singing', 'whisperx': 'whisperx-zh-ctc-sofa-tail', 'funasr': 'funasr-fa-zh'}[args.backend])
+    model = None if args.backend == 'lite' else LazyAligner(factory, {'sofa': 'sofa-mandarin-singing', 'whisperx': 'whisperx-zh-ctc-sofa-tail', 'funasr': 'funasr-fa-zh'}[args.backend])
+    def build(audio, lyrics, output, title='', artist=''):
+        if args.backend == 'lite':
+            if args.vocals:
+                parser.error('--vocals requires an advanced backend')
+            return lite_chart(audio, lyrics, output, title, artist)
+        return align_song(model, audio, lyrics, output, title, artist, args.vocals)
     if args.audio:
-        align_song(model, args.audio, args.lyrics, args.output, vocals=args.vocals)
+        build(args.audio, args.lyrics, args.output)
         return
     library_path = args.library or Path(__file__).resolve().parents[1] / 'media' / 'library.json'
     library = json.loads(library_path.read_text(encoding='utf-8-sig'))
@@ -292,7 +372,7 @@ def main():
             continue
         audio_path = root / song['audio']
         output = audio_path.with_suffix('.chart.json')
-        result = align_song(model, audio_path, root / song['lyrics'], output, song['title'], song['artist'])
+        result = build(audio_path, root / song['lyrics'], output, song['title'], song['artist'])
         song['chart'] = './' + output.relative_to(root).as_posix()
         song['timing'] = result['method']
         song['bpm'] = result['bpm']

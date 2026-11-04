@@ -1,5 +1,12 @@
-/media/
+/media/*.mp3
+/media/*.wav
+/media/jobs-state*
+/media/*.vocals.json
+/media/local-*
+
 /.venv/
 /.models/
 /.tools/
 __pycache__/
+
+/node_modules/

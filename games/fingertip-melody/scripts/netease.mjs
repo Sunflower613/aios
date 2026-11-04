@@ -51,7 +51,8 @@ export async function inspect(track) {
 }
 export async function search(query, limit = 30) {
   if (!query.trim()) return [];
-  const data = await (await remote('https://music.163.com/api/search/get/web?' + new URLSearchParams({ s: query.slice(0, 80), type: 1, limit }))).json();
+  const { default: cloud } = await import('NeteaseCloudMusicApi');
+  const { body: data } = await cloud.cloudsearch({ keywords: query.slice(0, 80), type: 1, limit });
   if (data.code !== 200) throw new Error('网络搜索暂时不可用');
   const tracks = (data.result?.songs || []).map(normalizeTrack), results = new Array(tracks.length);
   let next = 0;

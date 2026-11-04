@@ -1,0 +1,3542 @@
+{
+  "version": 2,
+  "duration": 188.452,
+  "method": "whisperx-zh-ctc-sofa-tail",
+  "beatMethod": "librosa-hpss-beat-track",
+  "audioSha256": "b7ed02ee177aac0eb00d1a0b4717f8d27ad04c4440b0e7f0483fcbea0bcfc528",
+  "lyricSha256": "dadc60578b8bef7138443bc3f77d7f226805678e902135c3d724e82f30cf60c1",
+  "bpm": 129.31034482758622,
+  "beats": [
+    0.208,
+    0.688,
+    1.168,
+    1.664,
+    2.08,
+    2.608,
+    3.088,
+    3.568,
+    3.968,
+    4.432,
+    4.896,
+    5.408,
+    5.856,
+    6.336,
+    6.784,
+    7.248,
+    7.712,
+    8.208,
+    8.672,
+    9.12,
+    9.552,
+    10.08,
+    10.56,
+    11.04,
+    11.488,
+    11.968,
+    12.448,
+    12.944,
+    13.424,
+    13.952,
+    14.432,
+    14.928,
+    15.408,
+    15.904,
+    16.432,
+    16.912,
+    17.44,
+    17.92,
+    18.448,
+    18.96,
+    19.456,
+    19.92,
+    20.4,
+    20.832,
+    21.312,
+    21.792,
+    22.256,
+    22.72,
+    23.184,
+    23.6,
+    24.032,
+    24.576,
+    25.04,
+    25.52,
+    25.968,
+    26.432,
+    26.816,
+    27.232,
+    27.648,
+    28.192,
+    28.656,
+    29.152,
+    29.68,
+    30.192,
+    30.672,
+    31.136,
+    31.632,
+    32.08,
+    32.56,
+    33.024,
+    33.504,
+    33.936,
+    34.416,
+    34.88,
+    35.36,
+    35.824,
+    36.304,
+    36.768,
+    37.232,
+    37.696,
+    38.176,
+    38.64,
+    39.104,
+    39.568,
+    40.064,
+    40.512,
+    40.992,
+    41.44,
+    41.92,
+    42.384,
+    42.864,
+    43.328,
+    43.808,
+    44.272,
+    44.736,
+    45.2,
+    45.68,
+    46.144,
+    46.624,
+    47.072,
+    47.552,
+    48.016,
+    48.496,
+    48.944,
+    49.424,
+    49.888,
+    50.368,
+    50.816,
+    51.312,
+    51.776,
+    52.24,
+    52.688,
+    53.168,
+    53.632,
+    54.128,
+    54.576,
+    55.072,
+    55.52,
+    56.0,
+    56.448,
+    56.928,
+    57.376,
+    57.856,
+    58.32,
+    58.816,
+    59.264,
+    59.728,
+    60.192,
+    60.64,
+    61.072,
+    61.504,
+    61.92,
+    62.352,
+    62.752,
+    63.264,
+    63.728,
+    64.192,
+    64.64,
+    65.056,
+    65.504,
+    65.936,
+    66.368,
+    66.8,
+    67.232,
+    67.696,
+    68.192,
+    68.672,
+    69.136,
+    69.6,
+    70.08,
+    70.528,
+    70.96,
+    71.408,
+    71.904,
+    72.368,
+    72.816,
+    73.28,
+    73.776,
+    74.256,
+    74.736,
+    75.2,
+    75.712,
+    76.176,
+    76.64,
+    77.12,
+    77.616,
+    78.064,
+    78.512,
+    78.944,
+    79.424,
+    79.888,
+    80.368,
+    80.864,
+    81.312,
+    81.792,
+    82.272,
+    82.704,
+    83.168,
+    83.584,
+    84.016,
+    84.528,
+    85.024,
+    85.536,
+    85.984,
+    86.448,
+    86.944,
+    87.424,
+    87.856,
+    88.304,
+    88.8,
+    89.248,
+    89.744,
+    90.208,
+    90.672,
+    91.136,
+    91.616,
+    92.08,
+    92.56,
+    93.024,
+    93.504,
+    93.936,
+    94.416,
+    94.88,
+    95.36,
+    95.824,
+    96.304,
+    96.768,
+    97.248,
+    97.696,
+    98.176,
+    98.64,
+    99.104,
+    99.568,
+    100.064,
+    100.512,
+    100.992,
+    101.44,
+    101.936,
+    102.384,
+    102.864,
+    103.328,
+    103.808,
+    104.272,
+    104.736,
+    105.2,
+    105.664,
+    106.128,
+    106.608,
+    107.072,
+    107.552,
+    108.016,
+    108.496,
+    108.944,
+    109.424,
+    109.888,
+    110.368,
+    110.816,
+    111.312,
+    111.76,
+    112.24,
+    112.688,
+    113.168,
+    113.632,
+    114.112,
+    114.576,
+    115.072,
+    115.52,
+    116.0,
+    116.448,
+    116.944,
+    117.376,
+    117.856,
+    118.32,
+    118.816,
+    119.28,
+    119.728,
+    120.192,
+    120.656,
+    121.136,
+    121.616,
+    122.08,
+    122.544,
+    123.008,
+    123.488,
+    123.952,
+    124.416,
+    124.88,
+    125.36,
+    125.824,
+    126.288,
+    126.752,
+    127.232,
+    127.696,
+    128.16,
+    128.64,
+    129.104,
+    129.568,
+    130.048,
+    130.512,
+    130.992,
+    131.456,
+    131.92,
+    132.384,
+    132.864,
+    133.328,
+    133.792,
+    134.256,
+    134.736,
+    135.216,
+    135.664,
+    136.144,
+    136.64,
+    137.104,
+    137.568,
+    138.048,
+    138.512,
+    139.008,
+    139.456,
+    139.904,
+    140.384,
+    140.848,
+    141.328,
+    141.808,
+    142.272,
+    142.736,
+    143.184,
+    143.68,
+    144.128,
+    144.592,
+    145.072,
+    145.552,
+    146.032,
+    146.512,
+    146.976,
+    147.44,
+    147.904,
+    148.352,
+    148.784,
+    149.2,
+    149.664,
+    150.192,
+    150.672,
+    151.136,
+    151.616,
+    152.08,
+    152.576,
+    153.024,
+    153.488,
+    153.936,
+    154.416,
+    154.88,
+    155.376,
+    155.824,
+    156.32,
+    156.768,
+    157.248,
+    157.696,
+    158.16,
+    158.624,
+    159.12,
+    159.568,
+    160.048,
+    160.512,
+    160.992,
+    161.44,
+    161.936,
+    162.384,
+    162.864,
+    163.312,
+    163.792,
+    164.272,
+    164.736,
+    165.2,
+    165.68,
+    166.144,
+    166.608,
+    167.072,
+    167.552,
+    168.016,
+    168.48,
+    168.944,
+    169.424,
+    169.888,
+    170.368,
+    170.832,
+    171.312,
+    171.776,
+    172.24,
+    172.704,
+    173.168,
+    173.632,
+    174.096,
+    174.576,
+    175.072,
+    175.52,
+    175.968,
+    176.432,
+    176.928,
+    177.392,
+    177.872,
+    178.32,
+    178.816,
+    179.264,
+    179.728
+  ],
+  "lines": [
+    {
+      "time": 0.6,
+      "text": "是不是我们健忘",
+      "playable": true,
+      "melodyId": 0
+    },
+    {
+      "time": 4.53,
+      "text": "才把爱留在过往",
+      "playable": true,
+      "melodyId": 1
+    },
+    {
+      "time": 7.89,
+      "text": "回忆若被风吹散",
+      "playable": true,
+      "melodyId": 2
+    },
+    {
+      "time": 10.52,
+      "text": "我该如何抵挡",
+      "playable": true,
+      "melodyId": 3
+    },
+    {
+      "time": 12.08,
+      "text": "怎么才能回到你的身旁",
+      "playable": true,
+      "melodyId": 4
+    },
+    {
+      "time": 15.36,
+      "text": "当我们拥抱着太阳",
+      "playable": true,
+      "melodyId": 5
+    },
+    {
+      "time": 19.32,
+      "text": "不知背后的影子多长",
+      "playable": true,
+      "melodyId": 6
+    },
+    {
+      "time": 23.06,
+      "text": "还以为我们够坚强",
+      "playable": true,
+      "melodyId": 7
+    },
+    {
+      "time": 25.65,
+      "text": "难道是回忆说谎",
+      "playable": true,
+      "melodyId": 8
+    },
+    {
+      "time": 30.7,
+      "text": "想倒流时间 想要回到你的身边",
+      "playable": true,
+      "melodyId": 9
+    },
+    {
+      "time": 34.03,
+      "text": "I, I’m missing you, I, I’m missing you, yeah",
+      "playable": false
+    },
+    {
+      "time": 38.0,
+      "text": "让我回到起点 让我从头爱你一遍",
+      "playable": true,
+      "melodyId": 10
+    },
+    {
+      "time": 41.26,
+      "text": "I, I’m missing you, I, I’m missing you, yeah",
+      "playable": false
+    },
+    {
+      "time": 45.39,
+      "text": "原来世界最远 不是距离而是昨天",
+      "playable": true,
+      "melodyId": 11
+    },
+    {
+      "time": 48.86,
+      "text": "I, I’m missing you, I, I’m missing you, yeah",
+      "playable": false
+    },
+    {
+      "time": 52.68,
+      "text": "即使你忘了 我还记得 我会纪念",
+      "playable": true,
+      "melodyId": 12
+    },
+    {
+      "time": 56.51,
+      "text": "I’ll be missing you, I’ll be missing you, yeah",
+      "playable": false
+    },
+    {
+      "time": 60.48,
+      "text": "看那鲜艳的花瓣 开得多漂亮",
+      "playable": true,
+      "melodyId": 13
+    },
+    {
+      "time": 65.28,
+      "text": "她是否也会 被你慢慢地遗忘",
+      "playable": true,
+      "melodyId": 14
+    },
+    {
+      "time": 68.39,
+      "text": "远去的时光 从来也没有一丝幽暗",
+      "playable": true,
+      "melodyId": 15
+    },
+    {
+      "time": 73.01,
+      "text": "你怎么舍得 让它被遗忘",
+      "playable": true,
+      "melodyId": 16
+    },
+    {
+      "time": 75.66,
+      "text": "当我们拥抱着太阳",
+      "playable": true,
+      "melodyId": 5
+    },
+    {
+      "time": 79.77,
+      "text": "不知背后的影子多长",
+      "playable": true,
+      "melodyId": 6
+    },
+    {
+      "time": 83.01,
+      "text": "还以为我们够坚强",
+      "playable": true,
+      "melodyId": 7
+    },
+    {
+      "time": 85.59,
+      "text": "难道是回忆说谎",
+      "playable": true,
+      "melodyId": 8
+    },
+    {
+      "time": 90.78,
+      "text": "想倒流时间 想要回到你的身边",
+      "playable": true,
+      "melodyId": 9
+    },
+    {
+      "time": 93.97999999999999,
+      "text": "I, I’m missing you, I, I’m missing you, yeah",
+      "playable": false
+    },
+    {
+      "time": 97.8,
+      "text": "让我回到起点 让我从头爱你一遍",
+      "playable": true,
+      "melodyId": 10
+    },
+    {
+      "time": 101.25999999999999,
+      "text": "I, I’m missing you, I, I’m missing you, yeah",
+      "playable": false
+    },
+    {
+      "time": 105.38,
+      "text": "原来世界最远 不是距离而是昨天",
+      "playable": true,
+      "melodyId": 11
+    },
+    {
+      "time": 108.96000000000001,
+      "text": "I, I’m missing you, I, I’m missing you, yeah",
+      "playable": false
+    },
+    {
+      "time": 112.8,
+      "text": "即使你忘了 我还记得 我会纪念",
+      "playable": true,
+      "melodyId": 12
+    },
+    {
+      "time": 116.25999999999999,
+      "text": "I’ll be missing you, I’ll be missing you, yeah",
+      "playable": false
+    },
+    {
+      "time": 119.82,
+      "text": "",
+      "playable": false
+    },
+    {
+      "time": 120.89,
+      "text": "想倒流时间 回到初次遇见",
+      "playable": true,
+      "melodyId": 17
+    },
+    {
+      "time": 124.09,
+      "text": "想倒流时间 回到那个夏天",
+      "playable": true,
+      "melodyId": 18
+    },
+    {
+      "time": 128.02,
+      "text": "倒流眼泪 找回失去的笑脸",
+      "playable": true,
+      "melodyId": 19
+    },
+    {
+      "time": 131.63,
+      "text": "倒流雨水 还我们一个晴天",
+      "playable": true,
+      "melodyId": 20
+    },
+    {
+      "time": 135.49,
+      "text": "想倒流时间 回到你的身边",
+      "playable": true,
+      "melodyId": 21
+    },
+    {
+      "time": 139.55,
+      "text": "想倒流时间 爱你多一遍",
+      "playable": true,
+      "melodyId": 22
+    },
+    {
+      "time": 143.04,
+      "text": "在你耳边 说我爱你到永远",
+      "playable": true,
+      "melodyId": 23
+    },
+    {
+      "time": 146.72,
+      "text": "我的世界 没有你没有终点",
+      "playable": true,
+      "melodyId": 24
+    },
+    {
+      "time": 150.78,
+      "text": "想倒流时间 想要回到你的身边",
+      "playable": true,
+      "melodyId": 9
+    },
+    {
+      "time": 153.76,
+      "text": "I, I’m missing you, I, I’m missing you, yeah",
+      "playable": false
+    },
+    {
+      "time": 158.09,
+      "text": "让我回到起点 让我从头爱你一遍",
+      "playable": true,
+      "melodyId": 10
+    },
+    {
+      "time": 161.37,
+      "text": "I, I’m missing you, I, I’m missing you, yeah",
+      "playable": false
+    },
+    {
+      "time": 165.39,
+      "text": "原来世界最远 不是距离而是昨天",
+      "playable": true,
+      "melodyId": 11
+    },
+    {
+      "time": 168.82,
+      "text": "I, I’m missing you, I, I’m missing you, yeah",
+      "playable": false
+    },
+    {
+      "time": 173.39,
+      "text": "即使你忘了 我还记得 我会纪念",
+      "playable": true,
+      "melodyId": 12
+    },
+    {
+      "time": 176.17000000000002,
+      "text": "I’ll be missing you, I’ll be missing you, yeah",
+      "playable": false
+    }
+  ],
+  "words": [
+    {
+      "char": "是",
+      "start": 0.861,
+      "end": 1.121,
+      "line": 0,
+      "confidence": 0.797
+    },
+    {
+      "char": "不",
+      "start": 1.121,
+      "end": 1.342,
+      "line": 0,
+      "confidence": 0.797
+    },
+    {
+      "char": "是",
+      "start": 1.342,
+      "end": 1.583,
+      "line": 0,
+      "confidence": 0.797
+    },
+    {
+      "char": "我",
+      "start": 1.583,
+      "end": 1.843,
+      "line": 0,
+      "confidence": 0.797
+    },
+    {
+      "char": "们",
+      "start": 1.843,
+      "end": 2.044,
+      "line": 0,
+      "confidence": 0.797
+    },
+    {
+      "char": "健",
+      "start": 2.044,
+      "end": 2.565,
+      "line": 0,
+      "confidence": 0.797
+    },
+    {
+      "char": "忘",
+      "start": 2.565,
+      "end": 3.325,
+      "line": 0,
+      "confidence": 0.797,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "才",
+      "start": 4.61,
+      "end": 4.852,
+      "line": 1,
+      "confidence": 0.8005714285714286
+    },
+    {
+      "char": "把",
+      "start": 4.852,
+      "end": 5.093,
+      "line": 1,
+      "confidence": 0.8005714285714286
+    },
+    {
+      "char": "爱",
+      "start": 5.093,
+      "end": 5.355,
+      "line": 1,
+      "confidence": 0.8005714285714286
+    },
+    {
+      "char": "留",
+      "start": 5.355,
+      "end": 5.596,
+      "line": 1,
+      "confidence": 0.8005714285714286
+    },
+    {
+      "char": "在",
+      "start": 5.596,
+      "end": 5.818,
+      "line": 1,
+      "confidence": 0.8005714285714286
+    },
+    {
+      "char": "过",
+      "start": 5.818,
+      "end": 6.119,
+      "line": 1,
+      "confidence": 0.8005714285714286
+    },
+    {
+      "char": "往",
+      "start": 6.119,
+      "end": 7.099,
+      "line": 1,
+      "confidence": 0.8005714285714286,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "回",
+      "start": 8.372,
+      "end": 8.593,
+      "line": 2,
+      "confidence": 0.7847142857142858
+    },
+    {
+      "char": "忆",
+      "start": 8.593,
+      "end": 8.834,
+      "line": 2,
+      "confidence": 0.7847142857142858
+    },
+    {
+      "char": "若",
+      "start": 8.834,
+      "end": 9.075,
+      "line": 2,
+      "confidence": 0.7847142857142858
+    },
+    {
+      "char": "被",
+      "start": 9.075,
+      "end": 9.295,
+      "line": 2,
+      "confidence": 0.7847142857142858
+    },
+    {
+      "char": "风",
+      "start": 9.295,
+      "end": 9.556,
+      "line": 2,
+      "confidence": 0.7847142857142858
+    },
+    {
+      "char": "吹",
+      "start": 9.556,
+      "end": 9.978,
+      "line": 2,
+      "confidence": 0.7847142857142858
+    },
+    {
+      "char": "散",
+      "start": 9.978,
+      "end": 10.518,
+      "line": 2,
+      "confidence": 0.7847142857142858,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "我",
+      "start": 10.52,
+      "end": 10.743,
+      "line": 3,
+      "confidence": 0.7653333333333333
+    },
+    {
+      "char": "该",
+      "start": 10.743,
+      "end": 10.986,
+      "line": 3,
+      "confidence": 0.7653333333333333
+    },
+    {
+      "char": "如",
+      "start": 10.986,
+      "end": 11.128,
+      "line": 3,
+      "confidence": 0.7653333333333333
+    },
+    {
+      "char": "何",
+      "start": 11.128,
+      "end": 11.472,
+      "line": 3,
+      "confidence": 0.7653333333333333
+    },
+    {
+      "char": "抵",
+      "start": 11.472,
+      "end": 11.938,
+      "line": 3,
+      "confidence": 0.7653333333333333
+    },
+    {
+      "char": "挡",
+      "start": 11.938,
+      "end": 12.378,
+      "line": 3,
+      "confidence": 0.7653333333333333,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "怎",
+      "start": 12.382,
+      "end": 12.523,
+      "line": 4,
+      "confidence": 0.8922000000000001
+    },
+    {
+      "char": "么",
+      "start": 12.523,
+      "end": 12.684,
+      "line": 4,
+      "confidence": 0.8922000000000001
+    },
+    {
+      "char": "才",
+      "start": 12.684,
+      "end": 12.885,
+      "line": 4,
+      "confidence": 0.8922000000000001
+    },
+    {
+      "char": "能",
+      "start": 12.885,
+      "end": 13.046,
+      "line": 4,
+      "confidence": 0.8922000000000001
+    },
+    {
+      "char": "回",
+      "start": 13.046,
+      "end": 13.187,
+      "line": 4,
+      "confidence": 0.8922000000000001
+    },
+    {
+      "char": "到",
+      "start": 13.187,
+      "end": 13.368,
+      "line": 4,
+      "confidence": 0.8922000000000001
+    },
+    {
+      "char": "你",
+      "start": 13.368,
+      "end": 13.529,
+      "line": 4,
+      "confidence": 0.8922000000000001
+    },
+    {
+      "char": "的",
+      "start": 13.529,
+      "end": 13.65,
+      "line": 4,
+      "confidence": 0.8922000000000001
+    },
+    {
+      "char": "身",
+      "start": 13.65,
+      "end": 13.911,
+      "line": 4,
+      "confidence": 0.8922000000000001
+    },
+    {
+      "char": "旁",
+      "start": 13.911,
+      "end": 14.841,
+      "line": 4,
+      "confidence": 0.8922000000000001,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "当",
+      "start": 15.863,
+      "end": 16.104,
+      "line": 5,
+      "confidence": 0.813125
+    },
+    {
+      "char": "我",
+      "start": 16.104,
+      "end": 16.365,
+      "line": 5,
+      "confidence": 0.813125
+    },
+    {
+      "char": "们",
+      "start": 16.365,
+      "end": 16.727,
+      "line": 5,
+      "confidence": 0.813125
+    },
+    {
+      "char": "拥",
+      "start": 16.727,
+      "end": 16.868,
+      "line": 5,
+      "confidence": 0.813125
+    },
+    {
+      "char": "抱",
+      "start": 16.868,
+      "end": 17.069,
+      "line": 5,
+      "confidence": 0.813125
+    },
+    {
+      "char": "着",
+      "start": 17.069,
+      "end": 17.39,
+      "line": 5,
+      "confidence": 0.813125
+    },
+    {
+      "char": "太",
+      "start": 17.39,
+      "end": 17.712,
+      "line": 5,
+      "confidence": 0.813125
+    },
+    {
+      "char": "阳",
+      "start": 17.712,
+      "end": 18.472,
+      "line": 5,
+      "confidence": 0.813125,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "不",
+      "start": 19.622,
+      "end": 19.742,
+      "line": 6,
+      "confidence": 0.8032222222222223
+    },
+    {
+      "char": "知",
+      "start": 19.742,
+      "end": 19.863,
+      "line": 6,
+      "confidence": 0.8032222222222223
+    },
+    {
+      "char": "背",
+      "start": 19.863,
+      "end": 20.104,
+      "line": 6,
+      "confidence": 0.8032222222222223
+    },
+    {
+      "char": "后",
+      "start": 20.104,
+      "end": 20.366,
+      "line": 6,
+      "confidence": 0.8032222222222223
+    },
+    {
+      "char": "的",
+      "start": 20.366,
+      "end": 20.587,
+      "line": 6,
+      "confidence": 0.8032222222222223
+    },
+    {
+      "char": "影",
+      "start": 20.587,
+      "end": 20.848,
+      "line": 6,
+      "confidence": 0.8032222222222223
+    },
+    {
+      "char": "子",
+      "start": 20.848,
+      "end": 21.27,
+      "line": 6,
+      "confidence": 0.8032222222222223
+    },
+    {
+      "char": "多",
+      "start": 21.27,
+      "end": 21.572,
+      "line": 6,
+      "confidence": 0.8032222222222223
+    },
+    {
+      "char": "长",
+      "start": 21.572,
+      "end": 22.942,
+      "line": 6,
+      "confidence": 0.8032222222222223,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "还",
+      "start": 23.361,
+      "end": 23.622,
+      "line": 7,
+      "confidence": 0.792125
+    },
+    {
+      "char": "以",
+      "start": 23.622,
+      "end": 23.963,
+      "line": 7,
+      "confidence": 0.792125
+    },
+    {
+      "char": "为",
+      "start": 23.963,
+      "end": 24.245,
+      "line": 7,
+      "confidence": 0.792125
+    },
+    {
+      "char": "我",
+      "start": 24.245,
+      "end": 24.365,
+      "line": 7,
+      "confidence": 0.792125
+    },
+    {
+      "char": "们",
+      "start": 24.365,
+      "end": 24.546,
+      "line": 7,
+      "confidence": 0.792125
+    },
+    {
+      "char": "够",
+      "start": 24.546,
+      "end": 24.887,
+      "line": 7,
+      "confidence": 0.792125
+    },
+    {
+      "char": "坚",
+      "start": 24.887,
+      "end": 25.188,
+      "line": 7,
+      "confidence": 0.792125
+    },
+    {
+      "char": "强",
+      "start": 25.188,
+      "end": 25.598,
+      "line": 7,
+      "confidence": 0.792125,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "难",
+      "start": 25.69,
+      "end": 25.931,
+      "line": 8,
+      "confidence": 0.809
+    },
+    {
+      "char": "道",
+      "start": 25.931,
+      "end": 26.151,
+      "line": 8,
+      "confidence": 0.809
+    },
+    {
+      "char": "是",
+      "start": 26.151,
+      "end": 26.371,
+      "line": 8,
+      "confidence": 0.809
+    },
+    {
+      "char": "回",
+      "start": 26.371,
+      "end": 27.193,
+      "line": 8,
+      "confidence": 0.809
+    },
+    {
+      "char": "忆",
+      "start": 27.193,
+      "end": 28.335,
+      "line": 8,
+      "confidence": 0.809
+    },
+    {
+      "char": "说",
+      "start": 28.335,
+      "end": 29.277,
+      "line": 8,
+      "confidence": 0.809
+    },
+    {
+      "char": "谎",
+      "start": 29.277,
+      "end": 30.327,
+      "line": 8,
+      "confidence": 0.809,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "想",
+      "start": 30.82,
+      "end": 31.101,
+      "line": 9,
+      "confidence": 0.8194615384615385
+    },
+    {
+      "char": "倒",
+      "start": 31.101,
+      "end": 31.322,
+      "line": 9,
+      "confidence": 0.8194615384615385
+    },
+    {
+      "char": "流",
+      "start": 31.322,
+      "end": 31.482,
+      "line": 9,
+      "confidence": 0.8194615384615385
+    },
+    {
+      "char": "时",
+      "start": 31.482,
+      "end": 31.823,
+      "line": 9,
+      "confidence": 0.8194615384615385
+    },
+    {
+      "char": "间",
+      "start": 31.823,
+      "end": 32.064,
+      "line": 9,
+      "confidence": 0.8194615384615385
+    },
+    {
+      "char": "想",
+      "start": 32.064,
+      "end": 32.285,
+      "line": 9,
+      "confidence": 0.8194615384615385
+    },
+    {
+      "char": "要",
+      "start": 32.285,
+      "end": 32.525,
+      "line": 9,
+      "confidence": 0.8194615384615385
+    },
+    {
+      "char": "回",
+      "start": 32.525,
+      "end": 32.766,
+      "line": 9,
+      "confidence": 0.8194615384615385
+    },
+    {
+      "char": "到",
+      "start": 32.766,
+      "end": 33.007,
+      "line": 9,
+      "confidence": 0.8194615384615385
+    },
+    {
+      "char": "你",
+      "start": 33.007,
+      "end": 33.208,
+      "line": 9,
+      "confidence": 0.8194615384615385
+    },
+    {
+      "char": "的",
+      "start": 33.208,
+      "end": 33.328,
+      "line": 9,
+      "confidence": 0.8194615384615385
+    },
+    {
+      "char": "身",
+      "start": 33.328,
+      "end": 33.448,
+      "line": 9,
+      "confidence": 0.8194615384615385
+    },
+    {
+      "char": "边",
+      "start": 33.448,
+      "end": 34.188,
+      "line": 9,
+      "confidence": 0.8194615384615385,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "让",
+      "start": 38.362,
+      "end": 38.503,
+      "line": 11,
+      "confidence": 0.8077142857142857
+    },
+    {
+      "char": "我",
+      "start": 38.503,
+      "end": 38.604,
+      "line": 11,
+      "confidence": 0.8077142857142857
+    },
+    {
+      "char": "回",
+      "start": 38.604,
+      "end": 38.845,
+      "line": 11,
+      "confidence": 0.8077142857142857
+    },
+    {
+      "char": "到",
+      "start": 38.845,
+      "end": 39.026,
+      "line": 11,
+      "confidence": 0.8077142857142857
+    },
+    {
+      "char": "起",
+      "start": 39.026,
+      "end": 39.288,
+      "line": 11,
+      "confidence": 0.8077142857142857
+    },
+    {
+      "char": "点",
+      "start": 39.288,
+      "end": 39.529,
+      "line": 11,
+      "confidence": 0.8077142857142857
+    },
+    {
+      "char": "让",
+      "start": 39.529,
+      "end": 39.791,
+      "line": 11,
+      "confidence": 0.8077142857142857
+    },
+    {
+      "char": "我",
+      "start": 39.791,
+      "end": 40.254,
+      "line": 11,
+      "confidence": 0.8077142857142857
+    },
+    {
+      "char": "从",
+      "start": 40.254,
+      "end": 40.435,
+      "line": 11,
+      "confidence": 0.8077142857142857
+    },
+    {
+      "char": "头",
+      "start": 40.435,
+      "end": 40.596,
+      "line": 11,
+      "confidence": 0.8077142857142857
+    },
+    {
+      "char": "爱",
+      "start": 40.596,
+      "end": 40.757,
+      "line": 11,
+      "confidence": 0.8077142857142857
+    },
+    {
+      "char": "你",
+      "start": 40.757,
+      "end": 40.898,
+      "line": 11,
+      "confidence": 0.8077142857142857
+    },
+    {
+      "char": "一",
+      "start": 40.898,
+      "end": 40.978,
+      "line": 11,
+      "confidence": 0.8077142857142857
+    },
+    {
+      "char": "遍",
+      "start": 40.978,
+      "end": 41.688,
+      "line": 11,
+      "confidence": 0.8077142857142857,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "原",
+      "start": 45.851,
+      "end": 45.992,
+      "line": 13,
+      "confidence": 0.8212857142857144
+    },
+    {
+      "char": "来",
+      "start": 45.992,
+      "end": 46.072,
+      "line": 13,
+      "confidence": 0.8212857142857144
+    },
+    {
+      "char": "世",
+      "start": 46.072,
+      "end": 46.333,
+      "line": 13,
+      "confidence": 0.8212857142857144
+    },
+    {
+      "char": "界",
+      "start": 46.333,
+      "end": 46.573,
+      "line": 13,
+      "confidence": 0.8212857142857144
+    },
+    {
+      "char": "最",
+      "start": 46.573,
+      "end": 46.794,
+      "line": 13,
+      "confidence": 0.8212857142857144
+    },
+    {
+      "char": "远",
+      "start": 46.794,
+      "end": 47.055,
+      "line": 13,
+      "confidence": 0.8212857142857144
+    },
+    {
+      "char": "不",
+      "start": 47.055,
+      "end": 47.235,
+      "line": 13,
+      "confidence": 0.8212857142857144
+    },
+    {
+      "char": "是",
+      "start": 47.235,
+      "end": 47.516,
+      "line": 13,
+      "confidence": 0.8212857142857144
+    },
+    {
+      "char": "距",
+      "start": 47.516,
+      "end": 47.837,
+      "line": 13,
+      "confidence": 0.8212857142857144
+    },
+    {
+      "char": "离",
+      "start": 47.837,
+      "end": 47.937,
+      "line": 13,
+      "confidence": 0.8212857142857144
+    },
+    {
+      "char": "而",
+      "start": 47.937,
+      "end": 48.178,
+      "line": 13,
+      "confidence": 0.8212857142857144
+    },
+    {
+      "char": "是",
+      "start": 48.178,
+      "end": 48.459,
+      "line": 13,
+      "confidence": 0.8212857142857144
+    },
+    {
+      "char": "昨",
+      "start": 48.459,
+      "end": 48.7,
+      "line": 13,
+      "confidence": 0.8212857142857144
+    },
+    {
+      "char": "天",
+      "start": 48.7,
+      "end": 49.2,
+      "line": 13,
+      "confidence": 0.8212857142857144,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "即",
+      "start": 53.362,
+      "end": 53.542,
+      "line": 15,
+      "confidence": 0.8426923076923077
+    },
+    {
+      "char": "使",
+      "start": 53.542,
+      "end": 53.863,
+      "line": 15,
+      "confidence": 0.8426923076923077
+    },
+    {
+      "char": "你",
+      "start": 53.863,
+      "end": 54.044,
+      "line": 15,
+      "confidence": 0.8426923076923077
+    },
+    {
+      "char": "忘",
+      "start": 54.044,
+      "end": 54.324,
+      "line": 15,
+      "confidence": 0.8426923076923077
+    },
+    {
+      "char": "了",
+      "start": 54.324,
+      "end": 54.585,
+      "line": 15,
+      "confidence": 0.8426923076923077
+    },
+    {
+      "char": "我",
+      "start": 54.585,
+      "end": 54.765,
+      "line": 15,
+      "confidence": 0.8426923076923077
+    },
+    {
+      "char": "还",
+      "start": 54.765,
+      "end": 55.006,
+      "line": 15,
+      "confidence": 0.8426923076923077
+    },
+    {
+      "char": "记",
+      "start": 55.006,
+      "end": 55.247,
+      "line": 15,
+      "confidence": 0.8426923076923077
+    },
+    {
+      "char": "得",
+      "start": 55.247,
+      "end": 55.487,
+      "line": 15,
+      "confidence": 0.8426923076923077
+    },
+    {
+      "char": "我",
+      "start": 55.487,
+      "end": 55.688,
+      "line": 15,
+      "confidence": 0.8426923076923077
+    },
+    {
+      "char": "会",
+      "start": 55.688,
+      "end": 55.949,
+      "line": 15,
+      "confidence": 0.8426923076923077
+    },
+    {
+      "char": "纪",
+      "start": 55.949,
+      "end": 56.189,
+      "line": 15,
+      "confidence": 0.8426923076923077
+    },
+    {
+      "char": "念",
+      "start": 56.189,
+      "end": 56.709,
+      "line": 15,
+      "confidence": 0.8426923076923077,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "看",
+      "start": 60.862,
+      "end": 60.962,
+      "line": 17,
+      "confidence": 0.8435833333333332
+    },
+    {
+      "char": "那",
+      "start": 60.962,
+      "end": 61.083,
+      "line": 17,
+      "confidence": 0.8435833333333332
+    },
+    {
+      "char": "鲜",
+      "start": 61.083,
+      "end": 61.324,
+      "line": 17,
+      "confidence": 0.8435833333333332
+    },
+    {
+      "char": "艳",
+      "start": 61.324,
+      "end": 61.565,
+      "line": 17,
+      "confidence": 0.8435833333333332
+    },
+    {
+      "char": "的",
+      "start": 61.565,
+      "end": 61.806,
+      "line": 17,
+      "confidence": 0.8435833333333332
+    },
+    {
+      "char": "花",
+      "start": 61.806,
+      "end": 62.308,
+      "line": 17,
+      "confidence": 0.8435833333333332
+    },
+    {
+      "char": "瓣",
+      "start": 62.308,
+      "end": 62.749,
+      "line": 17,
+      "confidence": 0.8435833333333332
+    },
+    {
+      "char": "开",
+      "start": 62.749,
+      "end": 63.011,
+      "line": 17,
+      "confidence": 0.8435833333333332
+    },
+    {
+      "char": "得",
+      "start": 63.011,
+      "end": 63.231,
+      "line": 17,
+      "confidence": 0.8435833333333332
+    },
+    {
+      "char": "多",
+      "start": 63.231,
+      "end": 63.452,
+      "line": 17,
+      "confidence": 0.8435833333333332
+    },
+    {
+      "char": "漂",
+      "start": 63.452,
+      "end": 63.713,
+      "line": 17,
+      "confidence": 0.8435833333333332
+    },
+    {
+      "char": "亮",
+      "start": 63.713,
+      "end": 65.193,
+      "line": 17,
+      "confidence": 0.8435833333333332,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "她",
+      "start": 65.28,
+      "end": 65.32,
+      "line": 18,
+      "confidence": 0.49833333333333335
+    },
+    {
+      "char": "是",
+      "start": 65.32,
+      "end": 65.34,
+      "line": 18,
+      "confidence": 0.49833333333333335
+    },
+    {
+      "char": "否",
+      "start": 65.34,
+      "end": 65.481,
+      "line": 18,
+      "confidence": 0.49833333333333335
+    },
+    {
+      "char": "也",
+      "start": 65.481,
+      "end": 65.661,
+      "line": 18,
+      "confidence": 0.49833333333333335
+    },
+    {
+      "char": "会",
+      "start": 65.661,
+      "end": 65.782,
+      "line": 18,
+      "confidence": 0.49833333333333335
+    },
+    {
+      "char": "被",
+      "start": 65.782,
+      "end": 65.802,
+      "line": 18,
+      "confidence": 0.49833333333333335
+    },
+    {
+      "char": "你",
+      "start": 65.802,
+      "end": 66.765,
+      "line": 18,
+      "confidence": 0.49833333333333335
+    },
+    {
+      "char": "慢",
+      "start": 66.765,
+      "end": 66.785,
+      "line": 18,
+      "confidence": 0.49833333333333335
+    },
+    {
+      "char": "慢",
+      "start": 66.785,
+      "end": 66.825,
+      "line": 18,
+      "confidence": 0.49833333333333335
+    },
+    {
+      "char": "地",
+      "start": 66.825,
+      "end": 67.126,
+      "line": 18,
+      "confidence": 0.49833333333333335
+    },
+    {
+      "char": "遗",
+      "start": 67.126,
+      "end": 67.166,
+      "line": 18,
+      "confidence": 0.49833333333333335
+    },
+    {
+      "char": "忘",
+      "start": 67.166,
+      "end": 67.186,
+      "line": 18,
+      "confidence": 0.49833333333333335,
+      "tailReview": true
+    },
+    {
+      "char": "远",
+      "start": 68.39,
+      "end": 68.571,
+      "line": 19,
+      "confidence": 0.8392857142857143
+    },
+    {
+      "char": "去",
+      "start": 68.571,
+      "end": 68.852,
+      "line": 19,
+      "confidence": 0.8392857142857143
+    },
+    {
+      "char": "的",
+      "start": 68.852,
+      "end": 69.033,
+      "line": 19,
+      "confidence": 0.8392857142857143
+    },
+    {
+      "char": "时",
+      "start": 69.033,
+      "end": 69.334,
+      "line": 19,
+      "confidence": 0.8392857142857143
+    },
+    {
+      "char": "光",
+      "start": 69.334,
+      "end": 70.258,
+      "line": 19,
+      "confidence": 0.8392857142857143
+    },
+    {
+      "char": "从",
+      "start": 70.258,
+      "end": 70.419,
+      "line": 19,
+      "confidence": 0.8392857142857143
+    },
+    {
+      "char": "来",
+      "start": 70.419,
+      "end": 70.559,
+      "line": 19,
+      "confidence": 0.8392857142857143
+    },
+    {
+      "char": "也",
+      "start": 70.559,
+      "end": 70.7,
+      "line": 19,
+      "confidence": 0.8392857142857143
+    },
+    {
+      "char": "没",
+      "start": 70.7,
+      "end": 70.861,
+      "line": 19,
+      "confidence": 0.8392857142857143
+    },
+    {
+      "char": "有",
+      "start": 70.861,
+      "end": 71.001,
+      "line": 19,
+      "confidence": 0.8392857142857143
+    },
+    {
+      "char": "一",
+      "start": 71.001,
+      "end": 71.142,
+      "line": 19,
+      "confidence": 0.8392857142857143
+    },
+    {
+      "char": "丝",
+      "start": 71.142,
+      "end": 71.343,
+      "line": 19,
+      "confidence": 0.8392857142857143
+    },
+    {
+      "char": "幽",
+      "start": 71.343,
+      "end": 71.524,
+      "line": 19,
+      "confidence": 0.8392857142857143
+    },
+    {
+      "char": "暗",
+      "start": 71.524,
+      "end": 72.524,
+      "line": 19,
+      "confidence": 0.8392857142857143,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "你",
+      "start": 73.01,
+      "end": 73.311,
+      "line": 20,
+      "confidence": 0.6975
+    },
+    {
+      "char": "怎",
+      "start": 73.311,
+      "end": 73.652,
+      "line": 20,
+      "confidence": 0.6975
+    },
+    {
+      "char": "么",
+      "start": 73.652,
+      "end": 73.954,
+      "line": 20,
+      "confidence": 0.6975
+    },
+    {
+      "char": "舍",
+      "start": 73.954,
+      "end": 73.974,
+      "line": 20,
+      "confidence": 0.6975
+    },
+    {
+      "char": "得",
+      "start": 73.974,
+      "end": 74.295,
+      "line": 20,
+      "confidence": 0.6975
+    },
+    {
+      "char": "让",
+      "start": 74.295,
+      "end": 74.455,
+      "line": 20,
+      "confidence": 0.6975
+    },
+    {
+      "char": "它",
+      "start": 74.455,
+      "end": 74.676,
+      "line": 20,
+      "confidence": 0.6975
+    },
+    {
+      "char": "被",
+      "start": 74.676,
+      "end": 74.897,
+      "line": 20,
+      "confidence": 0.6975
+    },
+    {
+      "char": "遗",
+      "start": 74.897,
+      "end": 75.098,
+      "line": 20,
+      "confidence": 0.6975
+    },
+    {
+      "char": "忘",
+      "start": 75.098,
+      "end": 75.66,
+      "line": 20,
+      "confidence": 0.6975,
+      "tailReview": true
+    },
+    {
+      "char": "当",
+      "start": 75.84,
+      "end": 76.161,
+      "line": 21,
+      "confidence": 0.796125
+    },
+    {
+      "char": "我",
+      "start": 76.161,
+      "end": 76.342,
+      "line": 21,
+      "confidence": 0.796125
+    },
+    {
+      "char": "们",
+      "start": 76.342,
+      "end": 76.602,
+      "line": 21,
+      "confidence": 0.796125
+    },
+    {
+      "char": "拥",
+      "start": 76.602,
+      "end": 76.823,
+      "line": 21,
+      "confidence": 0.796125
+    },
+    {
+      "char": "抱",
+      "start": 76.823,
+      "end": 77.063,
+      "line": 21,
+      "confidence": 0.796125
+    },
+    {
+      "char": "着",
+      "start": 77.063,
+      "end": 77.344,
+      "line": 21,
+      "confidence": 0.796125
+    },
+    {
+      "char": "太",
+      "start": 77.344,
+      "end": 77.585,
+      "line": 21,
+      "confidence": 0.796125
+    },
+    {
+      "char": "阳",
+      "start": 77.585,
+      "end": 78.355,
+      "line": 21,
+      "confidence": 0.796125,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "不",
+      "start": 79.81,
+      "end": 79.83,
+      "line": 22,
+      "confidence": 0.602
+    },
+    {
+      "char": "知",
+      "start": 79.83,
+      "end": 79.85,
+      "line": 22,
+      "confidence": 0.602
+    },
+    {
+      "char": "背",
+      "start": 79.85,
+      "end": 80.052,
+      "line": 22,
+      "confidence": 0.602
+    },
+    {
+      "char": "后",
+      "start": 80.052,
+      "end": 80.313,
+      "line": 22,
+      "confidence": 0.602
+    },
+    {
+      "char": "的",
+      "start": 80.313,
+      "end": 80.535,
+      "line": 22,
+      "confidence": 0.602
+    },
+    {
+      "char": "影",
+      "start": 80.535,
+      "end": 80.816,
+      "line": 22,
+      "confidence": 0.602
+    },
+    {
+      "char": "子",
+      "start": 80.816,
+      "end": 80.957,
+      "line": 22,
+      "confidence": 0.602
+    },
+    {
+      "char": "多",
+      "start": 80.957,
+      "end": 81.179,
+      "line": 22,
+      "confidence": 0.602
+    },
+    {
+      "char": "长",
+      "start": 81.179,
+      "end": 81.369,
+      "line": 22,
+      "confidence": 0.602,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "还",
+      "start": 83.353,
+      "end": 83.937,
+      "line": 23,
+      "confidence": 0.7565
+    },
+    {
+      "char": "以",
+      "start": 83.937,
+      "end": 84.119,
+      "line": 23,
+      "confidence": 0.7565
+    },
+    {
+      "char": "为",
+      "start": 84.119,
+      "end": 84.24,
+      "line": 23,
+      "confidence": 0.7565
+    },
+    {
+      "char": "我",
+      "start": 84.24,
+      "end": 84.34,
+      "line": 23,
+      "confidence": 0.7565
+    },
+    {
+      "char": "们",
+      "start": 84.34,
+      "end": 84.502,
+      "line": 23,
+      "confidence": 0.7565
+    },
+    {
+      "char": "够",
+      "start": 84.502,
+      "end": 84.844,
+      "line": 23,
+      "confidence": 0.7565
+    },
+    {
+      "char": "坚",
+      "start": 84.844,
+      "end": 85.005,
+      "line": 23,
+      "confidence": 0.7565
+    },
+    {
+      "char": "强",
+      "start": 85.005,
+      "end": 85.685,
+      "line": 23,
+      "confidence": 0.7565,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "难",
+      "start": 85.69,
+      "end": 85.931,
+      "line": 24,
+      "confidence": 0.8008571428571428
+    },
+    {
+      "char": "道",
+      "start": 85.931,
+      "end": 86.171,
+      "line": 24,
+      "confidence": 0.8008571428571428
+    },
+    {
+      "char": "是",
+      "start": 86.171,
+      "end": 86.392,
+      "line": 24,
+      "confidence": 0.8008571428571428
+    },
+    {
+      "char": "回",
+      "start": 86.392,
+      "end": 86.692,
+      "line": 24,
+      "confidence": 0.8008571428571428
+    },
+    {
+      "char": "忆",
+      "start": 86.692,
+      "end": 87.193,
+      "line": 24,
+      "confidence": 0.8008571428571428
+    },
+    {
+      "char": "说",
+      "start": 87.193,
+      "end": 88.255,
+      "line": 24,
+      "confidence": 0.8008571428571428
+    },
+    {
+      "char": "谎",
+      "start": 88.255,
+      "end": 91.355,
+      "line": 24,
+      "confidence": 0.8008571428571428,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "想",
+      "start": 91.364,
+      "end": 91.585,
+      "line": 25,
+      "confidence": 0.781
+    },
+    {
+      "char": "倒",
+      "start": 91.585,
+      "end": 91.827,
+      "line": 25,
+      "confidence": 0.781
+    },
+    {
+      "char": "流",
+      "start": 91.827,
+      "end": 91.947,
+      "line": 25,
+      "confidence": 0.781
+    },
+    {
+      "char": "时",
+      "start": 91.947,
+      "end": 92.008,
+      "line": 25,
+      "confidence": 0.781
+    },
+    {
+      "char": "间",
+      "start": 92.008,
+      "end": 92.289,
+      "line": 25,
+      "confidence": 0.781
+    },
+    {
+      "char": "想",
+      "start": 92.289,
+      "end": 92.37,
+      "line": 25,
+      "confidence": 0.781
+    },
+    {
+      "char": "要",
+      "start": 92.37,
+      "end": 92.511,
+      "line": 25,
+      "confidence": 0.781
+    },
+    {
+      "char": "回",
+      "start": 92.511,
+      "end": 92.632,
+      "line": 25,
+      "confidence": 0.781
+    },
+    {
+      "char": "到",
+      "start": 92.632,
+      "end": 92.772,
+      "line": 25,
+      "confidence": 0.781
+    },
+    {
+      "char": "你",
+      "start": 92.772,
+      "end": 93.215,
+      "line": 25,
+      "confidence": 0.781
+    },
+    {
+      "char": "的",
+      "start": 93.215,
+      "end": 93.316,
+      "line": 25,
+      "confidence": 0.781
+    },
+    {
+      "char": "身",
+      "start": 93.316,
+      "end": 93.457,
+      "line": 25,
+      "confidence": 0.781
+    },
+    {
+      "char": "边",
+      "start": 93.457,
+      "end": 94.227,
+      "line": 25,
+      "confidence": 0.781,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "让",
+      "start": 98.363,
+      "end": 98.504,
+      "line": 27,
+      "confidence": 0.7922142857142856
+    },
+    {
+      "char": "我",
+      "start": 98.504,
+      "end": 98.625,
+      "line": 27,
+      "confidence": 0.7922142857142856
+    },
+    {
+      "char": "回",
+      "start": 98.625,
+      "end": 98.846,
+      "line": 27,
+      "confidence": 0.7922142857142856
+    },
+    {
+      "char": "到",
+      "start": 98.846,
+      "end": 99.027,
+      "line": 27,
+      "confidence": 0.7922142857142856
+    },
+    {
+      "char": "起",
+      "start": 99.027,
+      "end": 99.148,
+      "line": 27,
+      "confidence": 0.7922142857142856
+    },
+    {
+      "char": "点",
+      "start": 99.148,
+      "end": 99.289,
+      "line": 27,
+      "confidence": 0.7922142857142856
+    },
+    {
+      "char": "让",
+      "start": 99.289,
+      "end": 99.792,
+      "line": 27,
+      "confidence": 0.7922142857142856
+    },
+    {
+      "char": "我",
+      "start": 99.792,
+      "end": 100.013,
+      "line": 27,
+      "confidence": 0.7922142857142856
+    },
+    {
+      "char": "从",
+      "start": 100.013,
+      "end": 100.375,
+      "line": 27,
+      "confidence": 0.7922142857142856
+    },
+    {
+      "char": "头",
+      "start": 100.375,
+      "end": 100.556,
+      "line": 27,
+      "confidence": 0.7922142857142856
+    },
+    {
+      "char": "爱",
+      "start": 100.556,
+      "end": 100.757,
+      "line": 27,
+      "confidence": 0.7922142857142856
+    },
+    {
+      "char": "你",
+      "start": 100.757,
+      "end": 100.878,
+      "line": 27,
+      "confidence": 0.7922142857142856
+    },
+    {
+      "char": "一",
+      "start": 100.878,
+      "end": 100.978,
+      "line": 27,
+      "confidence": 0.7922142857142856
+    },
+    {
+      "char": "遍",
+      "start": 100.978,
+      "end": 101.688,
+      "line": 27,
+      "confidence": 0.7922142857142856,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "原",
+      "start": 105.843,
+      "end": 105.983,
+      "line": 29,
+      "confidence": 0.832
+    },
+    {
+      "char": "来",
+      "start": 105.983,
+      "end": 106.064,
+      "line": 29,
+      "confidence": 0.832
+    },
+    {
+      "char": "世",
+      "start": 106.064,
+      "end": 106.345,
+      "line": 29,
+      "confidence": 0.832
+    },
+    {
+      "char": "界",
+      "start": 106.345,
+      "end": 106.567,
+      "line": 29,
+      "confidence": 0.832
+    },
+    {
+      "char": "最",
+      "start": 106.567,
+      "end": 106.788,
+      "line": 29,
+      "confidence": 0.832
+    },
+    {
+      "char": "远",
+      "start": 106.788,
+      "end": 107.049,
+      "line": 29,
+      "confidence": 0.832
+    },
+    {
+      "char": "不",
+      "start": 107.049,
+      "end": 107.23,
+      "line": 29,
+      "confidence": 0.832
+    },
+    {
+      "char": "是",
+      "start": 107.23,
+      "end": 107.512,
+      "line": 29,
+      "confidence": 0.832
+    },
+    {
+      "char": "距",
+      "start": 107.512,
+      "end": 107.753,
+      "line": 29,
+      "confidence": 0.832
+    },
+    {
+      "char": "离",
+      "start": 107.753,
+      "end": 107.874,
+      "line": 29,
+      "confidence": 0.832
+    },
+    {
+      "char": "而",
+      "start": 107.874,
+      "end": 108.196,
+      "line": 29,
+      "confidence": 0.832
+    },
+    {
+      "char": "是",
+      "start": 108.196,
+      "end": 108.437,
+      "line": 29,
+      "confidence": 0.832
+    },
+    {
+      "char": "昨",
+      "start": 108.437,
+      "end": 108.759,
+      "line": 29,
+      "confidence": 0.832
+    },
+    {
+      "char": "天",
+      "start": 108.759,
+      "end": 110.499,
+      "line": 29,
+      "confidence": 0.832,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "即",
+      "start": 113.363,
+      "end": 113.504,
+      "line": 31,
+      "confidence": 0.8171538461538461
+    },
+    {
+      "char": "使",
+      "start": 113.504,
+      "end": 113.846,
+      "line": 31,
+      "confidence": 0.8171538461538461
+    },
+    {
+      "char": "你",
+      "start": 113.846,
+      "end": 114.108,
+      "line": 31,
+      "confidence": 0.8171538461538461
+    },
+    {
+      "char": "忘",
+      "start": 114.108,
+      "end": 114.349,
+      "line": 31,
+      "confidence": 0.8171538461538461
+    },
+    {
+      "char": "了",
+      "start": 114.349,
+      "end": 114.55,
+      "line": 31,
+      "confidence": 0.8171538461538461
+    },
+    {
+      "char": "我",
+      "start": 114.55,
+      "end": 114.812,
+      "line": 31,
+      "confidence": 0.8171538461538461
+    },
+    {
+      "char": "还",
+      "start": 114.812,
+      "end": 115.013,
+      "line": 31,
+      "confidence": 0.8171538461538461
+    },
+    {
+      "char": "记",
+      "start": 115.013,
+      "end": 115.274,
+      "line": 31,
+      "confidence": 0.8171538461538461
+    },
+    {
+      "char": "得",
+      "start": 115.274,
+      "end": 115.395,
+      "line": 31,
+      "confidence": 0.8171538461538461
+    },
+    {
+      "char": "我",
+      "start": 115.395,
+      "end": 115.737,
+      "line": 31,
+      "confidence": 0.8171538461538461
+    },
+    {
+      "char": "会",
+      "start": 115.737,
+      "end": 115.938,
+      "line": 31,
+      "confidence": 0.8171538461538461
+    },
+    {
+      "char": "纪",
+      "start": 115.938,
+      "end": 116.22,
+      "line": 31,
+      "confidence": 0.8171538461538461
+    },
+    {
+      "char": "念",
+      "start": 116.22,
+      "end": 116.69,
+      "line": 31,
+      "confidence": 0.8171538461538461,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "想",
+      "start": 120.89,
+      "end": 121.071,
+      "line": 34,
+      "confidence": 0.8320909090909091
+    },
+    {
+      "char": "倒",
+      "start": 121.071,
+      "end": 121.333,
+      "line": 34,
+      "confidence": 0.8320909090909091
+    },
+    {
+      "char": "流",
+      "start": 121.333,
+      "end": 121.534,
+      "line": 34,
+      "confidence": 0.8320909090909091
+    },
+    {
+      "char": "时",
+      "start": 121.534,
+      "end": 121.816,
+      "line": 34,
+      "confidence": 0.8320909090909091
+    },
+    {
+      "char": "间",
+      "start": 121.816,
+      "end": 122.037,
+      "line": 34,
+      "confidence": 0.8320909090909091
+    },
+    {
+      "char": "回",
+      "start": 122.037,
+      "end": 122.279,
+      "line": 34,
+      "confidence": 0.8320909090909091
+    },
+    {
+      "char": "到",
+      "start": 122.279,
+      "end": 122.5,
+      "line": 34,
+      "confidence": 0.8320909090909091
+    },
+    {
+      "char": "初",
+      "start": 122.5,
+      "end": 122.802,
+      "line": 34,
+      "confidence": 0.8320909090909091
+    },
+    {
+      "char": "次",
+      "start": 122.802,
+      "end": 123.084,
+      "line": 34,
+      "confidence": 0.8320909090909091
+    },
+    {
+      "char": "遇",
+      "start": 123.084,
+      "end": 123.426,
+      "line": 34,
+      "confidence": 0.8320909090909091
+    },
+    {
+      "char": "见",
+      "start": 123.426,
+      "end": 124.016,
+      "line": 34,
+      "confidence": 0.8320909090909091,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "想",
+      "start": 124.591,
+      "end": 124.852,
+      "line": 35,
+      "confidence": 0.8282727272727274
+    },
+    {
+      "char": "倒",
+      "start": 124.852,
+      "end": 125.073,
+      "line": 35,
+      "confidence": 0.8282727272727274
+    },
+    {
+      "char": "流",
+      "start": 125.073,
+      "end": 125.293,
+      "line": 35,
+      "confidence": 0.8282727272727274
+    },
+    {
+      "char": "时",
+      "start": 125.293,
+      "end": 125.534,
+      "line": 35,
+      "confidence": 0.8282727272727274
+    },
+    {
+      "char": "间",
+      "start": 125.534,
+      "end": 125.794,
+      "line": 35,
+      "confidence": 0.8282727272727274
+    },
+    {
+      "char": "回",
+      "start": 125.794,
+      "end": 126.035,
+      "line": 35,
+      "confidence": 0.8282727272727274
+    },
+    {
+      "char": "到",
+      "start": 126.035,
+      "end": 126.235,
+      "line": 35,
+      "confidence": 0.8282727272727274
+    },
+    {
+      "char": "那",
+      "start": 126.235,
+      "end": 126.496,
+      "line": 35,
+      "confidence": 0.8282727272727274
+    },
+    {
+      "char": "个",
+      "start": 126.496,
+      "end": 126.697,
+      "line": 35,
+      "confidence": 0.8282727272727274
+    },
+    {
+      "char": "夏",
+      "start": 126.697,
+      "end": 126.957,
+      "line": 35,
+      "confidence": 0.8282727272727274
+    },
+    {
+      "char": "天",
+      "start": 126.957,
+      "end": 127.097,
+      "line": 35,
+      "confidence": 0.8282727272727274,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "倒",
+      "start": 128.361,
+      "end": 128.602,
+      "line": 36,
+      "confidence": 0.8381818181818183
+    },
+    {
+      "char": "流",
+      "start": 128.602,
+      "end": 128.802,
+      "line": 36,
+      "confidence": 0.8381818181818183
+    },
+    {
+      "char": "眼",
+      "start": 128.802,
+      "end": 129.043,
+      "line": 36,
+      "confidence": 0.8381818181818183
+    },
+    {
+      "char": "泪",
+      "start": 129.043,
+      "end": 129.544,
+      "line": 36,
+      "confidence": 0.8381818181818183
+    },
+    {
+      "char": "找",
+      "start": 129.544,
+      "end": 129.785,
+      "line": 36,
+      "confidence": 0.8381818181818183
+    },
+    {
+      "char": "回",
+      "start": 129.785,
+      "end": 129.965,
+      "line": 36,
+      "confidence": 0.8381818181818183
+    },
+    {
+      "char": "失",
+      "start": 129.965,
+      "end": 130.206,
+      "line": 36,
+      "confidence": 0.8381818181818183
+    },
+    {
+      "char": "去",
+      "start": 130.206,
+      "end": 130.487,
+      "line": 36,
+      "confidence": 0.8381818181818183
+    },
+    {
+      "char": "的",
+      "start": 130.487,
+      "end": 130.768,
+      "line": 36,
+      "confidence": 0.8381818181818183
+    },
+    {
+      "char": "笑",
+      "start": 130.768,
+      "end": 131.189,
+      "line": 36,
+      "confidence": 0.8381818181818183
+    },
+    {
+      "char": "脸",
+      "start": 131.189,
+      "end": 131.519,
+      "line": 36,
+      "confidence": 0.8381818181818183,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "倒",
+      "start": 132.112,
+      "end": 132.354,
+      "line": 37,
+      "confidence": 0.8335454545454546
+    },
+    {
+      "char": "流",
+      "start": 132.354,
+      "end": 132.494,
+      "line": 37,
+      "confidence": 0.8335454545454546
+    },
+    {
+      "char": "雨",
+      "start": 132.494,
+      "end": 132.796,
+      "line": 37,
+      "confidence": 0.8335454545454546
+    },
+    {
+      "char": "水",
+      "start": 132.796,
+      "end": 133.299,
+      "line": 37,
+      "confidence": 0.8335454545454546
+    },
+    {
+      "char": "还",
+      "start": 133.299,
+      "end": 133.54,
+      "line": 37,
+      "confidence": 0.8335454545454546
+    },
+    {
+      "char": "我",
+      "start": 133.54,
+      "end": 133.721,
+      "line": 37,
+      "confidence": 0.8335454545454546
+    },
+    {
+      "char": "们",
+      "start": 133.721,
+      "end": 133.962,
+      "line": 37,
+      "confidence": 0.8335454545454546
+    },
+    {
+      "char": "一",
+      "start": 133.962,
+      "end": 134.244,
+      "line": 37,
+      "confidence": 0.8335454545454546
+    },
+    {
+      "char": "个",
+      "start": 134.244,
+      "end": 134.525,
+      "line": 37,
+      "confidence": 0.8335454545454546
+    },
+    {
+      "char": "晴",
+      "start": 134.525,
+      "end": 134.927,
+      "line": 37,
+      "confidence": 0.8335454545454546
+    },
+    {
+      "char": "天",
+      "start": 134.927,
+      "end": 135.237,
+      "line": 37,
+      "confidence": 0.8335454545454546,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "想",
+      "start": 135.832,
+      "end": 136.133,
+      "line": 38,
+      "confidence": 0.8138181818181818
+    },
+    {
+      "char": "倒",
+      "start": 136.133,
+      "end": 136.334,
+      "line": 38,
+      "confidence": 0.8138181818181818
+    },
+    {
+      "char": "流",
+      "start": 136.334,
+      "end": 136.575,
+      "line": 38,
+      "confidence": 0.8138181818181818
+    },
+    {
+      "char": "时",
+      "start": 136.575,
+      "end": 136.837,
+      "line": 38,
+      "confidence": 0.8138181818181818
+    },
+    {
+      "char": "间",
+      "start": 136.837,
+      "end": 137.62,
+      "line": 38,
+      "confidence": 0.8138181818181818
+    },
+    {
+      "char": "回",
+      "start": 137.62,
+      "end": 137.781,
+      "line": 38,
+      "confidence": 0.8138181818181818
+    },
+    {
+      "char": "到",
+      "start": 137.781,
+      "end": 137.902,
+      "line": 38,
+      "confidence": 0.8138181818181818
+    },
+    {
+      "char": "你",
+      "start": 137.902,
+      "end": 138.002,
+      "line": 38,
+      "confidence": 0.8138181818181818
+    },
+    {
+      "char": "的",
+      "start": 138.002,
+      "end": 138.465,
+      "line": 38,
+      "confidence": 0.8138181818181818
+    },
+    {
+      "char": "身",
+      "start": 138.465,
+      "end": 138.726,
+      "line": 38,
+      "confidence": 0.8138181818181818
+    },
+    {
+      "char": "边",
+      "start": 138.726,
+      "end": 139.166,
+      "line": 38,
+      "confidence": 0.8138181818181818,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "想",
+      "start": 139.61,
+      "end": 139.851,
+      "line": 39,
+      "confidence": 0.6942
+    },
+    {
+      "char": "倒",
+      "start": 139.851,
+      "end": 140.011,
+      "line": 39,
+      "confidence": 0.6942
+    },
+    {
+      "char": "流",
+      "start": 140.011,
+      "end": 140.292,
+      "line": 39,
+      "confidence": 0.6942
+    },
+    {
+      "char": "时",
+      "start": 140.292,
+      "end": 140.573,
+      "line": 39,
+      "confidence": 0.6942
+    },
+    {
+      "char": "间",
+      "start": 140.573,
+      "end": 140.753,
+      "line": 39,
+      "confidence": 0.6942
+    },
+    {
+      "char": "爱",
+      "start": 140.753,
+      "end": 140.834,
+      "line": 39,
+      "confidence": 0.6942
+    },
+    {
+      "char": "你",
+      "start": 140.834,
+      "end": 141.516,
+      "line": 39,
+      "confidence": 0.6942
+    },
+    {
+      "char": "多",
+      "start": 141.516,
+      "end": 141.756,
+      "line": 39,
+      "confidence": 0.6942
+    },
+    {
+      "char": "一",
+      "start": 141.756,
+      "end": 141.776,
+      "line": 39,
+      "confidence": 0.6942
+    },
+    {
+      "char": "遍",
+      "start": 141.776,
+      "end": 142.386,
+      "line": 39,
+      "confidence": 0.6942,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "在",
+      "start": 143.402,
+      "end": 143.643,
+      "line": 40,
+      "confidence": 0.7318181818181819
+    },
+    {
+      "char": "你",
+      "start": 143.643,
+      "end": 143.985,
+      "line": 40,
+      "confidence": 0.7318181818181819
+    },
+    {
+      "char": "耳",
+      "start": 143.985,
+      "end": 144.126,
+      "line": 40,
+      "confidence": 0.7318181818181819
+    },
+    {
+      "char": "边",
+      "start": 144.126,
+      "end": 144.588,
+      "line": 40,
+      "confidence": 0.7318181818181819
+    },
+    {
+      "char": "说",
+      "start": 144.588,
+      "end": 145.031,
+      "line": 40,
+      "confidence": 0.7318181818181819
+    },
+    {
+      "char": "我",
+      "start": 145.031,
+      "end": 145.292,
+      "line": 40,
+      "confidence": 0.7318181818181819
+    },
+    {
+      "char": "爱",
+      "start": 145.292,
+      "end": 145.493,
+      "line": 40,
+      "confidence": 0.7318181818181819
+    },
+    {
+      "char": "你",
+      "start": 145.493,
+      "end": 145.513,
+      "line": 40,
+      "confidence": 0.7318181818181819
+    },
+    {
+      "char": "到",
+      "start": 145.513,
+      "end": 145.855,
+      "line": 40,
+      "confidence": 0.7318181818181819
+    },
+    {
+      "char": "永",
+      "start": 145.855,
+      "end": 146.077,
+      "line": 40,
+      "confidence": 0.7318181818181819
+    },
+    {
+      "char": "远",
+      "start": 146.077,
+      "end": 146.537,
+      "line": 40,
+      "confidence": 0.7318181818181819,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "我",
+      "start": 147.102,
+      "end": 147.383,
+      "line": 41,
+      "confidence": 0.8297272727272728
+    },
+    {
+      "char": "的",
+      "start": 147.383,
+      "end": 147.624,
+      "line": 41,
+      "confidence": 0.8297272727272728
+    },
+    {
+      "char": "世",
+      "start": 147.624,
+      "end": 147.866,
+      "line": 41,
+      "confidence": 0.8297272727272728
+    },
+    {
+      "char": "界",
+      "start": 147.866,
+      "end": 148.328,
+      "line": 41,
+      "confidence": 0.8297272727272728
+    },
+    {
+      "char": "没",
+      "start": 148.328,
+      "end": 148.589,
+      "line": 41,
+      "confidence": 0.8297272727272728
+    },
+    {
+      "char": "有",
+      "start": 148.589,
+      "end": 148.79,
+      "line": 41,
+      "confidence": 0.8297272727272728
+    },
+    {
+      "char": "你",
+      "start": 148.79,
+      "end": 148.971,
+      "line": 41,
+      "confidence": 0.8297272727272728
+    },
+    {
+      "char": "没",
+      "start": 148.971,
+      "end": 149.212,
+      "line": 41,
+      "confidence": 0.8297272727272728
+    },
+    {
+      "char": "有",
+      "start": 149.212,
+      "end": 149.574,
+      "line": 41,
+      "confidence": 0.8297272727272728
+    },
+    {
+      "char": "终",
+      "start": 149.574,
+      "end": 149.956,
+      "line": 41,
+      "confidence": 0.8297272727272728
+    },
+    {
+      "char": "点",
+      "start": 149.956,
+      "end": 150.876,
+      "line": 41,
+      "confidence": 0.8297272727272728,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "想",
+      "start": 150.881,
+      "end": 151.263,
+      "line": 42,
+      "confidence": 0.608
+    },
+    {
+      "char": "倒",
+      "start": 151.263,
+      "end": 151.324,
+      "line": 42,
+      "confidence": 0.608
+    },
+    {
+      "char": "流",
+      "start": 151.324,
+      "end": 151.585,
+      "line": 42,
+      "confidence": 0.608
+    },
+    {
+      "char": "时",
+      "start": 151.585,
+      "end": 151.606,
+      "line": 42,
+      "confidence": 0.608
+    },
+    {
+      "char": "间",
+      "start": 151.606,
+      "end": 151.827,
+      "line": 42,
+      "confidence": 0.608
+    },
+    {
+      "char": "想",
+      "start": 151.827,
+      "end": 152.049,
+      "line": 42,
+      "confidence": 0.608
+    },
+    {
+      "char": "要",
+      "start": 152.049,
+      "end": 152.33,
+      "line": 42,
+      "confidence": 0.608
+    },
+    {
+      "char": "回",
+      "start": 152.33,
+      "end": 152.351,
+      "line": 42,
+      "confidence": 0.608
+    },
+    {
+      "char": "到",
+      "start": 152.351,
+      "end": 152.512,
+      "line": 42,
+      "confidence": 0.608
+    },
+    {
+      "char": "你",
+      "start": 152.512,
+      "end": 152.532,
+      "line": 42,
+      "confidence": 0.608
+    },
+    {
+      "char": "的",
+      "start": 152.532,
+      "end": 152.753,
+      "line": 42,
+      "confidence": 0.608
+    },
+    {
+      "char": "身",
+      "start": 152.753,
+      "end": 152.955,
+      "line": 42,
+      "confidence": 0.608
+    },
+    {
+      "char": "边",
+      "start": 152.955,
+      "end": 153.105,
+      "line": 42,
+      "confidence": 0.608,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "让",
+      "start": 158.191,
+      "end": 158.533,
+      "line": 44,
+      "confidence": 0.5472142857142857
+    },
+    {
+      "char": "我",
+      "start": 158.533,
+      "end": 158.553,
+      "line": 44,
+      "confidence": 0.5472142857142857
+    },
+    {
+      "char": "回",
+      "start": 158.553,
+      "end": 158.674,
+      "line": 44,
+      "confidence": 0.5472142857142857
+    },
+    {
+      "char": "到",
+      "start": 158.674,
+      "end": 158.694,
+      "line": 44,
+      "confidence": 0.5472142857142857
+    },
+    {
+      "char": "起",
+      "start": 158.694,
+      "end": 158.714,
+      "line": 44,
+      "confidence": 0.5472142857142857
+    },
+    {
+      "char": "点",
+      "start": 158.714,
+      "end": 158.814,
+      "line": 44,
+      "confidence": 0.5472142857142857
+    },
+    {
+      "char": "让",
+      "start": 158.814,
+      "end": 159.076,
+      "line": 44,
+      "confidence": 0.5472142857142857
+    },
+    {
+      "char": "我",
+      "start": 159.076,
+      "end": 159.116,
+      "line": 44,
+      "confidence": 0.5472142857142857
+    },
+    {
+      "char": "从",
+      "start": 159.116,
+      "end": 159.136,
+      "line": 44,
+      "confidence": 0.5472142857142857
+    },
+    {
+      "char": "头",
+      "start": 159.136,
+      "end": 159.317,
+      "line": 44,
+      "confidence": 0.5472142857142857
+    },
+    {
+      "char": "爱",
+      "start": 159.317,
+      "end": 159.599,
+      "line": 44,
+      "confidence": 0.5472142857142857
+    },
+    {
+      "char": "你",
+      "start": 159.599,
+      "end": 159.821,
+      "line": 44,
+      "confidence": 0.5472142857142857
+    },
+    {
+      "char": "一",
+      "start": 159.821,
+      "end": 160.203,
+      "line": 44,
+      "confidence": 0.5472142857142857
+    },
+    {
+      "char": "遍",
+      "start": 160.203,
+      "end": 160.223,
+      "line": 44,
+      "confidence": 0.5472142857142857,
+      "tailReview": true
+    },
+    {
+      "char": "原",
+      "start": 165.871,
+      "end": 166.092,
+      "line": 46,
+      "confidence": 0.7755
+    },
+    {
+      "char": "来",
+      "start": 166.092,
+      "end": 166.333,
+      "line": 46,
+      "confidence": 0.7755
+    },
+    {
+      "char": "世",
+      "start": 166.333,
+      "end": 166.353,
+      "line": 46,
+      "confidence": 0.7755
+    },
+    {
+      "char": "界",
+      "start": 166.353,
+      "end": 166.573,
+      "line": 46,
+      "confidence": 0.7755
+    },
+    {
+      "char": "最",
+      "start": 166.573,
+      "end": 166.814,
+      "line": 46,
+      "confidence": 0.7755
+    },
+    {
+      "char": "远",
+      "start": 166.814,
+      "end": 167.035,
+      "line": 46,
+      "confidence": 0.7755
+    },
+    {
+      "char": "不",
+      "start": 167.035,
+      "end": 167.235,
+      "line": 46,
+      "confidence": 0.7755
+    },
+    {
+      "char": "是",
+      "start": 167.235,
+      "end": 167.496,
+      "line": 46,
+      "confidence": 0.7755
+    },
+    {
+      "char": "距",
+      "start": 167.496,
+      "end": 167.757,
+      "line": 46,
+      "confidence": 0.7755
+    },
+    {
+      "char": "离",
+      "start": 167.757,
+      "end": 167.917,
+      "line": 46,
+      "confidence": 0.7755
+    },
+    {
+      "char": "而",
+      "start": 167.917,
+      "end": 168.038,
+      "line": 46,
+      "confidence": 0.7755
+    },
+    {
+      "char": "是",
+      "start": 168.038,
+      "end": 168.178,
+      "line": 46,
+      "confidence": 0.7755
+    },
+    {
+      "char": "昨",
+      "start": 168.178,
+      "end": 168.619,
+      "line": 46,
+      "confidence": 0.7755
+    },
+    {
+      "char": "天",
+      "start": 168.619,
+      "end": 169.919,
+      "line": 46,
+      "confidence": 0.7755,
+      "endMethod": "demucs-vocal-release"
+    },
+    {
+      "char": "即",
+      "start": 173.491,
+      "end": 173.571,
+      "line": 48,
+      "confidence": 0.731
+    },
+    {
+      "char": "使",
+      "start": 173.571,
+      "end": 173.813,
+      "line": 48,
+      "confidence": 0.731
+    },
+    {
+      "char": "你",
+      "start": 173.813,
+      "end": 174.014,
+      "line": 48,
+      "confidence": 0.731
+    },
+    {
+      "char": "忘",
+      "start": 174.014,
+      "end": 174.297,
+      "line": 48,
+      "confidence": 0.731
+    },
+    {
+      "char": "了",
+      "start": 174.297,
+      "end": 174.498,
+      "line": 48,
+      "confidence": 0.731
+    },
+    {
+      "char": "我",
+      "start": 174.498,
+      "end": 174.699,
+      "line": 48,
+      "confidence": 0.731
+    },
+    {
+      "char": "还",
+      "start": 174.699,
+      "end": 174.901,
+      "line": 48,
+      "confidence": 0.731
+    },
+    {
+      "char": "记",
+      "start": 174.901,
+      "end": 175.082,
+      "line": 48,
+      "confidence": 0.731
+    },
+    {
+      "char": "得",
+      "start": 175.082,
+      "end": 175.163,
+      "line": 48,
+      "confidence": 0.731
+    },
+    {
+      "char": "我",
+      "start": 175.163,
+      "end": 175.243,
+      "line": 48,
+      "confidence": 0.731
+    },
+    {
+      "char": "会",
+      "start": 175.243,
+      "end": 175.263,
+      "line": 48,
+      "confidence": 0.731
+    },
+    {
+      "char": "纪",
+      "start": 175.263,
+      "end": 175.566,
+      "line": 48,
+      "confidence": 0.731
+    },
+    {
+      "char": "念",
+      "start": 175.566,
+      "end": 176.696,
+      "line": 48,
+      "confidence": 0.731,
+      "endMethod": "demucs-vocal-release"
+    }
+  ],
+  "review": {
+    "required": true,
+    "unusualDurationIndices": [
+      135,
+      136,
+      140,
+      142,
+      143,
+      145,
+      146,
+      164,
+      170,
+      179,
+      180,
+      202,
+      320,
+      329,
+      347,
+      351,
+      353,
+      358,
+      360,
+      361,
+      364,
+      365,
+      370,
+      373,
+      395
+    ],
+    "note": "Automatic alignment; accompaniment and incorrect source lyrics may require listening review."
+  },
+  "tailMethod": "demucs-vocal-release-v1",
+  "tailMeasuredCount": 34
+}

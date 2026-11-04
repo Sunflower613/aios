@@ -1,16 +1,21 @@
-import { deviceSongs, hiddenSongs, removeSong, songKey, listFolders, createFolder, songPlacements, moveSongs } from './device-library.mjs';
+import { initChartSettings, deviceSongs, hiddenSongs, removeSong, songKey, listFolders, createFolder, songPlacements, moveSongs } from './device-library.mjs';
 import { makeChart, layoutChart, Round, RhythmRound, ratingFor } from './engine.mjs?v=9';
 import { Transport } from './transport.mjs';
 import { MenuAudio } from './menu-audio.mjs';
 import { initCatalogSearch } from './library-search.mjs';
 import { catalogApi } from './service.mjs';
+import { repairKnownTiming } from './timing-corrections.mjs';
+import { exportArchive } from './song-archive.mjs';
 
 const $ = id => document.getElementById(id);
+initChartSettings($('chart-settings'), $('advanced-chart'));
 const palettes = { sunshine: '#ff94b8', rain: '#65c9d8', dream: '#aa8cef' };
 let transport, library = [], selected, alignment, round;
 let managing = false, chosen = new Set(), placements = new Map(), folders = [], dragging = false;
 let mode = 'score', state = 'library';
 let pendingMode = mode;
+let settingsOrigin = null, resultOverlay = null;
+let partialChart = false;
 const icon = name => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 const menuAudio = new MenuAudio();
 let menuPreference = true;
@@ -18,18 +23,18 @@ let start = 0, end = 0, offset = 0, generation = 0, frame = 0, countdownUntil = 
 const elements = new Map(), beatElements = new Map();
 const fmt = seconds => `${Math.floor(Math.max(0, seconds) / 60)}:${String(Math.floor(Math.max(0, seconds) % 60)).padStart(2, '0')}`;
 const escape = text => String(text).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-const modeName = () => mode === 'score' ? '计分模式' : '节奏模式';
-function bestKey() { return `melody:${selected.id}:${mode}:full:v3`; }
+const modeName = () => ({ score: '计分模式', rhythm: '节奏模式', listen: '欣赏模式' })[mode];
+function bestKey() { return `melody:${selected.id}:${mode}:full:v3${partialChart ? ':partial' : ''}`; }
 function readBest() { try { return Number(localStorage.getItem(bestKey())) || 0; } catch { return 0; } }
 const ratings = ['F', 'C', 'B', 'A', 'S', 'V', 'φ'];
 function bestRating(song = selected, currentMode = mode) {
-  try { const value = localStorage.getItem(`melody:${song.id}:${currentMode}:rating:v1`); return ratings.includes(value) ? value : '—'; } catch { return '—'; }
+  try { const value = localStorage.getItem(`melody:${song.id}:${currentMode}:rating:v1${song === selected && partialChart ? ':partial' : ''}`); return ratings.includes(value) ? value : '—'; } catch { return '—'; }
 }
 function saveBest(score) {
   try {
     localStorage.setItem(bestKey(), String(Math.max(readBest(), score)));
     const grade = ratingFor(round);
-    if (ratings.indexOf(grade) > ratings.indexOf(bestRating())) localStorage.setItem(`melody:${selected.id}:${mode}:rating:v1`, grade);
+    if (ratings.indexOf(grade) > ratings.indexOf(bestRating())) localStorage.setItem(`melody:${selected.id}:${mode}:rating:v1${partialChart ? ':partial' : ''}`, grade);
   } catch { /* Storage is optional. */ }
 }
 function coverUrl(song) {
@@ -75,6 +80,8 @@ $('bulk-select-all').onclick = () => { $('song-list').querySelectorAll('[data-ch
 $('folder-create').onclick = async () => { const name = prompt('新文件夹名称'); if (name === null) return; try { const created = await createFolder(name); await loadLibrary(); $('bulk-folder').value = created; } catch (error) { $('catalog-status').textContent = error.message; } };
 $('bulk-move').onclick = async () => { try { await moveSongs(library.filter(song => chosen.has(songKey(song))), $('bulk-folder').value); chosen.clear(); await loadLibrary(); } catch (error) { $('catalog-status').textContent = error.message; } };
 $('bulk-delete').onclick = () => deleteSongs(library.filter(song => chosen.has(songKey(song))));
+$('bulk-export').onclick = async () => { try { await exportArchive(library.filter(song => chosen.has(songKey(song))), message => { $('catalog-status').textContent = message; }); } catch (error) { $('catalog-status').textContent = error.message; } };
+$('export-library').onclick = async () => { try { await exportArchive(library, message => { $('upload-status').textContent = message; }); } catch (error) { $('upload-status').textContent = error.message; } };
 $('song-trash').addEventListener('dragover', event => { event.preventDefault(); $('song-trash').classList.add('over'); });
 $('song-trash').addEventListener('dragleave', () => $('song-trash').classList.remove('over'));
 $('song-trash').addEventListener('drop', event => { event.preventDefault(); const key = event.dataTransfer.getData('text/plain'); $('song-trash').classList.remove('visible', 'over'); dragging = false; const song = library.find(item => songKey(item) === key); if (song) deleteSongs([song]); });
@@ -98,10 +105,10 @@ async function loadLibrary(nextLibrary) {
     $('song-list').innerHTML = visible.map(({song, i}) => `<div class="song-shell" data-key="${escape(songKey(song))}"><button class="swipe-delete" type="button" aria-label="删除 ${escape(song.title)}">删除</button><article class="song-card" draggable="${!managing}" style="--cover:${palettes[song.mood] || palettes.sunshine}"><label class="song-check" ${managing ? '' : 'hidden'}><input type="checkbox" data-choose="${i}" ${chosen.has(songKey(song)) ? 'checked' : ''} aria-label="选择 ${escape(song.title)}"></label><div class="song-art" aria-hidden="true"><span class="tag">${escape(song.label)}</span><strong>${icon(song.mood === 'sunshine' ? 'sun' : song.mood === 'rain' ? 'cloud' : 'star')}</strong></div><div class="song-content"><div class="song-info"><div><h3>${escape(song.title)}</h3><p>${escape(song.artist)}</p></div><button class="song-play" data-index="${i}" aria-label="演奏${escape(song.title)}" ${song.available === false ? 'disabled title="音源暂不可用"' : ''}>${icon('play')}</button></div><div class="song-meta"><span>${fmt(song.duration)}${song.bpm ? ` · ${Math.round(song.bpm)} BPM` : ''}</span><span>${song.available === false ? '音源暂不可用' : song.chart ? '逐字谱面' : '等待制谱'}</span></div><div class="song-best"></div></div></article></div>`).join('');
     $('song-list').querySelectorAll('button[data-index]').forEach(button => {
       const song = library[Number(button.dataset.index)];
-      if (!song.chart || song.playable === false) { button.disabled = true; button.title = song.downloadNote || '等待制谱'; }
+      if (!song.audio) { button.disabled = true; button.title = song.downloadNote || '音源不可用'; }
       button.onclick = () => selectSong(song);
     });
-    $('song-list').querySelectorAll('.song-art').forEach((art, i) => applyCover(art, library[i]));
+    $('song-list').querySelectorAll('.song-art').forEach((art, i) => applyCover(art, visible[i].song));
     $('song-list').querySelectorAll('.song-shell').forEach((shell, i) => {
       const song = library[visible[i].i], card = shell.querySelector('.song-card');
       shell.querySelector('.swipe-delete').onclick = async () => { await deleteSongs([song]); };
@@ -123,7 +130,11 @@ async function loadLibrary(nextLibrary) {
     $('reload-library').onclick = loadLibrary;
   }
 }
-function setState(value) { state = value; $('board').dataset.state = value; $('menu-sound').hidden = value !== 'library'; if (value === 'library') updateCardScores(); }
+function setState(value) {
+  state = value; $('board').dataset.state = value; $('menu-sound').hidden = value !== 'library';
+  if (value === 'library') updateCardScores();
+  if (['ready', 'result'].includes(value)) { $('pause').disabled = false; $('pause').innerHTML = icon('settings'); $('pause').setAttribute('aria-label', '设置'); $('pause').title = '设置'; }
+}
 function overlay(label, title, copy, button, callback) {
   delete $('overlay-label').dataset.grade;
   $('overlay-label').removeAttribute('aria-label');
@@ -142,24 +153,24 @@ function stop() { generation++; transport?.pause(); cancelAnimationFrame(frame);
 async function selectSong(song) {
   stop(); const token = generation;
   menuAudio.stop(); updateMenuButton();
-  selected = song; applyCover($('overlay'), song); setState('loading'); round = null;
+  if (!song.chart) mode = pendingMode = 'listen';
+  partialChart = false; selected = song; applyCover($('overlay'), song); setState('loading'); round = null;
   $('playing-title').textContent = song.title;
   document.body.dataset.mood = song.mood;
   $('library').hidden = true; $('play-screen').hidden = false;
   $('playing-mood').textContent = song.label;
-  $('mode-title').textContent = mode === 'score' ? '跟上音乐，\n打出高分。' : '你的速度，\n你的旋律。';
-  $('mode-help').textContent = mode === 'score' ? '字块下沿到达判定线时点一下。音乐保持原速，漏按或点错只影响得分，歌曲会继续。' : '依次点亮最下面的歌词字。点击会放行下一段音乐，快点就加速；停手后音乐在下一个字前等你。';
+  updateModeCopy();
   $('offset').disabled = mode === 'rhythm';
   clearNotes(); $('score').textContent = '000000'; $('combo').textContent = '0'; $('metric').textContent = '—';
   $('feedback').textContent = ''; $('lyric-line').textContent = ''; $('progress-fill').style.width = '0%';
   overlay('LOADING', '准备音乐…', '正在读取音频与逐字谱面。');
   window.scrollTo({ top: 0, behavior: 'instant' });
   try {
-    if (!song.chart) throw new Error('这首歌还没有逐字谱面，请先运行 scripts/align.py。');
-    const [data, bytes] = await Promise.all([request(song.chart).then(r => r.json()), request(song.audio).then(r => r.arrayBuffer())]);
+    const [data, bytes] = await Promise.all([song.chart ? request(song.chart).then(r => r.json()) : Promise.resolve({ version: 2, lines: [], words: [], beats: [], method: 'audio-only' }), request(song.audio).then(r => r.arrayBuffer())]);
     if (generation !== token) return;
     const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(b => b.toString(16).padStart(2, '0')).join('');
-    if (data.audioSha256 !== hash) throw new Error('谱面与音频版本不一致，请为当前音频重新制谱。');
+    if (song.chart && data.audioSha256 !== hash) throw new Error('谱面与音频版本不一致，请为当前音频重新制谱。');
+    repairKnownTiming(data);
     transport?.dispose();
     const nextTransport = new Transport();
     await nextTransport.load(bytes);
@@ -167,7 +178,7 @@ async function selectSong(song) {
     transport = nextTransport; transport.volume = Number($('volume').value); alignment = data;
     transport.audio.id = 'song-audio'; transport.audio.hidden = true; document.body.append(transport.audio);
     transport.onError = () => { pause(); overlay('TRY AGAIN', '音乐暂时停住了', '点一下继续演奏。', '继续', begin); };
-    $('timing-note').textContent = `${data.method === 'provider-character-timestamps' ? '原生逐字谱面' : '音频逐字对齐'}${data.bpm ? ` · ${Math.round(data.bpm)} BPM` : ''}${data.review?.required ? ' · 部分字需听校' : ''}`;
+    $('timing-note').textContent = `${!song.chart ? '仅有音频，可用欣赏模式听歌' : data.method === 'provider-character-timestamps' ? '原生逐字谱面' : data.method === 'lite-zipformer-ctc' ? '轻量逐字谱面' : '音频逐字对齐'}${data.bpm ? ` · ${Math.round(data.bpm)} BPM` : ''}${data.review?.required ? ' · 部分字需听校' : ''}`;
     prepare();
   } catch (error) {
     if (generation !== token) return;
@@ -179,18 +190,32 @@ function prepare() {
   stop(); setState('ready'); clearNotes(); lastLine = -1;
   $('feedback').textContent = ''; $('feedback').classList.remove('pop');
   const seed = Number(selected.sourceId) || 1;
-  const chart = layoutChart(makeChart(alignment, transport.duration, seed), seed);
+  const chart = alignment.words.length ? layoutChart(makeChart(alignment, transport.duration, seed), seed) : [];
   start = 0;
   end = transport.duration;
-  const notes = chart.filter(note => note.time >= start && note.time < end - .25);
-  round = mode === 'score' ? new Round(notes, .24) : new RhythmRound(notes);
+  let notes = chart.filter(note => note.time >= start && note.time < end);
+  partialChart = alignment.lines.some(line => line.practiceOnly);
+  if (mode === 'score' && partialChart) {
+    if (!$('timing-note').textContent.includes('待校准句跳过计分')) $('timing-note').textContent += ' · 待校准句跳过计分';
+    const scored = notes.filter(note => !alignment.lines[note.line]?.practiceOnly);
+    if (scored.length) {
+      notes = scored;
+      $('transport-status').title = '低置信歌词仅在节奏模式显示';
+    } else {
+      mode = pendingMode = 'rhythm';
+      $('mode-title').textContent = '跟拍练习';
+      $('mode-help').textContent = '本曲字点需要听校，可依次跟拍歌词。';
+      $('offset').disabled = true;
+    }
+  }
+  if (!notes.length && mode !== 'listen') mode = pendingMode = 'listen';
+  round = mode === 'rhythm' ? new RhythmRound(notes) : new Round(notes, .24);
   transport.seek(start);
   $('elapsed').textContent = '0:00'; $('total').textContent = fmt(end - start); $('progress-fill').style.width = '0%';
   $('transport-status').textContent = modeName(); $('lyric-line').textContent = '一个字，一次点击。';
   updateScore(); draw(start);
-  overlay(bestRating(), readBest().toLocaleString(), `${modeName()} · ${notes.length} 个字\n${mode === 'score' ? '跟着原曲节奏点击，失误不会结束。' : '点击最下面的歌词，音乐才会往前走。'}`, '开始', begin);
-  showGrade(bestRating());
-  $('overlay-label').setAttribute('aria-label', `最高评级 ${bestRating()}`);
+  overlay(mode === 'listen' ? '♪' : bestRating(), mode === 'listen' ? '放松听完整首' : readBest().toLocaleString(), `${modeName()} · ${notes.length ? `${notes.length} 个字` : '纯音频'}\n${mode === 'listen' ? '歌词字块会自动弹奏，点击不会触发判定。' : mode === 'score' ? '跟着原曲节奏点击，失误不会结束。' : '点击最下面的歌词，音乐才会往前走。'}`, '开始', begin);
+  if (mode !== 'listen') { showGrade(bestRating()); $('overlay-label').setAttribute('aria-label', `最高评级 ${bestRating()}`); }
 }
 async function begin() {
   if (!['ready', 'paused'].includes(state)) return;
@@ -202,7 +227,7 @@ async function begin() {
     round.resume?.();
     countdownUntil = performance.now() + 3000; setState('countdown');
     $('pause').disabled = false; $('pause').innerHTML = icon('pause'); $('pause').setAttribute('aria-label', '暂停'); $('pause').title = '暂停';
-    overlay('GET READY', '3', mode === 'rhythm' ? '等你点下第一个字。' : '跟着音乐，找到节拍。');
+    overlay('GET READY', '3', mode === 'rhythm' ? '等你点下第一个字。' : mode === 'listen' ? '坐好，开始欣赏。' : '跟着音乐，找到节拍。');
     frame = requestAnimationFrame(tick);
   } catch { if (token !== generation) return; setState('paused'); overlay('TRY AGAIN', '点一下唤醒音乐', '浏览器未允许音频播放。', '继续', begin); }
 }
@@ -212,18 +237,23 @@ function tick(now) {
     $('overlay-title').textContent = String(Math.max(1, Math.ceil(remaining / 1000)));
     if (!remaining) {
       setState('playing'); $('overlay').hidden = true; $('board').focus({ preventScroll: true });
-      if (mode === 'score') transport.play(end, 1);
+      if (mode !== 'rhythm') transport.play(end, 1);
       else if (transport.time < (round.next?.time ?? end)) transport.play(round.next?.time ?? end, round.rate);
     }
   } else if (state === 'playing') {
-    const time = transport.time - (mode === 'score' ? offset : 0);
+    const time = transport.time - (mode === 'rhythm' ? 0 : offset);
     if (mode === 'score' && round.expire(time)) { feedback('MISS', false); updateScore(); }
+    if (mode === 'listen') {
+      let changed = false;
+      for (const note of round.notes) if (note.status === 'pending' && note.time <= time) { round.accept(note); changed = true; }
+      if (changed) updateScore();
+    }
     draw(time); updateLyrics(time);
     const beat = (alignment.beats || []).findLast(b => b <= time) ?? -10;
     document.body.style.setProperty('--pulse', String(Math.max(0, 1 - (time - beat) * 5)));
     const elapsed = Math.max(0, Math.min(end - start, transport.time - start));
     $('elapsed').textContent = fmt(elapsed); $('progress-fill').style.width = `${elapsed / (end - start) * 100}%`;
-    $('transport-status').textContent = mode === 'rhythm' ? (transport.playing ? `${round.rate.toFixed(2)}×` : '点下一个字，继续音乐') : '原曲速度 · 1.00×';
+    $('transport-status').textContent = mode === 'rhythm' ? (transport.playing ? `${round.rate.toFixed(2)}×` : '点下一个字，继续音乐') : mode === 'listen' ? '欣赏中 · 原曲速度' : '原曲速度 · 1.00×';
     if (transport.time >= end - .001) { finish(); return; }
   } else return;
   frame = requestAnimationFrame(tick);
@@ -271,14 +301,14 @@ function updateScore() {
   const judged = round.perfect + round.good + round.misses + round.wrong;
   $('combo').classList.toggle('gold', round.combo > 0 && round.misses === 0 && round.wrong === 0);
   $('metric').textContent = mode === 'rhythm' ? `${round.rate.toFixed(2)}×` : `${judged ? Math.round((round.perfect + round.good * .6) / judged * 100) : 100}%`;
-  $('metric').classList.toggle('gold', mode === 'score' && judged > 0 && round.perfect === judged && !round.good && !round.misses && !round.wrong);
+  $('metric').classList.toggle('gold', mode !== 'rhythm' && judged > 0 && round.perfect === judged && !round.good && !round.misses && !round.wrong);
 }
 function feedback(text, success = true) {
   const el = $('feedback'); el.textContent = text; el.style.color = success ? 'var(--accent)' : '#eb6695';
   el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
 }
 function hit(lane) {
-  if (state !== 'playing') return;
+  if (state !== 'playing' || mode === 'listen') return;
   const track = $('board').querySelectorAll('.tracks i')[lane]; track.classList.add('pressed');
   setTimeout(() => track.classList.remove('pressed'), 100);
   const result = mode === 'score' ? round.hit(lane, transport.time - offset) : round.tap(lane, performance.now() / 1000, transport.time);
@@ -293,7 +323,8 @@ function updateLyrics(time) {
   if (index !== lastLine) { lastLine = index; $('lyric-line').textContent = index >= 0 ? alignment.lines[index].text : '听，节奏正在靠近。'; }
 }
 function pause() {
-  if (!['playing', 'countdown', 'starting'].includes(state)) return;
+  if (!['playing', 'countdown', 'starting', 'ready', 'result'].includes(state)) return;
+  settingsOrigin = state;
   stop(); setState('paused'); $('pause').disabled = false; $('pause').innerHTML = icon('play'); $('pause').setAttribute('aria-label', '继续游戏'); $('pause').title = '继续游戏';
   overlay('', '', '', '');
   for (const id of ['overlay-label', 'overlay-title', 'overlay-copy']) $(id).hidden = true;
@@ -303,11 +334,19 @@ function pause() {
 function finish() {
   if (state !== 'playing') return;
   if (mode === 'score') round.expire(end + 1);
-  stop(); setState('result'); updateScore(); const previous = readBest(); saveBest(round.score);
+  if (mode === 'listen') {
+    for (const note of round.notes) if (note.status === 'pending') round.accept(note);
+    if (!round.notes.length) round.score = 100000;
+  }
+  stop(); setState('result'); updateScore(); const previous = mode === 'listen' ? 0 : readBest(); if (mode !== 'listen') saveBest(round.score);
   $('progress-fill').style.width = '100%';
-  overlay(ratingFor(round), round.score.toLocaleString(), `${round.accuracy}% 准确率\n最佳连击 ${round.maxCombo} · PERFECT ${round.perfect} · GOOD ${round.good}\n漏字 ${round.misses} · 点错 ${round.wrong}\n${round.score > previous ? '新的本地纪录' : `本地最高 ${previous.toLocaleString()} 分`}`, '再弹一次', prepare);
-  showGrade(ratingFor(round));
-  $('overlay-label').setAttribute('aria-label', ratingFor(round));
+  resultOverlay = { grade: mode === 'listen' ? 'φ' : ratingFor(round), score: round.score.toLocaleString(), copy: mode === 'listen' ? '欣赏完成 · 满分\n本次不计入历史成绩' : `${round.accuracy}% 准确率\n最佳连击 ${round.maxCombo} · PERFECT ${round.perfect} · GOOD ${round.good}\n漏字 ${round.misses} · 点错 ${round.wrong}\n${round.score > previous ? '新的本地纪录' : `本地最高 ${previous.toLocaleString()} 分`}` };
+  showResult();
+}
+function showResult() {
+  setState('result');
+  overlay(resultOverlay.grade, resultOverlay.score, resultOverlay.copy, '再弹一次', prepare);
+  showGrade(resultOverlay.grade); $('overlay-label').setAttribute('aria-label', resultOverlay.grade);
 }
 $('board').addEventListener('pointerdown', event => {
   if (event.target.closest('button') || state !== 'playing') return;
@@ -318,7 +357,7 @@ document.addEventListener('keydown', event => {
   if (event.repeat || event.ctrlKey || event.altKey || event.metaKey || event.target.matches('input,select,textarea')) return;
   const lane = ['KeyD', 'KeyF', 'KeyJ', 'KeyK'].indexOf(event.code);
   if (lane >= 0 && state === 'playing') { event.preventDefault(); hit(lane); }
-  if (['Space', 'Escape'].includes(event.code) && ['playing', 'countdown', 'paused'].includes(state)) { event.preventDefault(); state === 'paused' ? resume() : pause(); }
+  if (['Space', 'Escape'].includes(event.code) && ['playing', 'countdown', 'paused', 'ready', 'result'].includes(state)) { event.preventDefault(); state === 'paused' ? resume() : pause(); }
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 window.addEventListener('blur', pause);
@@ -326,14 +365,23 @@ $('pause').onclick = () => state === 'paused' ? resume() : pause();
 function updatePauseMode() {
   $('pause-mode').querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.value === pendingMode)));
   $('offset').disabled = pendingMode === 'rhythm';
+  $('pause-mode').querySelectorAll('button').forEach(button => { button.disabled = !selected?.chart && button.dataset.value !== 'listen'; });
 }
 function applyPendingMode() {
   mode = pendingMode;
   $('mode')?.querySelectorAll('button').forEach(button => { button.classList.toggle('active', button.dataset.value === mode); button.setAttribute('aria-pressed', String(button.dataset.value === mode)); });
-  $('mode-title').textContent = mode === 'score' ? '跟上音乐，\n打出高分。' : '你的速度，\n你的旋律。';
-  $('mode-help').textContent = mode === 'score' ? '下沿抵达判定线时点击，失误不会结束。' : '依次点击歌词，音乐跟着你的速度走。';
+  updateModeCopy();
 }
-function resume() { if (pendingMode !== mode) { applyPendingMode(); prepare(); } begin(); }
+function updateModeCopy() {
+  $('mode-title').textContent = mode === 'score' ? '跟上音乐，\n打出高分。' : mode === 'rhythm' ? '你的速度，\n你的旋律。' : '只管听，\n让旋律流动。';
+  $('mode-help').textContent = mode === 'score' ? '下沿抵达判定线时点击，失误不会结束。' : mode === 'rhythm' ? '依次点击歌词，音乐跟着你的速度走。' : '音块自动触发，判定线附近的点击不会影响播放。';
+}
+function resume() {
+  if (pendingMode !== mode) { applyPendingMode(); prepare(); return; }
+  if (settingsOrigin === 'ready') { prepare(); return; }
+  if (settingsOrigin === 'result') { showResult(); return; }
+  begin();
+}
 $('resume').onclick = resume;
 $('pause-mode').querySelectorAll('button').forEach(button => button.onclick = () => { pendingMode = button.dataset.value; updatePauseMode(); });
 $('restart').onclick = () => { if (round && state === 'paused') { applyPendingMode(); prepare(); begin(); } };

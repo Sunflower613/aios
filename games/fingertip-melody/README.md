@@ -19,7 +19,7 @@
 
 ## 本地准备
 
-需要 Node.js 22+、Git、Python 3.12。WhisperX 中文模型约 1.3GB，首次下载和 CPU 制谱会耗时。仓库根目录运行：
+需要 Node.js 22+、Git、Python 3.12。默认安装约 25MB 的 INT8 轻量模型，CPU 制谱按句运行。仓库根目录运行：
 
 ```powershell
 node games/fingertip-melody/scripts/fetch-songs.mjs
@@ -34,9 +34,13 @@ node games/fingertip-melody/scripts/server.mjs
 
 ## 可复用制谱
 
-默认使用 [WhisperX](https://github.com/m-bain/whisperX) 3.8.6 的中文 wav2vec2 CTC 强制对齐：已有歌词与实际音频一起输入，输出每个字的起止时间，不重新猜测歌词。首次运行会下载中文模型 `jonatasgrosman/wav2vec2-large-xlsr-53-chinese-zh-cn`。只使用 alignment 模块，安装脚本以 `--no-deps` 安装 WhisperX，单独安装本项目使用的 CPU 对齐依赖；不使用其转写、说话人识别或 GPU 全套运行环境。
+默认使用 `--backend lite`。中文 Zipformer-small INT8 模型通过 ONNX Runtime 运行，将已知汉字编码为 byte-BPE，按 CTC 路径强制对齐。LRC 句首向前搜索 700ms，句尾留 500ms 余量。音频解码到临时磁盘文件，逐句计算，不导入 PyTorch、WhisperX、SOFA 或 librosa。模型在安装时下载并校验 SHA-256，请求时不下载。
 
-保留 `--backend sofa` 使用 [SOFA](https://github.com/qiuqiao/SOFA) 中文歌声模型，也保留 `--backend funasr` 实验路径。SOFA 源码和模型来源、许可证见原项目。新后端不会在对齐失败时静默回退，也不会填充缺失汉字时间戳。
+句尾从最后一个识别帧继续追踪相近频谱和连续能量，遇到持续 120ms 的衰减停止，最长额外搜索 12 秒，并以下一句实际起点为界。无法确认收音时保留 `tailReview`。弱可信句保留 `timingReview`；极低置信或无法对齐的句子标记 `practiceOnly`，计分模式跳过，节奏模式允许练习。无法拆字的句子仅保留一个整句提示点。部分谱面的纪录与完整谱面分开存储。
+
+可选高级制谱使用 WhisperX 3.8.6、SOFA 和 Demucs。Windows 安装脚本加 `-Advanced`，Linux 使用 `MELODY_INSTALL_ADVANCED=1`，安装时预热模型缓存。`/api/melody/capabilities` 检查当前服务器的 Python 依赖、源码和完整模型缓存，结果缓存一分钟。检测通过时首页出现“制谱设置 / 开启高级制谱”，默认关闭，选择保存在当前浏览器；仅影响之后普通 LRC 的导入、下载。可用 `MELODY_DISABLE_ADVANCED=1` 强制隐藏。该探测针对本项目配置的本地 Python worker。CLI 可指定 `--backend whisperx`。
+
+保留 `--backend sofa` 使用 [SOFA](https://github.com/qiuqiao/SOFA) 中文歌声模型，也保留 `--backend funasr` 实验路径。SOFA 源码和模型来源、许可证见原项目。高级后端在缺字时报告失败。
 
 WhisperX CTC 的句尾经常只覆盖一个发音帧，不能作为完整歌声音长。最初使用 SOFA 补尾，但整句对齐在部分翻唱上偏移较大。现在保留所有 WhisperX 起点，额外使用 torchaudio 的 [Hybrid Demucs 人声分离模型](https://docs.pytorch.org/audio/stable/generated/torchaudio.pipelines.HDEMUCS_HIGH_MUSDB_PLUS.html) 检测末字的连续人声及收音；持续 120ms 低于相对能量阈值时结束，不跨静音追逐下一次人声，也不直接填满下一句前的空白。无足够人声证据的尾音标记听校。这是自动声学估计，伴唱、换气、分离残留仍可能导致误差。
 
@@ -44,15 +48,15 @@ WhisperX CTC 的句尾经常只覆盖一个发音帧，不能作为完整歌声�
 ./games/fingertip-melody/.venv/Scripts/python.exe games/fingertip-melody/scripts/align.py --audio D:/music/song.mp3 --lyrics D:/music/song.lrc --output D:/music/song.chart.json
 ```
 
-若同目录有 `song.yrc`，优先使用该录音的原生逐字时间戳；多汉字共用一个时间戳会报错，移走 YRC 可改用音频模型。可选 `--vocals D:/music/song-vocals.wav` 使用已分离人声，必须保持原音频的起点和时长。不要拿另一演唱版本的歌词时间轴直接使用。
+若同目录有 `song.yrc`，优先使用该录音的原生逐字时间戳；多汉字共用一个时间戳会报错，移走 YRC 可改用音频模型。高级后端可选 `--vocals D:/music/song-vocals.wav` 使用已分离人声，必须保持原音频的起点和时长。不要拿另一演唱版本的歌词时间轴直接使用。
 
-制谱步骤：过滤公司、歌手、制作/演奏人员与版权说明 → 逐字强制对齐或读取原生逐字数据 → librosa HPSS 节拍检测 → chroma 相似句检测 → 输出 version 2 JSON。新歌曲在 `media/library.json` 添加 audio、lyrics、chart、title、artist、sourceId、mood（sunshine/rain/dream）即可复用。未来动态曲库应在服务端完成下载、制谱与缓存，再向静态游戏提供同样的数据格式。
+高级制谱步骤：过滤公司、歌手、制作/演奏人员与版权说明 → 逐字强制对齐或读取原生逐字数据 → librosa HPSS 节拍检测 → chroma 相似句检测 → 输出 version 2 JSON。新歌曲在 `media/library.json` 添加 audio、lyrics、chart、title、artist、sourceId、mood（sunshine/rain/dream）即可复用。未来动态曲库应在服务端完成下载、制谱与缓存，再向静态游戏提供同样的数据格式。
 
 **自动对齐仍需听校。** 伴奏、合唱、错误 LRC、多音字会影响模型；节拍速度可能出现半速/倍速检测，旋律相似检测也可能误判。谱面 `review` 标出异常短音和长音，`confidence` 保留模型信心值。前端验证音频 SHA-256，避免错用另一音频的谱面；这些校验不能证明每个字已经精确同步。人工校正 `words[].start/end` 后无需修改游戏逻辑。
 
 ### 对齐算法的下一步验证
 
-自动人声分离仅用于句尾测量，播放始终使用原音频。首次会下载约 319MiB 的官方模型；按音频 SHA256 缓存 `*.vocals.wav`，后续重做不重复分离。也可用 `--vocals` 提供同起点的人声。异常短音数量减少不等于时间戳已经更准确，仍需听校。修复已有谱面且保留起点：`python scripts/vocal_tails.py media/歌曲.mp3 media/歌曲.chart.json`。
+高级制谱的自动人声分离仅用于句尾测量，播放始终使用原音频。首次会下载约 319MiB 的官方模型；按音频 SHA256 缓存 `*.vocals.wav`，后续重做不重复分离。也可用 `--vocals` 提供同起点的人声。异常短音数量减少不等于时间戳已经更准确，仍需听校。修复已有谱面且保留起点：`python scripts/vocal_tails.py media/歌曲.mp3 media/歌曲.chart.json`。
 
 直接把通用 Whisper 转写时间戳当作精准谱面并不稳妥：已知歌词应保留，ASR 更适合帮助检查歌词版本、漏字和句子边界。现有 LRC 的切句时间也需要检验；错误边界会把字挤成极短时长，单纯把视觉块拉高不会修正这些误差。
 
@@ -69,7 +73,7 @@ WhisperX CTC 的句尾经常只覆盖一个发音帧，不能作为完整歌声�
 
 使用上述 Node 本地服务启动，搜索歌名或歌手。结果顺序为：本地、公开音频且有 YRC、公开普通音频、会员/购买资源；无法确认可用性的资源单独置后。有 YRC 的条目显示“逐字”标签，包括音频仍需会员的原版；标签不代表音频可下载。
 
-下载和导入保存到当前浏览器 IndexedDB，不修改服务器曲库。YRC 在浏览器直接制谱，普通 LRC 临时调用服务器 WhisperX，返回结果后清理临时文件。未附歌词的音频先收藏；制谱失败仍保留设备音频供重试。删除按钮移除设备缓存或隐藏服务器种子歌曲，重新下载可恢复。
+下载和导入保存到当前浏览器 IndexedDB，不修改服务器曲库。YRC 在浏览器直接制谱，普通 LRC 默认临时调用服务器 lite，启用高级制谱时调用 WhisperX，返回结果后清理临时文件。未附歌词的音频先收藏；制谱失败仍保留设备音频供重试。删除按钮移除设备缓存或隐藏服务器种子歌曲，重新下载可恢复。
 
 目前网络搜索仅接网易云公开接口，参照 Listen1 的音源分层。QQ 音乐、酷狗及三平台会员登录尚未实现；会员音频能播放也不代表已经具备可用于游玩的完整音频与匹配逐字谱面。来源状态以当次音频探测为准，短时缓存三分钟，网络故障不会直接推断为会员限制。
 
@@ -86,3 +90,7 @@ node --check games/fingertip-melody/game.mjs
 ```
 
 覆盖相邻轨道与重复旋律、叠词同列同色、制作信息过滤、原始时值保留、拒绝伪逐字数据、句尾补偿与起点分歧拒绝、失误不中断、节奏等待和变速、单音轨保调及暂停取消；本地曲库存在时额外校验可播放歌曲的谱面与音频摘要。
+
+### 已知原生时间轴修正
+
+`33361894`《牵丝戏》原 YRC 在 207.350 秒把“灯火葳蕤揉皱你眼眉”九字压成 600ms。使用同录音前一遍同句作为模板，通过频谱 DTW 迁移为 207.600–213.060 秒，共 5.460 秒。该结果属于自动校正，保留听校标记。修正表按音频 SHA-256 与完整错误字点序列匹配，保留已手动修改的谱面；浏览器导入、设备缓存和服务器种子谱均应用该修正。已修改的 YRC 与种子 JSON 同步入库。
