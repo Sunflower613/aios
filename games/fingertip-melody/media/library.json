@@ -57,24 +57,6 @@
     "bpm": 107.14285714285714
   },
   {
-    "id": 1306112195,
-    "mood": "rain",
-    "label": "生活的涟漪",
-    "description": "在日常里听见自己的声音。",
-    "shape": "rain",
-    "title": "生活倒影",
-    "artist": "苏运莹",
-    "duration": 275.923,
-    "audio": "./media/1306112195.mp3",
-    "lyrics": "./media/1306112195.lrc",
-    "available": false,
-    "source": "netease",
-    "sourceId": "1306112195",
-    "sourceUrl": "https://music.163.com/#/song?id=1306112195",
-    "timing": "unprocessed",
-    "fetchedAt": "2026-10-30T23:43:15.916Z"
-  },
-  {
     "id": 3436855494,
     "mood": "dream",
     "label": "自由生长",

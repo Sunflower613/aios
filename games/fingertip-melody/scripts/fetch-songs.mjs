@@ -9,7 +9,6 @@ const seeds = [
   { id: 1436709403, mood: 'sunshine', label: '晴朗汽水', description: '把夏天的微风，轻轻弹在指尖。', shape: 'sun' },
   { id: 1472877518, mood: 'rain', label: '蓝色心事', description: '有些告别，适合慢慢唱。', shape: 'rain' },
   { id: 28707594, mood: 'dream', label: '星光漫游', description: '跟着那束光，走进温柔的夜。', shape: 'star' },
-  { id: 1306112195, mood: 'rain', label: '生活的涟漪', description: '在日常里听见自己的声音。', shape: 'rain' },
   { id: 3436855494, mood: 'dream', label: '自由生长', description: '跟着旋律，走向自由的自己。', shape: 'star' },
   { id: 2077620214, mood: 'rain', label: '生活的涟漪', shape: 'rain' },
   { id: 1957866769, mood: 'dream', label: '光年漫游', shape: 'star' },

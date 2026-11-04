@@ -30,6 +30,11 @@
 	handle @melody_private {
 		respond 404
 	}
+	# 页面用原生 ESM 直接 import，文件名不变时浏览器会启发式缓存旧副本，
+	# 出现过「engine.mjs 改了但 ?v= 没变 → 拿到新旧混合模块」的事故。
+	# 统一改成协商缓存（ETag 304），保证每次部署后刷一次页面就能拿到当前代码。
+	@melody_assets path /games/fingertip-melody/*
+	header @melody_assets Cache-Control "no-cache"
 
 	# ---- 21点 Go 后端（同源服务器路径）----
 	handle /ws {
