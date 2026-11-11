@@ -1,0 +1,61 @@
+games/sisyphus/icon.svg
+  s_645955be7d4356::t_b1fb3a29738e39 1
+index.html
+  s_645955be7d4356::t_b1fb3a29738e39 207
+games/sisyphus/game.mjs
+  s_645955be7d4356::t_b1fb3a29738e39 1-98
+games/sisyphus/index.html
+  s_645955be7d4356::t_b1fb3a29738e39 1-43
+games/sisyphus/state.mjs
+  s_645955be7d4356::t_cd2fd52030df64 14-15
+  s_645955be7d4356::t_b1fb3a29738e39 1-13,16-34
+games/sisyphus/style.css
+  s_645955be7d4356::t_b1fb3a29738e39 1
+  s_645955be7d4356::t_7c0f96f259b3e9 2
+site-config.js
+  s_645955be7d4356::t_b1fb3a29738e39 183-190
+games/sisyphus/state.test.mjs
+  s_645955be7d4356::t_a16db1a0580d34 1-21,23-38
+  s_645955be7d4356::t_cd2fd52030df64 22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "5.30.8",
+  "base_commit_sha": "d24f241c12e4d0bcb08209c2608e487816be9145",
+  "prompts": {},
+  "humans": {
+    "h_784d76c5d0e1d4": {
+      "author": "Sunflower <tangjiao17@h-partners.com>"
+    }
+  },
+  "sessions": {
+    "s_645955be7d4356": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c9e2-5671-7e61-9fdd-afac6790895d",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Sunflower <tangjiao17@h-partners.com>",
+      "custom_attributes": {
+        "stats_model_totals": "{\"gpt-6-astra\":{\"additions\":227,\"deletions\":2}}",
+        "stats_total_additions": "227",
+        "stats_total_deletions": "2",
+        "stats_turn_models": "{\"t_7c0f96f259b3e9\":\"gpt-6-astra\",\"t_a16db1a0580d34\":\"gpt-6-astra\",\"t_b1fb3a29738e39\":\"gpt-6-astra\",\"t_cd2fd52030df64\":\"gpt-6-astra\"}"
+      }
+    },
+    "s_baa6cd6cac760d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18adf-dbe0-7662-9543-b53838786602",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Sunflower <tangjiao17@h-partners.com>",
+      "custom_attributes": {
+        "stats_model_totals": "{\"gpt-6-astra\":{\"additions\":98,\"deletions\":35}}",
+        "stats_total_additions": "3",
+        "stats_total_deletions": "3",
+        "stats_turn_models": "{\"t_441a0a048d2c34\":\"gpt-6-astra\",\"t_747f9fddd2a48d\":\"gpt-6-astra\",\"t_7bfe47fc1cb604\":\"gpt-6-astra\",\"t_9a32db51a12dd6\":\"gpt-6-astra\",\"t_d7243fe417879c\":\"gpt-6-astra\",\"t_fe1e53fdf393d5\":\"gpt-6-astra\"}"
+      }
+    }
+  }
+}
