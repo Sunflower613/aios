@@ -1,0 +1,63 @@
+games/sisyphus/index.html
+  s_645955be7d4356::t_646011b00e8f59 1-52
+games/sisyphus/game.mjs
+  s_645955be7d4356::t_b1fb3a29738e39 3-4,11,18,20-21,25,60,100,196,226-227
+  s_645955be7d4356::t_af0c0e8b6d5553 2,10,13-14,32,49,66-74,104,106-107,128,136-137,139-140,155,161,167,175-180,182,184-185,211-217,219,221,223,228
+  s_645955be7d4356::t_883abd9ee0ae87 1,5-9,12,15-17,19,22-24,26-31,33-48,50-59,61-65,75-99,101-103,105,108-115,127,130-135,141-154,156-160,162-166,168-174,181,183,186-195,197-210,218,220,222,224-225
+  s_645955be7d4356::t_393d8afd60d12b 116-126,129,138
+games/sisyphus/state.mjs
+  s_645955be7d4356::t_b1fb3a29738e39 1-2,27,40-41,79,93,101-107,116
+  s_645955be7d4356::t_e0befb50bf5d88 3-6,28-39,42-50,52-54,57-60,63-69,71-72,74-78,80-92,94-100,108-114,117-125
+  s_645955be7d4356::t_24b2e5cdf3d26d 51,61,73
+  s_645955be7d4356::t_883abd9ee0ae87 70,115
+  s_645955be7d4356::t_bf4266b73a87cb 7-26,55-56,62,126
+games/sisyphus/audio.mjs
+  s_645955be7d4356::t_bf4266b73a87cb 1-31,35-55,60-72,74-78
+  s_645955be7d4356::t_393d8afd60d12b 56-59
+  s_645955be7d4356::t_3145b51254d4fe 32-34
+  s_645955be7d4356::t_5e086885b1750b 73
+games/sisyphus/style.css
+  s_645955be7d4356::t_c1e8a06b05760c 63-120
+  s_645955be7d4356::t_a27ec1a7a3a335 121-125
+  s_645955be7d4356::t_dd5c6947bd490b 1-62
+games/sisyphus/skins.css
+  s_645955be7d4356::t_bf4266b73a87cb 1-53
+games/sisyphus/icon.svg
+  s_645955be7d4356::t_b1fb3a29738e39 1
+games/sisyphus/state.test.mjs
+  s_645955be7d4356::t_ceabd874092c70 5,13-16,61-68,73
+  s_645955be7d4356::t_a16db1a0580d34 1-4,7,20,59-60,70-71
+  s_645955be7d4356::t_c41640bbd3c582 6,8-12,21-58,69,72
+  s_645955be7d4356::t_bf025279e09718 17-19
+index.html
+  s_645955be7d4356::t_b1fb3a29738e39 207
+site-config.js
+  s_645955be7d4356::t_b1fb3a29738e39 183-190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "5.30.8",
+  "base_commit_sha": "dc2c5c6d647affcc548ce784740131aff210a405",
+  "prompts": {},
+  "humans": {
+    "h_784d76c5d0e1d4": {
+      "author": "Sunflower <tangjiao17@h-partners.com>"
+    }
+  },
+  "sessions": {
+    "s_645955be7d4356": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c9e2-5671-7e61-9fdd-afac6790895d",
+        "model": "gpt-6-astra"
+      },
+      "human_author": null,
+      "custom_attributes": {
+        "stats_model_totals": "{\"gpt-6-astra\":{\"additions\":302,\"deletions\":41}}",
+        "stats_total_additions": "302",
+        "stats_total_deletions": "41",
+        "stats_turn_models": "{\"t_3145b51254d4fe\":\"gpt-6-astra\",\"t_393d8afd60d12b\":\"gpt-6-astra\",\"t_5e086885b1750b\":\"gpt-6-astra\",\"t_646011b00e8f59\":\"gpt-6-astra\",\"t_a27ec1a7a3a335\":\"gpt-6-astra\",\"t_af0c0e8b6d5553\":\"gpt-6-astra\",\"t_bf4266b73a87cb\":\"gpt-6-astra\",\"t_c1e8a06b05760c\":\"gpt-6-astra\",\"t_ceabd874092c70\":\"gpt-6-astra\"}"
+      }
+    }
+  }
+}
