@@ -1,5 +1,6 @@
 import { deviceRecords, songKey, chartVersions, changeChartVersion } from './device-library.mjs';
 import { parseLrc, makeChart, stripSingerPrefix } from './engine.mjs';
+import { regenerateChart } from './rechart.mjs';
 
 const chars = text => stripSingerPrefix(text).normalize('NFC').match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]/gu) || [];
 export function editableLyrics(text) {
@@ -180,6 +181,23 @@ export async function mountChartEditor() {
     }
     if(!record.charts?.length)container.textContent='暂无已保存谱面';
   }
+  $('[data-action="rechart"]').onclick=async()=>{
+    if(saving)return;
+    release();pause();persist();
+    if(!Number.isFinite(audio.duration)){toast('请等待音频加载完成');return;}
+    saving=true;
+    const controls=[...document.querySelectorAll('button,input,textarea')].map(element=>[element,element.disabled]);
+    controls.forEach(([element])=>element.disabled=true);
+    const button=$('[data-action="rechart"]');button.classList.add('is-loading');
+    $('.chart-manager').close();$('.studio-status').setAttribute('aria-busy','true');status('正在在线重新制谱，请稍候…');
+    try{
+      const {chart,lyric}=await regenerateChart(bytes,structuredClone(lines),structuredClone(words),audio.duration);
+      const name=`在线制谱 · ${new Date().toLocaleString('zh-CN')}`;
+      await changeChartVersion(song,'save',null,{id:crypto.randomUUID(),name,chart,lyric,created:Date.now()});
+      session.alignment=chart;loadChart(chart,name);toast('在线制谱成功，已保存为新谱面');status('在线制谱成功，可以继续修改');
+    }catch(error){toast(`重新制谱失败：${error.message}`);status(`重新制谱失败：${error.message}`);}
+    finally{saving=false;button.classList.remove('is-loading');$('.studio-status').setAttribute('aria-busy','false');controls.forEach(([element,disabled])=>element.disabled=disabled);}
+  };
   $('[data-action="manage"]').onclick=async()=>{release();pause();persist();await renderManager();$('.chart-manager').showModal();};
   $('[data-action="manager-close"]').onclick=()=>$('.chart-manager').close();
   $('[data-action="new-chart"]').onclick=()=>{release();pause();words=tokens.map(()=>null);cursor=0;selectedLine=0;activeName='新谱面';dirty=true;seek(0);render();$('.chart-manager').close();};

@@ -299,11 +299,12 @@ export function createServer({ origins = publicOrigins, readCatalog = readLibrar
             return send(res, 503, { error: '高级制谱服务不可用，请关闭高级制谱后重试' });
           }
           folder = await mkdtemp(path.join(tmpdir(), 'melody-prepare-'));
-          const original = path.join(folder, 'input'), audio = path.join(folder, 'song.mp3'), lrc = path.join(folder, 'song.lrc'), output = path.join(folder, 'song.chart.json');
+          const preserveAudio = form.get('preserveAudio') === '1';
+          const original = path.join(folder, 'input'), audio = preserveAudio ? original : path.join(folder, 'song.mp3'), lrc = path.join(folder, 'song.lrc'), output = path.join(folder, 'song.chart.json');
           await writeFile(original, Buffer.from(await file.arrayBuffer())); if (lyric?.size) await writeFile(lrc, await lyric.text());
           const inspected = await promisify(execFile)(pythonPath(), [path.join(gameRoot, 'scripts/align.py'), '--inspect-audio', original, '--output', audio], { timeout: 120000, windowsHide: true });
           if (lyric?.size) await align({}, audio, lrc, output, backend);
-          return send(res, 200, { duration: JSON.parse(inspected.stdout.trim()).duration, chart: lyric?.size ? JSON.parse(await readFile(output, 'utf8')) : null, audio: (await readFile(audio)).toString('base64') });
+          return send(res, 200, { duration: JSON.parse(inspected.stdout.trim()).duration, chart: lyric?.size ? JSON.parse(await readFile(output, 'utf8')) : null, ...(preserveAudio ? {} : {audio: (await readFile(audio)).toString('base64')}) });
         } finally {
           uploads--;
           if (folder && path.dirname(path.resolve(folder)) === path.resolve(tmpdir()) && path.basename(folder).startsWith('melody-prepare-')) await rm(folder, { recursive: true, force: true });

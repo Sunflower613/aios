@@ -83,6 +83,10 @@ WhisperX CTC 的句尾经常只覆盖一个发音帧，不能作为完整歌声�
 
 ## 自动验证
 
+制谱页面右上角「谱面管理」提供「重新在线制谱」：以当前编辑的歌词、现有句首时间和原始音频调用 `/api/melody/prepare`，完成后在设备缓存中新增并选中一个谱面版本，保留旧版本。没有句首时间的歌词按篇幅提供粗略句锚点，最终字点仍由对齐算法生成；句锚点顺序错误时需先修正。沿用主页高级制谱偏好（默认轻量制谱，开启高级制谱时使用 WhisperX），日文仍使用 YRC 或手动制谱。请求使用 `preserveAudio=1`，服务仅临时处理并返回谱面，不转码或修改原音频，也不写入服务器曲库。修改后需重启曲库服务以启用该参数。
+
+列表最高分兼容完整谱面及部分歌词计分的历史记录，展示较高分数及其记录的评级。难度按有效谱面字数 `N` 和时长 `T`（秒）计算：`0.8N + 0.8 × N / max(60,T) × 60`，小于 300 为 EZ、小于 500 为 HD、小于 750 为 IN，其余为 AT；暂无谱面时显示「—」。难度是字数为主、密度为辅的粗略分档，不影响判定或成绩。
+
 ```powershell
 node --test games/fingertip-melody/*.test.mjs
 ./games/fingertip-melody/.venv/Scripts/python.exe -m unittest discover -s games/fingertip-melody/scripts -p test_alignment.py

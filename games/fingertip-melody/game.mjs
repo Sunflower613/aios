@@ -7,6 +7,7 @@ import { initCatalogSearch } from './library-search.mjs';
 import { catalogApi } from './service.mjs';
 import { repairKnownTiming } from './timing-corrections.mjs';
 import { exportArchive } from './song-archive.mjs';
+import { libraryBest, songDifficulty, chartCharacterCount } from './song-stats.mjs';
 
 const $ = id => document.getElementById(id);
 if ($('chart-settings')) initChartSettings($('chart-settings'), $('advanced-chart'));
@@ -54,10 +55,10 @@ function showGrade(grade) { $('overlay-label').textContent = grade; $('overlay-l
 function updateCardScores() {
   $('song-list').querySelectorAll('[data-index]').forEach(button => {
     const song = library[Number(button.dataset.index)];
-    let best = 0; try { best = Number(localStorage.getItem(`melody:${song.id}:score:full:v3`)) || 0; } catch {}
+    let best = {score:0,grade:'—'}; try { best = libraryBest(localStorage,song); } catch {}
     let badge = button.closest('.song-content').querySelector('.song-best');
     if (!badge) { badge = document.createElement('div'); badge.className = 'song-best'; button.closest('.song-content').append(badge); }
-    badge.textContent = `${bestRating(song, 'score')} · ${best.toLocaleString()}`;
+    badge.textContent = `${best.grade} · ${best.score.toLocaleString()}`;
   });
 }
 async function request(url) { const r = await fetch(url, { credentials: 'include', signal: AbortSignal.timeout(30000), cache: url.includes('.json') ? 'no-store' : 'default' }); if (!r.ok) throw new Error(`无法读取 ${url}`); return r; }
@@ -105,11 +106,17 @@ async function loadLibrary(nextLibrary) {
     $('bulk-folder').innerHTML = '<option value="">未分类</option>' + folders.map(name => `<option value="${escape(name)}">${escape(name)}</option>`).join('');
     const visible = library.map((song, i) => ({song, i})).filter(({song}) => filter.value === 'all' || (placements.get(songKey(song)) || '') === filter.value);
     $('library-count').textContent = `${visible.length} 首歌 · 已下载曲库`;
-    $('song-list').innerHTML = visible.map(({song, i}) => `<div class="song-shell" data-key="${escape(songKey(song))}"><button class="swipe-delete" type="button" aria-label="删除 ${escape(song.title)}">删除</button><article class="song-card" draggable="${!managing}" style="--cover:${palettes[song.mood] || palettes.sunshine}"><label class="song-check" ${managing ? '' : 'hidden'}><input type="checkbox" data-choose="${i}" ${chosen.has(songKey(song)) ? 'checked' : ''} aria-label="选择 ${escape(song.title)}"></label><div class="song-art" aria-hidden="true"><span class="tag">${escape(song.label)}</span><strong>${icon(song.mood === 'sunshine' ? 'sun' : song.mood === 'rain' ? 'cloud' : 'star')}</strong></div><div class="song-content"><div class="song-info"><div><h3>${escape(song.title)}</h3><p>${escape(song.artist)}</p></div><button class="song-play" data-index="${i}" aria-label="演奏${escape(song.title)}" ${song.available === false ? 'disabled title="音源暂不可用"' : ''}>${icon('play')}</button></div><div class="song-meta"><span>${fmt(song.duration)}${song.bpm ? ` · ${Math.round(song.bpm)} BPM` : ''}</span><span>${song.available === false ? '音源暂不可用' : song.chart ? '逐字谱面' : '等待制谱'}</span></div><div class="song-best"></div></div></article></div>`).join('');
+    $('song-list').innerHTML = visible.map(({song, i}) => `<div class="song-shell" data-key="${escape(songKey(song))}"><button class="swipe-delete" type="button" aria-label="删除 ${escape(song.title)}">删除</button><article class="song-card" draggable="${!managing}" style="--cover:${palettes[song.mood] || palettes.sunshine}"><label class="song-check" ${managing ? '' : 'hidden'}><input type="checkbox" data-choose="${i}" ${chosen.has(songKey(song)) ? 'checked' : ''} aria-label="选择 ${escape(song.title)}"></label><div class="song-art" aria-hidden="true"><span class="tag">${escape(song.label)}</span><strong>${icon(song.mood === 'sunshine' ? 'sun' : song.mood === 'rain' ? 'cloud' : 'star')}</strong></div><div class="song-content"><div class="song-info"><div><h3>${escape(song.title)}</h3><p>${escape(song.artist)}</p></div><div class="song-actions"><span class="song-difficulty" title="暂无谱面或正在读取">—</span><button class="song-play" data-index="${i}" aria-label="演奏${escape(song.title)}" ${song.available === false ? 'disabled title="音源暂不可用"' : ''}>${icon('play')}</button></div></div><div class="song-meta"><span>${song.available === false ? '音源暂不可用' : song.chart ? '逐字谱面' : '等待制谱'}</span></div><div class="song-best"></div></div></article></div>`).join('');
     $('song-list').querySelectorAll('button[data-index]').forEach(button => {
       const song = library[Number(button.dataset.index)];
       if (!song.audio) { button.disabled = true; button.title = song.downloadNote || '音源不可用'; }
       button.onclick = () => selectSong(song);
+      const label=button.parentElement.querySelector('.song-difficulty');
+      if(song.chart) request(song.chart).then(response=>response.json()).then(chart=>{
+        if(!label.isConnected)return;
+        const count=chartCharacterCount(chart),level=songDifficulty(count,chart.duration || song.duration);
+        label.textContent=level || '—';label.dataset.level=level || '';label.title=`${count} 字 · 难度综合歌词字数与密度`;
+      }).catch(()=>{if(label.isConnected)label.title='谱面暂不可读取';});
     });
     $('song-list').querySelectorAll('.song-art').forEach((art, i) => applyCover(art, visible[i].song));
     $('song-list').querySelectorAll('.song-shell').forEach((shell, i) => {
