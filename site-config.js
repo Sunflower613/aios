@@ -180,6 +180,14 @@ export const siteConfig = {
       icon: "./games/fingertip-melody/icon.svg",
       color: "#8e77ff",
       emoji: "🎵"
+    },
+    {
+      id: "sisyphus",
+      name: "西西弗斯",
+      path: "./games/sisyphus/index.html",
+      icon: "./games/sisyphus/icon.svg",
+      color: "#d5b782",
+      emoji: "🪨"
     }
   ],
 

@@ -1,0 +1,75 @@
+/* The same miniature renders in the shop, the world and the central push button. */
+.skin-art { --rock: #8b8271; display: block; position: relative; width: 100%; height: 100%; isolation: isolate; }
+.skin-surface { position: absolute; inset: 1%; border-radius: 50%; overflow: hidden; background: var(--rock); box-shadow: inset -8px -10px 18px #0004, inset 4px 5px 12px #fff4; }
+.skin-surface::before, .skin-surface::after, .skin-detail, .skin-orbit { content: ''; position: absolute; pointer-events: none; }
+.skin-surface::before { inset: 0; background: conic-gradient(from 25deg at 40% 35%, #fff2, #0002, #fff1, #0002, #fff2); }
+.skin-surface::after { inset: 0; background: radial-gradient(circle at 28% 22%, #fff4, transparent 65%); }
+.skin-detail { inset: 15%; border: 1px solid #ffffff30; clip-path: polygon(30% 0, 90% 20%, 100% 70%, 50% 100%, 0 70%, 0 20%); background: conic-gradient(#fff1, #0001, #fff2, #0001); }
+[data-skin=moss] .skin-surface { background: radial-gradient(ellipse at 30% 20%, #a2b779 0 10%, transparent 40%), radial-gradient(circle at 65% 70%, #436c50 0 15%, transparent 45%), #839375; }
+[data-skin=gold] .skin-surface { background: conic-gradient(#b77926, #ffdf83, #aa6e20, #ffe6a0, #b77926); }
+[data-skin=nebula] .skin-surface { background: radial-gradient(ellipse at 30% 60%, #e78ff0, transparent 50%), radial-gradient(ellipse at 70% 20%, #87badf, transparent 60%), #483b7a; }
+[data-skin=dream] .skin-surface { background: conic-gradient(#f4abab, #f1d78a, #8ed7b4, #96b6ed, #c992df, #f4abab); }
+[data-skin=hexagon] .skin-surface { clip-path: polygon(25% 7%, 75% 7%, 100% 50%, 75% 93%, 25% 93%, 0 50%); border-radius: 0; background: repeating-conic-gradient(#e9c564 0 60deg, #a77b2e 60deg 120deg, #d7a641 120deg 180deg); }
+[data-skin=cube] .skin-surface { border-radius: 14%; inset: 12%; transform: rotate(12deg); background: conic-gradient(from 30deg at 50% 50%, #516d9b 0 120deg, #9ac3ed 120deg 240deg, #6a91bf 240deg); }
+[data-skin=ice] .skin-surface { clip-path: polygon(32% 1%, 77% 8%, 100% 43%, 82% 88%, 39% 100%, 4% 65%, 6% 23%); background: repeating-conic-gradient(from 10deg, #ddf9ff 0 50deg, #85c8e0 50deg 90deg, #beeef5 90deg 120deg); }
+[data-skin=lava] .skin-surface { background: radial-gradient(ellipse at 35% 30%, #ffc76d, transparent 25%), repeating-conic-gradient(from 18deg, #291e26 0 35deg, #ed6831 36deg 43deg, #592b28 44deg 70deg); }
+[data-skin=lava] .skin-surface::after { background: #ff571d44; animation: skin-breathe 2.8s ease-in-out infinite alternate; }
+[data-skin=ocean] .skin-surface { background: repeating-radial-gradient(ellipse at 40% 130%, #173f6b 0 8%, #368eac 9% 17%, #93d9cf 18% 21%); }
+[data-skin=ocean] .skin-surface::before { inset: -30%; background: repeating-radial-gradient(ellipse at 50% 120%, transparent 0 15%, #b5f6ed55 16% 19%, transparent 20% 30%); animation: skin-drift 5s ease-in-out infinite alternate; }
+[data-skin=aurora] .skin-surface { background: #173747; }
+[data-skin=aurora] .skin-surface::before { inset: -40%; background: repeating-linear-gradient(110deg, #74efb9 0, #58bdce 15%, #8665ce 30%, #203f64 45%, #74efb9 60%); filter: blur(7px); animation: skin-drift 5s ease-in-out infinite alternate; }
+[data-skin=neon] .skin-surface { background: #292237; border: 3px solid #e18bff; box-shadow: inset 0 0 14px #ab63f4; }
+[data-skin=neon] .skin-detail { inset: 23%; border: 3px solid #65e9ed; clip-path: none; background: none; transform: rotate(45deg); box-shadow: 0 0 8px #65e9ed; animation: skin-turn 8s linear infinite; }
+[data-skin=circuit] .skin-surface { background: repeating-linear-gradient(0deg, transparent 0 18%, #40d4a455 19% 20%), repeating-linear-gradient(90deg, #102f2c 0 18%, #40d4a455 19% 20%); }
+[data-skin=circuit] .skin-detail { inset: 33%; clip-path: none; background: #b4ffe4; box-shadow: 0 0 12px #6effca; animation: skin-breathe 2s ease-in-out infinite alternate; }
+[data-skin=galaxy] .skin-surface { background: repeating-conic-gradient(from 20deg, #221c47 0 30deg, #6a60ab 45deg, #d8afdf 60deg, #221c47 90deg); }
+[data-skin=galaxy] .skin-surface::after, [data-skin=nebula] .skin-surface::after { background: radial-gradient(circle at 22% 30%, white 0 1%, transparent 2%), radial-gradient(circle at 65% 25%, white 0 1%, transparent 2%), radial-gradient(circle at 70% 70%, #fff8 0 2%, transparent 3%); animation: skin-breathe 3s ease-in-out infinite alternate; }
+[data-skin=void] .skin-surface { background: radial-gradient(circle, #151323 0 35%, #6f539b 40%, #e3b8f1 45%, #503b72 51%, #1a1829 65%); }
+[data-skin=void] .skin-detail { inset: 24%; background: #11101e; border: 0; clip-path: none; border-radius: 50%; }
+[data-skin=sun] .skin-surface { background: radial-gradient(circle at 35% 35%, #fff5bc, #ffc657 45%, #e77524 90%); box-shadow: 0 0 15px #efa63888, inset -5px -6px 10px #d6612655; }
+[data-skin=sun] .skin-surface::before { background: repeating-conic-gradient(#fff3 0 10deg, transparent 10deg 25deg); animation: skin-turn 18s linear infinite; }
+[data-skin=moon] .skin-surface { background: radial-gradient(circle at 30% 25%, #929caa 0 10%, transparent 11%), radial-gradient(circle at 60% 65%, #a0a8b6 0 15%, transparent 16%), radial-gradient(circle at 78% 28%, #aab1bf 0 7%, transparent 8%), #d7dbe1; }
+[data-skin=yin] .skin-surface { background:#f1efe5 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23f1efe5'/%3E%3Cpath d='M50 0a50 50 0 0 0 0 100 25 25 0 0 0 0-50 25 25 0 0 1 0-50Z' fill='%23293333'/%3E%3Ccircle cx='50' cy='25' r='6' fill='%23293333'/%3E%3Ccircle cx='50' cy='75' r='6' fill='%23f1efe5'/%3E%3C/svg%3E") center/100% 100% no-repeat; }
+[data-skin=yin] .skin-surface::before { display:none; }
+[data-skin=yin] .skin-detail { display: none; }
+[data-skin=clock] .skin-surface { border: 4px solid #a78851; background: repeating-conic-gradient(#b38e50 0 3deg, transparent 3deg 30deg), radial-gradient(circle, #293b38 0 60%, #dec598 61%); }
+[data-skin=clock] .skin-detail { inset: 22% 48% 48% 48%; clip-path: none; border: 0; background: #fce5b7; transform-origin: 50% 100%; animation: skin-turn 12s linear infinite; }
+[data-skin=glitch] .skin-surface { border-radius: 15%; background: repeating-linear-gradient(0deg, #343148 0 14%, #74e6dc 15% 20%, #343148 21% 43%, #e09acb 44% 50%); }
+[data-skin=glitch] .skin-surface::before { background: repeating-linear-gradient(90deg, transparent 0 35%, #b0b0fb77 36% 50%); animation: skin-glitch 3s steps(1) infinite; }
+[data-skin=portal] .skin-surface { background: repeating-radial-gradient(circle, #202639 0 9%, #6e8bca 10% 13%, #a5d6ed 14% 16%, #202639 17% 24%); }
+[data-skin=portal] .skin-detail { inset: 22%; clip-path: none; border: 2px solid #e1e0ff; border-radius: 25%; background: none; animation: skin-turn 6s linear infinite; }
+[data-skin=candy] .skin-surface { background: repeating-conic-gradient(#f9e9d7 0 30deg, #e294a3 30deg 60deg, #9ac9b9 60deg 90deg); }
+[data-skin=prism] .skin-surface { clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); border-radius: 0; background: repeating-conic-gradient(from 15deg, #bca6e3 0 45deg, #90c8d0 45deg 90deg, #efb4c0 90deg 135deg, #efdaa7 135deg 180deg); }
+[data-skin=prism] .skin-surface::after, [data-skin=dream] .skin-surface::after { background: linear-gradient(110deg, transparent 35%, #fff8 50%, transparent 65%); animation: skin-drift 4s ease-in-out infinite alternate; }
+.skin-orbit { inset: -4%; border-radius: 50%; opacity: 0; border: 1px solid #ccb0e4; }
+[data-skin=nebula] .skin-orbit, [data-skin=void] .skin-orbit { opacity: .7; transform: rotate(-30deg) scaleY(.4); }
+@keyframes skin-turn { to { transform: rotate(360deg); } }
+@keyframes skin-breathe { from { opacity: .35; } to { opacity: 1; } }
+@keyframes skin-drift { from { transform: translateX(-12%) rotate(-12deg); } to { transform: translateX(12%) rotate(12deg); } }
+@keyframes skin-glitch { 0%, 90%, 100% { transform: translateX(0); } 92% { transform: translateX(10%); } 96% { transform: translateX(-8%); } }
+body[data-motion=off] .skin-art *, body[data-motion=off] .skin-art *::before, body[data-motion=off] .skin-art *::after,
+body[data-paused=true] .skin-art *, body[data-paused=true] .skin-art *::before, body[data-paused=true] .skin-art *::after { animation-play-state: paused !important; }
+@media (prefers-reduced-motion: reduce) { .skin-art *, .skin-art *::before, .skin-art *::after { animation: none !important; } }
+
+.skin-spin { position:absolute; inset:0; display:block; transform-origin:50% 50%; }
+#stone { transform:none!important; will-change:auto; }
+#stone .skin-spin { will-change:transform; }
+#stone .skin-surface { box-shadow:none; }
+#stone::after { background:radial-gradient(circle at 28% 20%,#fff6d455,transparent 50%),linear-gradient(150deg,transparent 45%,#14221e66); }
+.skin-flower { display:none; }
+[data-skin=blossom] .skin-surface { background:radial-gradient(circle at 30% 25%,#daf0bb,#7d9f67 70%); }
+[data-skin=blossom] .skin-detail { display:none; }
+[data-skin=blossom] .skin-flower { display:block; position:absolute; width:36%; height:36%; left:32%; top:32%; transform:rotate(calc(var(--flower) * 60deg)) translateY(-70%); border-radius:50%; background:radial-gradient(circle,#f7e19a 0 13%,transparent 14%),repeating-conic-gradient(#e69ab9 0deg 36deg,#ffd5e0 36deg 72deg); clip-path:polygon(50% 0,64% 22%,89% 10%,82% 38%,100% 50%,78% 65%,88% 90%,60% 80%,50% 100%,37% 79%,11% 90%,20% 63%,0 50%,22% 36%,12% 10%,39% 22%); box-shadow:0 2px 4px #0002; }
+[data-skin=blossom] .skin-flower:last-child { transform:scale(.95); background:radial-gradient(circle,#efd46a 0 15%,transparent 16%),repeating-conic-gradient(#f4b9b2 0 36deg,#fff0df 36deg 72deg); }
+[data-skin=balloon] .skin-surface { inset:3% 10% 14%; border-radius:50% 50% 46% 46%; background:radial-gradient(ellipse at 28% 23%,#fff9 0 7%,transparent 16%),radial-gradient(circle at 30% 20%,#ffbad6,#d77dc9 55%,#7e81ca); }
+[data-skin=balloon] .skin-detail { display:none; }
+[data-skin=balloon] .skin-orbit { display:block; opacity:1; left:49%; top:86%; width:8%; height:28%; border:0; border-left:1px solid #dedccb; border-radius:45%; transform:none; }
+[data-skin=balloon] .skin-surface::before { inset:auto 40% -3% 40%; height:14%; background:#b16aa8; clip-path:polygon(50% 0,100% 100%,0 100%); }
+[data-skin=prism] .skin-surface { clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%); background:repeating-conic-gradient(from 15deg,#ef74bc 0 30deg,#536bea 30deg 60deg,#69e5df 60deg 90deg,#ffdf8c 90deg 120deg); filter:saturate(1.4); }
+[data-skin=prism] .skin-surface::before { inset:-35%; background:repeating-conic-gradient(from 30deg at 50% 40%,#30346e 0 12deg,#ec9ee4 12deg 24deg,#92edf4 24deg 36deg,#f9e8a6 36deg 48deg); mix-blend-mode:screen; animation:skin-turn 12s linear infinite; }
+[data-skin=prism] .skin-surface::after { inset:10%; background:repeating-conic-gradient(#2c258a99 0 30deg,#a6ffff88 30deg 60deg); clip-path:polygon(50% 0,61% 32%,93% 25%,72% 50%,93% 75%,61% 68%,50% 100%,39% 68%,7% 75%,28% 50%,7% 25%,39% 32%); mix-blend-mode:overlay; animation:skin-turn 8s linear infinite reverse; }
+[data-skin=prism] .skin-detail { inset:28%; clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); border:2px solid #fff9; background:repeating-conic-gradient(#fff6 0 30deg,#8428bd88 30deg 60deg); animation:skin-turn 6s linear infinite; }
+
+/* The holiday ornament keeps a simple tree; solar terms use the material renderer. */
+[data-skin=christmas] .skin-surface { background:repeating-linear-gradient(45deg,#356756 0 15%,#497a63 16% 30%); }
+[data-skin=christmas] .skin-detail { border:0; border-radius:0; inset:15% 23%; background:linear-gradient(#afbc8c,#477c61); clip-path:polygon(50% 0,80% 32%,67% 32%,95% 65%,74% 65%,100% 90%,60% 90%,60% 100%,40% 100%,40% 90%,0 90%,26% 65%,5% 65%,33% 32%,20% 32%); }
