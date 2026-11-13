@@ -1,6 +1,8 @@
 import { deviceRecords, songKey, chartVersions, changeChartVersion } from './device-library.mjs';
 import { parseLrc, makeChart, stripSingerPrefix } from './engine.mjs';
 import { regenerateChart } from './rechart.mjs';
+// 模块图成功解析并执行到这里，说明内核不旧：告诉 boot-guard.js 撤掉兼容提示。
+if (typeof window !== 'undefined') window.melodyBooted?.();
 
 const chars = text => stripSingerPrefix(text).normalize('NFC').match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]/gu) || [];
 export function editableLyrics(text) {

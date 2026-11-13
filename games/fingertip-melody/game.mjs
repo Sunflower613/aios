@@ -8,6 +8,8 @@ import { catalogApi } from './service.mjs';
 import { repairKnownTiming } from './timing-corrections.mjs';
 import { exportArchive } from './song-archive.mjs';
 import { libraryBest, songDifficulty, chartCharacterCount } from './song-stats.mjs';
+// 模块图成功解析并执行到这里，说明内核不旧：告诉 boot-guard.js 撤掉兼容提示。
+if (typeof window !== 'undefined') window.melodyBooted?.();
 
 const $ = id => document.getElementById(id);
 if ($('chart-settings')) initChartSettings($('chart-settings'), $('advanced-chart'));
